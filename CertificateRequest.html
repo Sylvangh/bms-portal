@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Online request</title>
+
+  <style>
+    /* ===== BODY & HEADINGS ===== */
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4ff;
+      padding: 20px;
+      color: #1f2937;
+    }
+
+    h1, h2, h3 {
+      text-align: center;
+      color: #2563eb;
+      margin-bottom: 20px;
+    }
+
+    
+
+    /* ===== CONTAINER & CARDS ===== */
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    #requestsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+    #residencyRequestsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+  #indigencyRequestsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+  #businessRequestsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+
+
+
+
+    .card, .request {
+      background: rgba(37, 99, 235, 0.1);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover, .request:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(37, 99, 235, 0.25);
+    }
+
+    /* ===== BUTTONS ===== */
+    button {
+      position: relative;
+      overflow: hidden;
+      padding: 8px 16px;
+      margin-right: 8px;
+      border: none;
+      border-radius: 8px;
+      background-color: #2563eb;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.25s;
+    }
+
+    button:hover { background-color: #1d4ed8; }
+
+    button.approve { background-color: #2ecc71; }
+    button.approve:hover { background-color: #27ae60; }
+
+    button.reject { background-color: #ef4444; }
+    button.reject:hover { background-color: #b91c1c; }
+
+    button.print { background-color: #f39c12; }
+    button.print:hover { background-color: #d97706; }
+
+    button.remove { background-color: #7f8c8d; }
+    button.remove:hover { background-color: #4b5563; }
+
+    button.back { background-color: #3498db; margin-top: 20px; }
+    button.back:hover { background-color: #2563eb; }
+
+    button:after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255,255,255,0.4);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.3s ease, height 0.3s ease;
+    }
+    button:active:after { width: 200px; height: 200px; transition: 0s; }
+
+    /* ===== MODAL ===== */
+    .modal {
+      position: fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,0.35);
+      padding:20px;
+      z-index:10;
+    }
+
+    .modal-content {
+      background: rgba(37, 99, 235, 0.1);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 20px;
+      width: 400px;
+      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15);
+    }
+
+    .hidden { display:none; }
+
+    .actions {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+
+    textarea {
+      width:100%;
+      height:100px;
+      border-radius:8px;
+      border:1px solid #ddd;
+      padding:8px;
+      resize:none;
+    }
+
+    #searchClearance  {
+      display:block;
+      width:40%;
+      padding:10px 12px;
+      margin: 15px auto;
+      border-radius:8px;
+      border:1px solid #ccc;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Barangay Clearance Requests</h1>
+  <input type="text" id="searchClearance" placeholder="Search...">
+
+  <div class="container">
+    <div class="card" id="requestsList"></div>
+  </div>
+
+  <h2>Certificate of Residency Requests</h2>
+
+<div class="container">
+  <div class="card" id="residencyRequestsList"></div>
+</div>
+
+
+  <h2>Certificate of indigency Requests</h2>
+
+<div class="container">
+  <div class="card" id="indigencyRequestsList"></div>
+</div>
+
+
+<h2>Certificate of Business Clearance Requests</h2>
+
+<div class="container">
+  <div class="card" id="businessRequestsList"></div>
+</div>
+
+
+
+  <!-- Reject Modal -->
+  <div id="messageModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Reject Request</h3>
+      <textarea id="rejectMessage" placeholder="Enter reason..."></textarea>
+      <div class="actions">
+        <button id="sendReject" class="reject">Send</button>
+        <button id="cancelReject">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  
+  
+  <!-- Reject Modal for Residency -->
+<div id="residencyRejectModal" class="modal hidden">
+  <div class="modal-content">
+    <h3>Reject Residency Request</h3>
+    <textarea id="residencyRejectMessage" placeholder="Enter reason..."></textarea>
+    <div class="actions">
+      <button id="sendResidencyReject" class="reject">Send</button>
+      <button id="cancelResidencyReject">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+  <!-- Reject Modal for indgency -->
+<div id="messageIndigencyModal" class="modal hidden">
+  <div class="modal-content">
+    <h3>Reject Residency Request</h3>
+    <textarea id="indigencyRejectMessage" placeholder="Enter reason..."></textarea>
+    <div class="actions">
+      <button id="sendIndigencyReject" class="reject">Send</button>
+      <button id="cancelIndigencyReject">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Reject Modal for Business Clearance -->
+<div id="businessRejectModal" class="modal hidden">
+  <div class="modal-content">
+    <h3>Reject Business Request</h3>
+    <textarea id="businessRejectMessage" placeholder="Enter reason..."></textarea>
+    <div class="actions">
+      <button id="sendBusinessReject" class="reject">Send</button>
+      <button id="cancelBusinessReject">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const requestsList = document.getElementById("requestsList");
+const modal = document.getElementById("messageModal");
+const rejectMessage = document.getElementById("rejectMessage");
+
+let currentRejectId = null;
+
+
+
+// ---------------- LOAD REQUESTS ----------------
+async function loadRequests() {
+  const res = await fetch("authController.php?action=adminGetClearanceRequests");
+  return await res.json();
+}
+
+// ---------------- RENDER ----------------
+async function renderRequests() {
+  const data = await loadRequests();
+  const search = document.getElementById("searchClearance").value.toLowerCase();
+
+  const filtered = data.filter(r =>
+    (r.username || "").toLowerCase().includes(search) ||
+    ((r.name || "") + " " + (r.lastname || "")).toLowerCase().includes(search)
+  );
+
+  if (!filtered.length) {
+    requestsList.innerHTML = "<p>No indigency requests found..</p>";
+    return;
+  }
+
+  requestsList.innerHTML = filtered.map(r => {
+    // Map type to a readable label
+    let typeLabel = "Request";
+    if (r.type === "clearance") typeLabel = "";
+
+    return `
+      <div class="request">
+        <h2 style="margin-bottom:5px;">${typeLabel}</h2>
+        <h3>${r.name} ${r.lastname}</h3>
+        <p><b>Date:</b> ${r.date}</p>
+        <p><b>Age:</b> ${r.age}</p>
+        <p><b>Purok:</b> ${r.purok}</p>
+        <p><b>Purpose:</b> ${r.purpose}</p>
+        <p><b>Status:</b> ${r.status}</p>
+        <p><b>Price:</b> ${r.price}</p>
+        <p><b>Payment:</b>
+          <span style="color:${r.paid == 1 ? 'green':'red'};font-weight:bold">
+            ${r.paid == 1 ? "PAID":"UNPAID"}
+          </span>
+        </p>
+        <p><b>Admin Message:</b> ${r.adminMessage || "None"}</p>
+
+        <div class="actions">
+          <button class="approve" onclick="approve(${r.id})">Approve</button>
+          <button class="reject" onclick="openReject(${r.id})">Reject</button>
+          <button class="markPaid" onclick="markPaid(${r.id})">Mark Paid</button>
+          <button class="print" onclick="printClearance('${r.name}','${r.lastname}','${r.age}','${r.purpose}','${r.price}','${r.purok}')">Print</button>
+
+          
+
+          <button class="remove" onclick="deleteReq(${r.id})">Delete</button>
+        </div>
+      </div>
+    `;
+  }
+).join("");
+  
+}
+
+// ---------------- ACTIONS ----------------
+async function approve(id) {
+  await fetch("authController.php?action=adminUpdateRequest", {
+    method:"POST",
+    body:new URLSearchParams({
+      id, status:"Approved", adminMessage:"Approved"
+    })
+  });
+  renderRequests();
+}
+
+function openReject(id) {
+  currentRejectId = id;
+  modal.classList.remove("hidden");
+}
+
+document.getElementById("sendReject").onclick = async () => {
+  await fetch("authController.php?action=adminUpdateRequest", {
+    method:"POST",
+    body:new URLSearchParams({
+      id: currentRejectId,
+      status:"Rejected",
+      adminMessage: rejectMessage.value
+    })
+  });
+  rejectMessage.value="";
+  modal.classList.add("hidden");
+  renderRequests();
+};
+
+document.getElementById("cancelReject").onclick = ()=>{
+  modal.classList.add("hidden");
+  rejectMessage.value="";
+};
+
+async function markPaid(id) {
+  if (!confirm("Mark this request as PAID?")) return;
+
+  try {
+    const res = await fetch("authController.php?action=adminMarkPaid", {
+      method: "POST",
+      body: new URLSearchParams({ id })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+
+    // Refresh the list after marking as paid
+    renderRequests();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to mark as paid: " + err.message);
+  }
+}
+
+
+async function deleteReq(id) {
+  if(!confirm("Delete request?")) return;
+  await fetch("authController.php?action=adminDeleteRequest",{
+    method:"POST",
+    body:new URLSearchParams({id})
+  });
+  renderRequests();
+}
+
+// ---------------- PRINT ----------------
+function printClearance(name, lastname, age, purpose,price,purok) {
+    const fullName = `${name ?? ''} ${lastname ?? ''}`.trim().toUpperCase();
+  const today = new Date().toLocaleDateString();
+  const win = window.open("", "_blank");
+  win.document.write(`
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Barangay Clearance</title>
+
+<style>
+  @page {
+    size: 8.5in 11in;
+    margin: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;  /* <-- all text uses Arial */
+  }
+
+  .page {
+    width: 8.5in;
+    height: 11in;
+    position: relative;
+    background: url("template1.png") center/cover no-repeat; /* template as background */
+  }
+
+  .right {
+    position: absolute;   /* overlay content on template */
+    top: 2.5in;           /* adjust vertical position to fit template */
+    left: 3.5in;            /* left margin */
+    right: 1in;           /* right margin */
+    font-size: 12pt;
+    line-height: 1.4;
+    text-align: justify;
+  }
+.right h1 {
+  text-align: center;
+  font-size: 20pt;
+  line-height: 20pt;   /* exact height */
+  margin-top: 0;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+    position: relative;
+  top: -50px;     /* 👈 moves ONLY the title */
+}
+
+ .right p {
+  margin: 0 0 25px 0;     /* bottom spacing between paragraphs */
+  text-indent: 0.7in;     /* first-line indent */
+  margin-left: 0.15in;     /* shift whole paragraph closer to the left */
+  line-height: 1.5;
+}
+
+  .right .no-indent {
+    text-indent: 0;
+    margin-bottom: 12px;
+  }
+
+  .highlight {
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .signature {
+    margin-top: 100px;
+    text-align: left;
+    
+  }
+
+  .signature b {
+    display: block;
+    margin-top: 10px;
+  }
+
+ .or-details {
+    margin-top: 80px;
+    margin-left: 0.50in;   /* move left */
+    font-size: 12pt;
+    line-height: 1.3;
+}
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <div class="right">
+    <h1>BARANGAY CLEARANCE</h1>
+
+    <p class="no-indent"><b>TO WHOM IT MAY CONCERN:</b></p>
+
+    <p>
+      THIS IS TO CERTIFY that <span class="highlight"><b>${name}</b></span>,
+     <b>${age}</b> years old, Filipino citizen, is a bonafide resident of Purok ${purok},
+      Barangay Peñafrancia, Sta. Magdalena, Sorsogon and has no derogatory
+      record in this community.
+    </p>
+
+    <p>
+      THIS CERTIFICATION is issued upon request of the interested party
+      for <span class="highlight"><b>${purpose}</b></span> purposes.
+    </p>
+
+    <p>
+      Issued this ${today} at the Barangay Hall,
+      Barangay Peñafrancia, Sta. Magdalena, Sorsogon.
+    </p>
+
+    <div class="signature">
+      Approved by:
+      <b>ROLLY C. FULGAR</b>
+      PUNONG BARANGAY
+    </div>
+
+    <div class="or-details">
+      OR No.: 00001<br>
+      Issued on: ${today}<br>
+      Issued at: Brgy. Peñafrancia<br>
+      Amount Paid: ₱${price}.00
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
+       `);
+   // Close the document to finish rendering
+  win.document.close();
+
+  // Wait until the new window finishes loading before printing
+  win.focus();
+  win.onload = function() {
+    win.print();
+    // Optionally close the window after printing
+    // win.close();
+  }
+}
+
+// INIT
+
+
+//// dito natin i add ang kay  residnecy
+
+const residencyModal = document.getElementById("residencyRejectModal");
+const residencyRejectMessage = document.getElementById("residencyRejectMessage");
+let currentRejectResidencyId = null;
+
+
+const residencyRequestsList = document.getElementById("residencyRequestsList");
+
+// ---------------- LOAD RESIDENCY REQUESTS ----------------
+async function loadResidencyRequests() {
+  const res = await fetch("authController.php?action=AdmingetResidencyRequests");
+  return await res.json();
+}
+
+// ---------------- RENDER RESIDENCY ----------------
+async function renderResidencyRequests() {
+  const data = await loadResidencyRequests();
+  const search = document.getElementById("searchClearance").value.toLowerCase();
+
+  const filtered = data.filter(r =>
+    (r.username || "").toLowerCase().includes(search) ||
+    ((r.name || "") + " " + (r.lastname || "")).toLowerCase().includes(search)
+  );
+
+  if (!filtered.length) {
+    residencyRequestsList.innerHTML = "<p>No residency requests found.</p>";
+    return;
+  }
+
+  residencyRequestsList.innerHTML = filtered.map(r => {
+    return `
+      <div class="request">
+        <h3>${r.name} ${r.lastname}</h3>
+        <p><b>Date:</b> ${r.date}</p>
+        <p><b>Gender:</b> ${r.age || "N/A"}</p>
+        <p><b>Purok:</b> ${r.purok || "N/A"}</p>
+        <p><b>biological parent:</b> ${r.bioName}</p>
+        <p><b>Price:</b> ${r.price || "N/A"}</p>
+        <p><b>Status:</b> ${r.status}</p>
+        <p><b>Payment:</b>
+          <span style="color:${r.paid == 1 ? 'green':'red'};font-weight:bold">
+            ${r.paid == 1 ? "PAID":"UNPAID"}
+          </span>
+        </p>
+        <p><b>Admin Message:</b> ${r.adminMessage || "None"}</p>
+
+        <div class="actions">
+          <button class="approve" onclick="approveResidency(${r.id})">Approve</button>
+          <button class="reject" onclick="openRejectResidency(${r.id})">Reject</button>
+          <button class="markPaid" onclick="markPaidResidency(${r.id})">Mark Paid</button>
+          <button class="print" onclick="printResidency('${r.name}','${r.lastname}','${r.age}','${r.purok}','${r.bioName}','${r.price}')">Print</button>
+          <button class="remove" onclick="deleteResidency(${r.id})">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+
+// APPROVE
+async function approveResidency(id) {
+  await fetch("authController.php?action=adminUpdateRequest1", {
+    method:"POST",
+    body:new URLSearchParams({id, status:"Approved", adminMessage:"Approved"})
+  });
+  renderResidencyRequests();
+}
+
+// REJECT
+
+function openRejectResidency(id) {
+  currentRejectResidencyId = id;
+  residencyModal.classList.remove("hidden");
+}
+
+document.getElementById("sendResidencyReject").onclick = async () => {
+  try {
+    const res = await fetch("authController.php?action=adminUpdateRequest1", {
+      method:"POST",
+      body:new URLSearchParams({
+        id: currentRejectResidencyId,
+        status:"Rejected",
+        adminMessage: residencyRejectMessage.value
+      })
+    });
+    const data = await res.json();
+    alert(data.message);
+
+    residencyRejectMessage.value="";
+    residencyModal.classList.add("hidden");
+    renderResidencyRequests();
+    currentRejectResidencyId = null;
+  } catch(err) {
+    console.error(err);
+    alert("Failed to reject residency: " + err.message);
+  }
+};
+
+document.getElementById("cancelResidencyReject").onclick = ()=>{
+  residencyRejectMessage.value="";
+  residencyModal.classList.add("hidden");
+  currentRejectResidencyId = null;
+};
+
+// MARK PAID
+async function markPaidResidency(id) {
+  if (!confirm("Mark this request as PAID?")) return;
+
+  try {
+    const res = await fetch("authController.php?action=adminMarkPaid1", {
+      method: "POST",
+      body: new URLSearchParams({ id })
+    });
+    const data = await res.json();
+    alert(data.message);
+    renderResidencyRequests();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to mark as paid: " + err.message);
+  }
+}
+
+// DELETE
+async function deleteResidency(id) {
+  if(!confirm("Delete request?")) return;
+  await fetch("authController.php?action=adminDeleteRequest1",{
+    method:"POST",
+    body:new URLSearchParams({id})
+  });
+  renderResidencyRequests();
+}
+
+// PRINT
+function printResidency(name, lastname,age,purok,bioName,price ) {
+  // similar sa printClearance, pero pwedeng palitan ng title & content
+  const today = new Date().toLocaleDateString();
+  const win = window.open("", "_blank");
+  win.document.write(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Barangay Business Clearance</title>
+
+<style>
+  @page {
+    size: 8.5in 11in;
+    margin: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;  /* <-- all text uses Arial */
+  }
+
+  .page {
+    width: 8.5in;
+    height: 11in;
+    position: relative;
+    background: url("template1.png") center/cover no-repeat; /* template as background */
+  }
+.right {
+  position: absolute;
+  top: 2in;   /* moved entire block up from 2.5in to 2in */
+  left: 3.5in;
+  right: 1in;
+  font-size: 11pt;
+  line-height: 1.4;
+  text-align: justify;
+}
+
+.right h1 {
+  text-align: center;
+  font-size: 20pt;
+  line-height: 20pt;
+  margin-top: 0;
+  margin-bottom: 5px;  /* closer to permit number */
+  letter-spacing: 1px;
+  position: relative;
+  top: -10px;  /* small adjustment if needed */
+}
+
+.right .no-indent {
+  text-indent: 0;
+  margin-bottom: 12px;
+  position: relative;
+  top: -40px;      /* keeps it slightly higher */
+  left: -20px;     /* moves it 20px to the left */
+}
+.right .no-indent {
+  text-indent: 0;
+  margin-bottom: 12px;
+  margin-left: -0.1in;   /* ✅ negative value moves it left */
+  position: relative;
+  top: -5px;            /* optional, keeps it slightly higher */
+}
+
+
+  .highlight {
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+.applicant-signature {
+  margin-top: 20px;      /* space from previous content */
+  text-align: left;
+}
+
+.applicant-signature .line,
+.applicant-signature .name {
+  margin: 0;             /* remove extra space */
+  padding: 0;
+}
+
+.approved-signature {
+  margin-top: 10px;      /* space between applicant & approved */
+  text-align: left;
+}
+
+.approved-signature b,
+.approved-signature div {
+  margin: 0;             /* remove extra space between name & title */
+  padding: 0;
+}
+
+
+ .or-details {
+    margin-top: 80px;
+    margin-left: 0.50in;   /* move left */
+    font-size: 11pt;
+    line-height: 1.3;
+}
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="right">
+    <h1>BARANGAY CERTIFICATION</h1>
+
+    <p class="no-indent"><b>TO WHOM IT MAY CONCERN:</b></p>
+
+    <p>
+      This is to <span class="highlight"><b>CERTIFY</b></span> that 
+      <span class="highlight"><b>${name}</b></span>, ${age} yrs old, 
+      a bonafide resident of Purok ${purok}, Barangay Peñafrancia, Sta. Magdalena, Sorsogon.
+    </p>
+
+    <p>
+      <span class="highlight"><b>FURTHER CERTIFY</b></span> that 
+      <span class="highlight"><b>B${name}</b></span> is the 
+      biological daughter of <span class="highlight"><b>${bioName}</b></span>.
+    </p>
+
+    <p>
+      THIS CERTIFICATION is issued upon the request of the above-mentioned 
+      individual for whatever legal purpose it may serve.
+    </p>
+
+    <p>
+      Issued this <b>${today}</b> at the Barangay Hall, 
+      Purok 3, Barangay Peñafrancia, Sta. Magdalena, Sorsogon.
+    </p>
+
+    <div class="signature">
+      Approved by:<br>
+      <b>ROLLY C. FULGAR</b><br>
+      Punong Barangay
+    </div>
+
+    <div class="or-details">
+      OR No.: 00001<br>
+      Issued on:${today}<br>
+      Issued at: Brgy. Peñafrancia<br>
+      Amount Paid:  ₱${price}.00
+    </div>
+  </div>
+
+</div>
+</body>
+       `);
+   // Close the document to finish rendering
+  win.document.close();
+
+  // Wait until the new window finishes loading before printing
+  win.focus();
+  win.onload = function() {
+    win.print();
+    // Optionally close the window after printing
+    // win.close();
+  }
+}
+
+document.getElementById("searchClearance").addEventListener("input", renderRequests);
+renderRequests();
+setInterval(renderRequests, 5000);
+
+renderResidencyRequests();
+setInterval(renderResidencyRequests, 5000);
+
+
+
+
+const indigencyRequestsList = document.getElementById("indigencyRequestsList");
+const messageIndigencyModal = document.getElementById("messageIndigencyModal");
+const indigencyRejectMessage = document.getElementById("indigencyRejectMessage");
+
+let currentRejectIndigencyId = null;
+
+
+// ---------------- LOAD INDIGENCY REQUESTS ----------------
+async function loadIndigencyRequests() {
+  const res = await fetch("authController.php?action=adminGetIndigencyRequests");
+  return await res.json();
+}
+
+
+// ---------------- RENDER ----------------
+async function renderIndigencyRequests() {
+  const data = await loadIndigencyRequests();
+  const search = document.getElementById("searchClearance").value.toLowerCase();
+
+  const filtered = data.filter(r =>
+    (r.username || "").toLowerCase().includes(search) ||
+    ((r.name || "") + " " + (r.lastname || "")).toLowerCase().includes(search)
+  );
+
+  if (!filtered.length) {
+    indigencyRequestsList.innerHTML = "<p>No indigency requests found.</p>";
+    return;
+  }
+
+  indigencyRequestsList.innerHTML = filtered.map(r => `
+    <div class="request">
+      <h2 style="margin-bottom:5px;"></h2>
+      <h3>${r.name || ""} ${r.lastname || ""}</h3>
+      <p><b>Date:</b> ${r.date}</p>
+      <p><b>Purok:</b> ${r.purok}</p>
+      <p><b>Amount:</b> ${r.price}</p>
+      <p><b>Status:</b> ${r.status}</p>
+
+      <p><b>Payment:</b>
+        <span style="color:${r.paid == 1 ? 'green':'red'};font-weight:bold">
+          ${r.paid == 1 ? "PAID":"UNPAID"}
+        </span>
+      </p>
+
+      <p><b>Admin Message:</b> ${r.adminMessage || "None"}</p>
+
+      <div class="actions">
+        <button class="approve" onclick="approveIndigecny(${r.id})">Approve</button>
+        <button class="reject" onclick="openRejectIndigency(${r.id})">Reject</button>
+        <button class="markPaid" onclick="markIndigencyPaid(${r.id})">Mark Paid</button>
+        <button class="print" onclick="printIndigency('${r.name}','${r.lastname}','${r.purok}','${r.price}')">Print</button>
+        <button class="remove" onclick="deleteReqIn(${r.id})">Delete</button>
+      </div>
+    </div>
+
+
+
+
+  `).join("");
+}
+
+
+// ---------------- ACTIONS ----------------
+async function approveIndigecny(id) {
+  await fetch("authController.php?action=adminUpdateRequest2", {
+    method: "POST",
+    body: new URLSearchParams({
+      id,
+      status: "Approved",
+      adminMessage: "Approved"
+    })
+  });
+  renderIndigencyRequests();
+}
+
+
+function openRejectIndigency(id) {
+  currentRejectId = id;
+  messageIndigencyModal.classList.remove("hidden");
+}
+
+document.getElementById("sendIndigencyReject").onclick = async () => {
+  await fetch("authController.php?action=adminUpdateRequest2", {
+    method: "POST",
+    body: new URLSearchParams({
+      id: currentRejectId,
+      status: "Rejected",
+      adminMessage: indigencyRejectMessage.value
+    })
+  });
+
+  indigencyRejectMessage.value = "";
+  messageIndigencyModal.classList.add("hidden");
+  renderIndigencyRequests();
+};
+
+document.getElementById("cancelIndigencyReject").onclick = () => {
+  messageIndigencyModal.classList.add("hidden");
+  indigencyRejectMessage.value = "";
+};
+
+async function markIndigencyPaid(id) {
+  if (!confirm("Mark this indigency request as PAID?")) return;
+
+  const res = await fetch("authController.php?action=adminMarkPaid2", {
+    method: "POST",
+    body: new URLSearchParams({ id })
+  });
+
+  const data = await res.json();
+  alert(data.message);
+  renderIndigencyRequests();
+}
+
+async function deleteReqIn(id) {
+  if (!confirm("Delete indigency request?")) return;
+
+  await fetch("authController.php?action=adminDeleteRequest2", {
+    method: "POST",
+    body: new URLSearchParams({ id })
+  });
+
+  renderIndigencyRequests();
+}
+
+
+// ---------------- PRINT ----------------
+function printIndigency(name, lastname, purok, price) {
+    const fullName = `${name ?? ''} ${lastname ?? ''}`.trim().toUpperCase();
+  const today = new Date().toLocaleDateString();
+  const win = window.open("", "_blank");
+  win.document.write(`
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Barangay Clearance</title>
+
+<style>
+  @page {
+    size: 8.5in 11in;
+    margin: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;  /* <-- all text uses Arial */
+  }
+
+  .page {
+    width: 8.5in;
+    height: 11in;
+    position: relative;
+    background: url("template1.png") center/cover no-repeat; /* template as background */
+  }
+
+  .right {
+    position: absolute;   /* overlay content on template */
+    top: 2.5in;           /* adjust vertical position to fit template */
+    left: 3.5in;            /* left margin */
+    right: 1in;           /* right margin */
+    font-size: 12pt;
+    line-height: 1.4;
+    text-align: justify;
+  }
+.right h1 {
+  text-align: center;
+  font-size: 20pt;
+  line-height: 20pt;   /* exact height */
+  margin-top: 0;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+    position: relative;
+  top: -50px;     /* 👈 moves ONLY the title */
+}
+
+ .right p {
+  margin: 0 0 25px 0;     /* bottom spacing between paragraphs */
+  text-indent: 0.7in;     /* first-line indent */
+  margin-left: 0.15in;     /* shift whole paragraph closer to the left */
+  line-height: 1.5;
+}
+
+  .right .no-indent {
+    text-indent: 0;
+    margin-bottom: 12px;
+  }
+
+  .highlight {
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .signature {
+    margin-top: 100px;
+    text-align: left;
+    
+  }
+
+  .signature b {
+    display: block;
+    margin-top: 10px;
+  }
+
+ .or-details {
+    margin-top: 80px;
+    margin-left: 0.50in;   /* move left */
+    font-size: 12pt;
+    line-height: 1.3;
+}
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <div class="right">
+    <h1>BARANGAY INDIGENCY</h1>
+
+    <p class="no-indent"><b>TO WHOM IT MAY CONCERN:</b></p>
+
+    <p>
+       <p>
+   This is to certify that <b>${fullName}</b> of legal age, Filipino, and a bona fide resident 
+   of, Purok ${purok}, Barangay Peñafrancia, Sta. Magdalena, Sorsogon,is known to this office and belongs to an indigent family.
+   on the records of this Barangay, the above-named individual has insufficient income and no 
+   permanent source of livelihood, making him/her financially incapable of meeting basic needs.  
+</p>
+
+    <p>
+      Issued this ${today} at the Barangay Hall,
+      Barangay Peñafrancia, Sta. Magdalena, Sorsogon.
+    </p>
+
+    <div class="signature">
+      Approved by:
+      <b>ROLLY C. FULGAR</b>
+      PUNONG BARANGAY
+    </div>
+
+    <div class="or-details">
+      OR No.: 00001<br>
+      Issued on: ${today}<br>
+      Issued at: Brgy. Peñafrancia<br>
+      Amount Paid: ₱${price}.00
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
+  `);
+    win.document.close();
+
+  // Wait until the new window finishes loading before printing
+  win.focus();
+  win.onload = function() {
+    win.print();
+    // Optionally close the window after printing
+    // win.close();
+  }
+ 
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+const businessModal = document.getElementById("businessRejectModal");
+const businessRejectMessage = document.getElementById("businessRejectMessage");
+let currentRejectBusinessId = null;
+
+const businessRequestsList = document.getElementById("businessRequestsList");
+
+// ---------------- LOAD BUSINESS REQUESTS ----------------
+async function loadBusinessRequests() {
+  const res = await fetch("authController.php?action=adminGetBusinessRequests");
+  return await res.json();
+}
+
+// ---------------- RENDER BUSINESS ----------------
+async function renderBusinessRequests() {
+  const data = await loadBusinessRequests();
+  const search = document.getElementById("searchClearance").value.toLowerCase();
+
+  const filtered = data.filter(r =>
+    (r.username || "").toLowerCase().includes(search) ||
+    ((r.name || "") + " " + (r.lastname || "")).toLowerCase().includes(search) ||
+    (r.businessName || "").toLowerCase().includes(search)
+  );
+
+  if (!filtered.length) {
+    businessRequestsList.innerHTML = "<p>No business requests found.</p>";
+    return;
+  }
+
+  businessRequestsList.innerHTML = filtered.map(r => {
+    return `
+      <div class="request">
+        <h3>${r.name} ${r.lastname}</h3>
+        <p><b>Business Type:</b> ${r.businessType || "N/A"}</p>
+        <p><b>Business Name:</b> ${r.businessName || "N/A"}</p>
+        <p><b>Business Address:</b> ${r.businessAddress || "N/A"}</p>
+        <p><b>Amount:</b> ${r.price || "N/A"}</p>
+        <p><b>Purpose:</b> ${r.purpose}</p>
+        <p><b>Status:</b> ${r.status}</p>
+        <p><b>Payment:</b>
+          <span style="color:${r.paid == 1 ? 'green':'red'}; font-weight:bold">
+            ${r.paid == 1 ? "PAID":"UNPAID"}
+          </span>
+        </p>
+        <p><b>Admin Message:</b> ${r.adminMessage || "None"}</p>
+
+        <div class="actions">
+          <button class="approve" onclick="approveBusiness(${r.id})">Approve</button>
+          <button class="reject" onclick="openRejectBusiness(${r.id})">Reject</button>
+          <button class="markPaid" onclick="markPaidBusiness(${r.id})">Mark Paid</button>
+          <button class="print" onclick="printBusiness('${r.name}','${r.lastname}','${r.businessType}','${r.businessName}','${r.businessAddress}','${r.price}')">Print</button>
+          <button class="remove" onclick="deleteBusiness(${r.id})">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+// ---------------- APPROVE ----------------
+async function approveBusiness(id) {
+  await fetch("authController.php?action=adminUpdateBusinessRequest", {
+    method:"POST",
+    body:new URLSearchParams({id, status:"Approved", adminMessage:"Approved"})
+  });
+  renderBusinessRequests();
+}
+
+// ---------------- REJECT ----------------
+function openRejectBusiness(id) {
+  currentRejectBusinessId = id;
+  businessModal.classList.remove("hidden");
+}
+
+document.getElementById("sendBusinessReject").onclick = async () => {
+  try {
+    const res = await fetch("authController.php?action=adminUpdateBusinessRequest", {
+      method:"POST",
+      body:new URLSearchParams({
+        id: currentRejectBusinessId,
+        status:"Rejected",
+        adminMessage: businessRejectMessage.value
+      })
+    });
+    const data = await res.json();
+    alert(data.message);
+
+    businessRejectMessage.value="";
+    businessModal.classList.add("hidden");
+    renderBusinessRequests();
+    currentRejectBusinessId = null;
+  } catch(err) {
+    console.error(err);
+    alert("Failed to reject business request: " + err.message);
+  }
+};
+
+document.getElementById("cancelBusinessReject").onclick = ()=>{
+  businessRejectMessage.value="";
+  businessModal.classList.add("hidden");
+  currentRejectBusinessId = null;
+};
+
+// ---------------- MARK PAID ----------------
+async function markPaidBusiness(id) {
+  if (!confirm("Mark this request as PAID?")) return;
+
+  try {
+    const res = await fetch("authController.php?action=adminMarkBusinessPaid", {
+      method: "POST",
+      body: new URLSearchParams({ id })
+    });
+    const data = await res.json();
+    alert(data.message);
+    renderBusinessRequests();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to mark as paid: " + err.message);
+  }
+}
+
+// ---------------- DELETE ----------------
+async function deleteBusiness(id) {
+  if(!confirm("Delete request?")) return;
+  await fetch("authController.php?action=deleteBusinessRequest",{
+    method:"POST",
+    body:new URLSearchParams({id})
+  });
+  renderBusinessRequests();
+}
+
+// ---------------- PRINT ----------------
+function printBusiness(name, lastname, businessType, businessName, businessAddress, price) {
+  const today = new Date().toLocaleDateString();
+  const win = window.open("", "_blank");
+  win.document.write(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Barangay Business Clearance</title>
+
+<style>
+  @page {
+    size: 8.5in 11in;
+    margin: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;  /* <-- all text uses Arial */
+  }
+
+  .page {
+    width: 8.5in;
+    height: 11in;
+    position: relative;
+    background: url("template1.png") center/cover no-repeat; /* template as background */
+  }
+.right {
+  position: absolute;
+  top: 2in;   /* moved entire block up from 2.5in to 2in */
+  left: 3.5in;
+  right: 1in;
+  font-size: 11pt;
+  line-height: 1.4;
+  text-align: justify;
+}
+
+.right h1 {
+  text-align: center;
+  font-size: 20pt;
+  line-height: 20pt;
+  margin-top: 0;
+  margin-bottom: 5px;  /* closer to permit number */
+  letter-spacing: 1px;
+  position: relative;
+  top: -10px;  /* small adjustment if needed */
+}
+
+.right .no-indent {
+  text-indent: 0;
+  margin-bottom: 12px;
+  position: relative;
+  top: -40px;      /* keeps it slightly higher */
+  left: -20px;     /* moves it 20px to the left */
+}
+.right .no-indent {
+  text-indent: 0;
+  margin-bottom: 12px;
+  margin-left: -0.1in;   /* ✅ negative value moves it left */
+  position: relative;
+  top: -5px;            /* optional, keeps it slightly higher */
+}
+
+
+  .highlight {
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+.applicant-signature {
+  margin-top: 20px;      /* space from previous content */
+  text-align: left;
+}
+
+.applicant-signature .line,
+.applicant-signature .name {
+  margin: 0;             /* remove extra space */
+  padding: 0;
+}
+
+.approved-signature {
+  margin-top: 10px;      /* space between applicant & approved */
+  text-align: left;
+}
+
+.approved-signature b,
+.approved-signature div {
+  margin: 0;             /* remove extra space between name & title */
+  padding: 0;
+}
+
+
+ .or-details {
+    margin-top: 80px;
+    margin-left: 0.50in;   /* move left */
+    font-size: 11pt;
+    line-height: 1.3;
+}
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <div class="right">
+    <h1>BUSINESS CLEARANCE</h1>
+
+    <p class="no-indent"><b>PERMIT NO. ____</b></p>
+
+    <p>
+      Pursuant to the provision of the barangay Tax-Revenue of Barangay Peñafrancia, Sta. Magdalena, the business establishment whose name, address, and owner's name appear below is now duly registered in this barangay as provided under Sec. 1520 of Republic Act No. 7160, otherwise known as the Local Government Code of 1991, to wit:
+    </p>
+
+    <p><b>TYPE OF BUSINESS:</b> ${businessType || "______________________"}</p>
+    <p><b>NAME OF BUSINESS:</b> ${businessName || "______________________"}</p>
+    <p><b>NAME OF OWNER:</b> ${name}${lastname}</</p>
+    <p><b>ADDRESS OF BUSINESS:</b> ${businessAddress || "______________________"}</p>
+
+    <p>
+      Issued this  <b>${today}</b> at the Barangay Hall, Purok 3, Barangay Peñafrancia, Sta. Magdalena, Sorsogon.
+    </p>
+
+   <div class="applicant-signature">
+  Applicant:
+  <div class="line">____________________________</div>
+  <div class="name">Printed Name & Signature</div>
+</div>
+
+<div class="approved-signature">
+  Approved by:
+  <b>ROLLY C. FULGAR</b>
+  <div>Punong Barangay</div>
+</div>
+
+    <div class="or-details">
+      <b>OR NO:</b> Control no.: 0001<br>
+      Issued on: ${today}<br>
+      Issued at: Brgy. Peñafrancia<br>
+      Amount Paid: ₱${price}.00
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>
+
+
+  `);
+    win.document.close();
+
+  // Wait until the new window finishes loading before printing
+  win.focus();
+  win.onload = function() {
+    win.print();
+    // Optionally close the window after printing
+    // win.close();
+  }
+}
+
+// ---------------- SEARCH & AUTO REFRESH ----------------
+document.getElementById("searchClearance").addEventListener("input", renderRequests, renderRequests,renderResidencyRequests, renderResidencyRequests);
+renderBusinessRequests();
+setInterval(renderBusinessRequests, 5000);
+
+renderRequests();
+setInterval(renderRequests, 5000);
+
+renderResidencyRequests();
+setInterval(renderResidencyRequests, 5000);
+
+renderIndigencyRequests();
+setInterval(renderIndigencyRequests, 5000);
+</script>
+

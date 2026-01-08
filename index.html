@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Barangay Portal - Login</title>
+  <style>
+    :root {
+  --card: #ffffff;
+  --accent: #1a67b9;
+}
+
+* { 
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background: linear-gradient(135deg,#e0e4e7,#b4cbee);
+  min-height: 100vh;
+  padding: 10px;     
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(50px); /* start slightly below */
+  animation: slideIn 1s ease forwards;
+  animation-delay: 0.1s; /* matches intro timeout */
+}
+
+.container {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* --- Logo on top --- */
+.logo {
+  width: 100px;
+  height: auto;
+  margin-bottom: 1px;
+}
+
+/* --- Headings --- */
+h1 {
+  text-align: center;
+  color: #063680;
+  margin-bottom: 15px;
+}
+h2 {
+  color: #063680;
+}
+
+/* --- Text colors --- */
+label {
+  color: rgb(255, 255, 255);
+}
+.muted {  
+  color: rgb(255, 255, 255);
+  text-align: center;
+}
+
+/* --- Cards --- */
+.card {
+  background: linear-gradient(135deg,#aad2ebc5,#0b50919f);
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 11px 10px 3px rgba(0, 0, 0, 0.116);
+  margin-bottom: 16px;
+  margin-top: 0px;
+  width: 100%;
+}
+.card.login-card{
+  min-height: 10vh;
+}
+
+/* --- Inputs --- */
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ffffff;
+  border-radius: 8px;
+  margin-top: 6px;
+  font-size: 1rem;
+}
+
+/* --- Buttons --- */
+button { 
+  background: var(--accent);
+  color: white;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 18px;
+}
+button:hover {
+  background-color: #134b93;
+}
+
+/* --- Footer --- */
+footer {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #150479;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.075);
+  padding: 12px 0;
+  margin-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.3);
+  width: 100%;
+  position: relative; /* changed from fixed to prevent keyboard issues */
+}
+footer b {
+  color: #48399b;
+}
+
+/* --- Mobile responsiveness --- */
+@media (max-width: 480px) {
+  body {
+    padding: 5px;
+  }
+
+  .container {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+  }
+
+  h2 {
+    font-size: 1.1rem;
+  }
+
+  input, button {
+    font-size: 0.95rem;
+  }
+}
+/* --- Background logo matching form width --- */
+.container::before {
+  content: '';
+  position: absolute;
+  top: 300px; /* adjust this value to move it down */
+  left: 50%;
+  transform: translateX(-50%);
+  background: url('logo.png') no-repeat center;
+  background-size: contain; /* scale to container width */
+  opacity: 0.05;
+  width: 100%;  /* match container width */
+  height: 100%; /* match container height */
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 12px; /* match card rounding if desired */
+  
+}
+
+/* --- Ensure keyboard doesn't break layout --- */
+input:focus {
+  outline: 2px solid var(--accent);
+}
+
+/* --- Intro Screen --- */
+.intro {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg,#e0e4e7,#b4cbee);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.intro-logo {
+  width: 150px;
+  height: auto;
+  opacity: 0;
+  transform: scale(0.5);
+  animation: introLogo 2s ease forwards;
+}
+
+/* --- Officials Banner --- */
+.banner {
+  width: 100%;
+  max-width: 420px;      /* keeps it from being too big */
+  height: auto;
+  margin: 10px auto 15px;
+  display: block;
+
+  /* Frame / Border */
+  border: 3px solid rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  padding: 6px;
+  background: linear-gradient(135deg, #ffffffcc, #dbe9f5cc);
+
+  /* Shadow for depth */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* --- Officials Title --- */
+.officials-header {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  margin: 0 auto 6px;
+
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #063680;
+
+  padding: 6px 0;
+  border-radius: 10px;
+
+  background: linear-gradient(135deg, #ffffffcc, #cfe2f3cc);
+  border: 2px solid rgba(255,255,255,0.7);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+}
+/* --- Vision & Mission Section --- */
+.vision-mission {
+  width: 100%;
+  margin-top: 14px;
+  padding: 16px;
+
+  background: linear-gradient(135deg, #ffffffc7, #e3eff8c7);
+  border-radius: 14px;
+  border: 2px solid rgba(255,255,255,0.7);
+
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  color: #063680;
+}
+
+.vision-mission h3 {
+  margin-top: 0;
+  margin-bottom: 6px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-align: center;
+}
+
+.vision-mission p {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  text-align: justify;
+  margin-bottom: 12px;
+}
+
+.vision-mission b {
+  color: #0b5091;
+}
+
+@media (max-width: 480px) {
+  .officials-header {
+    font-size: 1rem;
+    max-width: 320px;
+  }
+}
+
+
+
+@media (max-width: 480px) {
+  .banner {
+    max-width: 320px;
+  }
+}
+
+
+
+@keyframes introLogo {
+  0% { opacity: 0; transform: scale(0.5);}
+  50% { opacity: 1; transform: scale(1.1);}
+  100% { opacity: 1; transform: scale(1);}
+}
+
+/* fade out screen */
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  100% {
+    opacity: 0;
+    pointer-events: none;
+    display: none;
+  }
+}
+
+/* Slide up and fade in */
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+  </style>
+</head>
+<body>
+  <!-- Intro Screen -->
+  <div class="intro">
+    <img src="logo.png" class="intro-logo" alt="Barangay Logo" />
+    
+  </div>
+
+  <!-- Main Wrapper -->
+  <div class="wrapper" style="display:none;">
+    <div class="container">
+  <h1>Barangay Peñafrancia Resident Portal</h1>
+  <div class="officials-header">
+  OFFICIALS
+</div>
+<img src="officials.png" alt="Banner" class="banner" />
+  <div class="officials-header">
+  APPOINTE
+</div>
+<img src="appointe.png" alt="Banner" class="banner" />
+
+      <div class="card login-card">
+        <h2>Login</h2>
+        <label>Username
+          <input id="login-username" type="text" autocomplete="username" />
+        </label>
+        <label>Password
+          <input id="login-password" type="password" autocomplete="current-password" />
+        </label>
+        <button id="btn-login">Login</button>
+        <p class="muted">
+          Don't have an account? <a href="register.html">Register</a><br>
+          Login as Admin? <a href="adminLogin.html">Admin</a>
+        </p>
+      </div>
+    </div>
+    <div class="vision-mission">
+  <h3>VISION</h3>
+  <p>
+    Ang <b>Barangay Peñafrancia</b> ay lugar na kung saan matatagpuan ang
+    <b>Binongtohan (Old Church)</b> at isang barangay na may
+    <b>mapayapang komunidad</b>, <b>nagkakaisang pamayanan</b>,
+    <b>maunlad na kabuhayan</b>, <b>maayos at matibay na pasilidad</b>,
+    <b>malinis na kapaligiran</b>, at <b>turismong kaakit-akit</b>.
+    Isang barangay na may <b>pagkakapantay-pantay</b> at
+    <b>patas na pamumuno</b>, at may <b>takot sa Diyos</b>.
+  </p>
+
+  <h3>MISSION</h3>
+  <p>
+    Tumugon sa anumang hamon sa aming barangay at magsulong ng
+    <b>tapat na serbisyo</b> pang
+    <b>kapaligiran</b>, <b>kabuhayan</b>, at <b>kalusugan</b>
+    para sa isang <b>maayos at ligtas na komunidad</b>.
+  </p>
+</div>
+
+    <footer>
+      Developed by <b>@SylvanDR2</b>
+    </footer>
+  </div>
+<script>
+setTimeout(() => {
+  document.querySelector('.intro').style.display = 'none';
+  document.querySelector('.wrapper').style.display = 'flex';
+}, 2500);
+
+// 🔑 DEFINE ELEMENTS
+const loginBtn = document.getElementById("btn-login");
+const emailInput = document.getElementById("login-username");
+const passwordInput = document.getElementById("login-password");
+
+// 🔐 LOGIN HANDLER
+loginBtn.addEventListener("click", async () => {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+
+  if (!email || !password) {
+    alert("Please enter email and password");
+    return;
+  }
+
+  try {
+    const res = await fetch("authController.php?action=residentLogin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message || "Login failed");
+      return;
+    }
+
+    // ✅ SAVE SESSION
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("currentEmail", email);
+    localStorage.setItem("role", "resident");
+    localStorage.setItem("userId", data.user.id); // 👈 SAVE userId
+
+    // Redirect to dashboard
+    window.location.href = "userDashboard.php";
+
+  } catch (err) {
+    alert("Error connecting to server");
+  }
+});
+</script>
+
+</body>
+</html>

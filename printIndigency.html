@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Certificate of Indigency</title>
+  
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #f5f6fa;
+  }
+
+  .container {
+    max-width: 500px;
+    margin: auto;
+  }
+
+  /* BIG TITLE */
+  .title {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 25px;
+    font-size: clamp(28px, 5vw, 40px);
+    letter-spacing: 1px;
+  }
+
+  /* FORM CARD */
+  .certificate-form {
+    background: #fff;
+    padding: 24px;
+    border-radius: 14px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.1);
+  }
+
+  /* LABELS */
+  label {
+    display: block;
+    margin-top: 16px;
+    font-weight: bold;
+    font-size: clamp(16px, 3.5vw, 18px);
+  }
+
+  /* INPUTS */
+  input {
+    width: 100%;
+    padding: 14px;
+    margin-top: 8px;
+    font-size: clamp(16px, 4vw, 18px);
+    border-radius: 10px;
+    border: 1px solid #ccc;
+  }
+
+  /* BUTTON */
+  button {
+    margin-top: 24px;
+    padding: 16px;
+    width: 100%;
+    font-size: clamp(18px, 4vw, 20px);
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #2980b9;
+  }
+</style>
+
+
+</head>
+<body>
+  <h2 class="title"> CERTIFICATE OF INDIGENCY</h2>
+  <div class="certificate-form">
+    <label for="name">Full Name:</label>
+    <input type="text" id="name" placeholder="Enter full name">
+    <label for="address">Address:</label>
+    <input type="text" id="address" placeholder="Street, Barangay, City/Municipality, Province/State">
+     <label for="price">Amount:</label>
+    <input type="text" id="price" placeholder="Enter amount">
+    <button id="printBtn">Print Certificate</button>
+  </div>
+
+  <script>
+
+     const today = new Date().toLocaleDateString();
+     
+    document.getElementById("printBtn").addEventListener("click", () => {
+      const name = document.getElementById("name").value;
+      const address = document.getElementById("address").value;
+      const price = document.getElementById("price").value;
+     
+
+      if (!name || !address ||!price) {
+        alert("Please fill out all fields.");
+        return;
+      }
+
+      const win = window.open("", "_blank");
+      win.document.write(`
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Barangay Clearance</title>
+
+<style>
+  @page {
+    size: 8.5in 11in;
+    margin: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;  /* <-- all text uses Arial */
+  }
+
+  .page {
+    width: 8.5in;
+    height: 11in;
+    position: relative;
+    background: url("template1.png") center/cover no-repeat; /* template as background */
+  }
+
+  .right {
+    position: absolute;   /* overlay content on template */
+    top: 2.5in;           /* adjust vertical position to fit template */
+    left: 3.5in;            /* left margin */
+    right: 1in;           /* right margin */
+    font-size: 12pt;
+    line-height: 1.4;
+    text-align: justify;
+  }
+.right h1 {
+  text-align: center;
+  font-size: 20pt;
+  line-height: 20pt;   /* exact height */
+  margin-top: 0;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+    position: relative;
+  top: -50px;     /* 👈 moves ONLY the title */
+}
+
+ .right p {
+  margin: 0 0 25px 0;     /* bottom spacing between paragraphs */
+  text-indent: 0.7in;     /* first-line indent */
+  margin-left: 0.15in;     /* shift whole paragraph closer to the left */
+  line-height: 1.5;
+}
+
+  .right .no-indent {
+    text-indent: 0;
+    margin-bottom: 12px;
+  }
+
+  .highlight {
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .signature {
+    margin-top: 100px;
+    text-align: left;
+    
+  }
+
+  .signature b {
+    display: block;
+    margin-top: 10px;
+  }
+
+ .or-details {
+    margin-top: 80px;
+    margin-left: 0.50in;   /* move left */
+    font-size: 12pt;
+    line-height: 1.3;
+}
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <div class="right">
+    <h1>BARANGAY INDIGENCY</h1>
+
+    <p class="no-indent"><b>TO WHOM IT MAY CONCERN:</b></p>
+
+    <p>
+       <p>
+   This is to certify that <b>${name}</b> of legal age, Filipino, and a bona fide resident 
+   of, Purok ${address}, is known to this office and belongs to an indigent family.
+   on the records of this Barangay, the above-named individual has insufficient income and no 
+   permanent source of livelihood, making him/her financially incapable of meeting basic needs.  
+</p>
+
+    <p>
+      Issued this ${today} at the Barangay Hall,
+      Barangay Peñafrancia, Sta. Magdalena, Sorsogon.
+    </p>
+
+    <div class="signature">
+      Approved by:
+      <b>ROLLY C. FULGAR</b>
+      PUNONG BARANGAY
+    </div>
+
+    <div class="or-details">
+      OR No.: 00001<br>
+      Issued on: ${today}<br>
+      Issued at: Brgy. Peñafrancia<br>
+      Amount Paid: ₱${price}.00
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
+       `);
+   // Close the document to finish rendering
+  win.document.close();
+
+  // Wait until the new window finishes loading before printing
+  win.focus();
+  win.onload = function() {
+    win.print();
+    // Optionally close the window after printing
+    // win.close();
+  }
+    });
+  </script>
+</body>
+</html>

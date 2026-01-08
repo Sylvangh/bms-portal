@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Business Clearance</title>
+  
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #f5f6fa;
+  }
+
+  .container {
+    max-width: 500px;
+    margin: auto;
+  }
+
+  /* BIG TITLE */
+  .title {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 25px;
+    font-size: clamp(28px, 5vw, 40px);
+    letter-spacing: 1px;
+  }
+
+  /* FORM CARD */
+  .certificate-form {
+    background: #fff;
+    padding: 24px;
+    border-radius: 14px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.1);
+  }
+
+  /* LABELS */
+  label {
+    display: block;
+    margin-top: 16px;
+    font-weight: bold;
+    font-size: clamp(16px, 3.5vw, 18px);
+  }
+
+  /* INPUTS */
+  input {
+    width: 100%;
+    padding: 14px;
+    margin-top: 8px;
+    font-size: clamp(16px, 4vw, 18px);
+    border-radius: 10px;
+    border: 1px solid #ccc;
+  }
+
+  /* BUTTON */
+  button {
+    margin-top: 24px;
+    padding: 16px;
+    width: 100%;
+    font-size: clamp(18px, 4vw, 20px);
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #2980b9;
+  }
+</style>
+
+
+</head>
+<body>
+  <h2 class="title"> BARANGAY BUSINESS CLEARANCE</h2>
+  <div class="certificate-form">
+    <label for="name">Name of owner:</label>
+    <input type="text" id="name" placeholder="Owner full name">
+    <label>Business Name</label>
+    <input type="text" id="businessName" placeholder="Enter your business name" required>
+    <label>Type of bussiness</label>
+    <input type="text" id="businessType" placeholder="Enter type of bussiness" required>
+    <label>Permit no.</label>
+    <input type="text" id="no" placeholder="Enter permit no" required>
+    <label>Business Address</label>
+    <input type="text" id="businessAddress" placeholder="Enter your business address" required>
+    <label>Amount</label>
+    <input type="text" id="paid" placeholder="Enter amount" required>
+    
+    <button id="printBtn">Print Certificate</button>
+  </div>
+
+  <script>
+
+     const today = new Date().toLocaleDateString();
+     
+    document.getElementById("printBtn").addEventListener("click", () => {
+      const name = document.getElementById("name").value;
+      const businessAddress = document.getElementById("businessAddress").value;
+      const businessName = document.getElementById("businessName").value;
+      const businessType = document.getElementById("businessType").value;
+      const paid = document.getElementById("paid").value;
+      const no = document.getElementById("no").value;
+
+
+      if (!name || !businessAddress || !businessName ||!businessType||!no) {
+        alert("Please fill out all fields.");
+        return;
+      }
+
+      const win = window.open("", "_blank");
+      win.document.write(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Barangay Business Clearance</title>
+
+<style>
+  @page {
+    size: 8.5in 11in;
+    margin: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;  /* <-- all text uses Arial */
+  }
+
+  .page {
+    width: 8.5in;
+    height: 11in;
+    position: relative;
+    background: url("template1.png") center/cover no-repeat; /* template as background */
+  }
+.right {
+  position: absolute;
+  top: 2in;   /* moved entire block up from 2.5in to 2in */
+  left: 3.5in;
+  right: 1in;
+  font-size: 11pt;
+  line-height: 1.4;
+  text-align: justify;
+}
+
+.right h1 {
+  text-align: center;
+  font-size: 20pt;
+  line-height: 20pt;
+  margin-top: 0;
+  margin-bottom: 5px;  /* closer to permit number */
+  letter-spacing: 1px;
+  position: relative;
+  top: -10px;  /* small adjustment if needed */
+}
+
+.right .no-indent {
+  text-indent: 0;
+  margin-bottom: 12px;
+  position: relative;
+  top: -40px;      /* keeps it slightly higher */
+  left: -20px;     /* moves it 20px to the left */
+}
+.right .no-indent {
+  text-indent: 0;
+  margin-bottom: 12px;
+  margin-left: -0.1in;   /* ✅ negative value moves it left */
+  position: relative;
+  top: -5px;            /* optional, keeps it slightly higher */
+}
+
+
+  .highlight {
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+.applicant-signature {
+  margin-top: 20px;      /* space from previous content */
+  text-align: left;
+}
+
+.applicant-signature .line,
+.applicant-signature .name {
+  margin: 0;             /* remove extra space */
+  padding: 0;
+}
+
+.approved-signature {
+  margin-top: 10px;      /* space between applicant & approved */
+  text-align: left;
+}
+
+.approved-signature b,
+.approved-signature div {
+  margin: 0;             /* remove extra space between name & title */
+  padding: 0;
+}
+
+
+ .or-details {
+    margin-top: 80px;
+    margin-left: 0.50in;   /* move left */
+    font-size: 11pt;
+    line-height: 1.3;
+}
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <div class="right">
+    <h1>BUSINESS CLEARANCE</h1>
+
+    <p class="no-indent"><b>PERMIT NO. ${no}</b></p>
+
+    <p>
+      Pursuant to the provision of the barangay Tax-Revenue of Barangay Peñafrancia, Sta. Magdalena, the business establishment whose name, address, and owner's name appear below is now duly registered in this barangay as provided under Sec. 1520 of Republic Act No. 7160, otherwise known as the Local Government Code of 1991, to wit:
+    </p>
+
+    <p><b>TYPE OF BUSINESS:</b> ${businessName || "______________________"}</p>
+    <p><b>NAME OF BUSINESS:</b> ${businessType || "______________________"}</p>
+    <p><b>NAME OF OWNER:</b> ${name}</p>
+    <p><b>ADDRESS OF BUSINESS:</b> ${businessAddress || "______________________"}</p>
+
+    <p>
+      Issued this  ${today}< at the Barangay Hall, Purok 3, Barangay Peñafrancia, Sta. Magdalena, Sorsogon.
+    </p>
+
+   <div class="applicant-signature">
+  Applicant:
+  <div class="line">____________________________</div>
+  <div class="name">Printed Name & Signature</div>
+</div>
+
+<div class="approved-signature">
+  Approved by:
+  <b>ROLLY C. FULGAR</b>
+  <div>Punong Barangay</div>
+</div>
+
+    <div class="or-details">
+      <b>OR NO:</b> Control no.: 0001<br>
+      Issued on: ${today}<br>
+      Issued at: Brgy. Peñafrancia<br>
+      Amount Paid: ₱${paid}.00
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>
+
+
+  
+       `);
+   // Close the document to finish rendering
+  win.document.close();
+
+  // Wait until the new window finishes loading before printing
+  win.focus();
+  win.onload = function() {
+    win.print();
+    // Optionally close the window after printing
+    // win.close();
+  }
+    });
+  </script>
+</body>
+</html>

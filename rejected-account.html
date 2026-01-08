@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rejected Residents</title>
+
+<style>
+/* ===== BODY & HEADINGS ===== */
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f4ff;
+  padding: 20px;
+  color: #1f2937;
+}
+
+h2 {
+  text-align: center;
+  color: #2563eb;
+  margin-bottom: 25px;
+}
+
+/* ===== CONTENT BOX ===== */
+.content-box {
+  background: rgba(37, 99, 235, 0.1);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 25px 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.content-box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(37, 99, 235, 0.25);
+}
+
+/* ===== RESIDENT REQUEST CARDS ===== */
+.request {
+  background: rgba(37, 99, 235, 0.08);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 15px 18px;
+  margin-bottom: 15px;
+  box-shadow: 0 6px 15px rgba(37, 99, 235, 0.12);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.request:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
+}
+
+.request p {
+  margin: 5px 0;
+  font-size: 1rem;
+}
+
+/* ===== BUTTONS ===== */
+button {
+  position: relative;
+  overflow: hidden;
+  padding: 8px 16px;
+  margin-right: 8px;
+  border: none;
+  border-radius: 8px;
+  background-color: #2563eb;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+button:hover {
+  background-color: #1d4ed8;
+}
+
+button.danger {
+  background-color: #ef4444;
+}
+
+button.danger:hover {
+  background-color: #b91c1c;
+}
+
+button:after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255,255,255,0.4);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+button:active:after {
+  width: 200px;
+  height: 200px;
+  transition: 0s;
+}
+
+/* ===== REJECTED LIST LAYOUT ===== */
+#rejectedList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 600px) {
+  #rejectedList {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .request {
+    width: calc(50% - 12px);
+  }
+}
+
+@media (min-width: 900px) {
+  .request {
+    width: calc(33.33% - 12px);
+  }
+}
+</style>
+</head>
+<body>
+
+<h2>Rejected Residents</h2>
+
+<div id="rejectedList" class="content-box">
+  <!-- Residents will be dynamically rendered here -->
+</div>
+
+<script>
+async function loadRejectedResidents() {
+  try {
+    const res = await fetch("authController.php?action=getAllResidents");
+    const residents = await res.json();
+
+    const rejected = residents.filter(r => (r.accountStatus || "").toLowerCase() === "rejected");
+
+    const container = document.getElementById("rejectedList");
+    container.innerHTML = "";
+
+    if (!rejected.length) {
+      container.innerHTML = "<p>No rejected residents.</p>";
+      return;
+    }
+
+    rejected.forEach(r => {
+      const div = document.createElement("div");
+      div.className = "request";
+      div.innerHTML = `
+        <p><b>${r.name}</b> (${r.email})</p>
+        <p>Rejection Reason: ${r.adminMessage || "Not provided"}</p>
+        <div style="margin-top:5px;">
+          <button class="approveBtn">Approve</button>
+          <button class="deleteBtn danger">Delete Permanently</button>
+        </div>
+      `;
+      container.appendChild(div);
+
+      div.querySelector(".approveBtn").onclick = async () => {
+        if (!confirm(`Approve ${r.name}?`)) return;
+
+        try {
+          const updateRes = await fetch(`authController.php?action=updateStatus&id=${r.id}&status=approved`, { method: "POST" });
+          const data = await updateRes.json();
+          alert(data.message);
+          loadRejectedResidents();
+        } catch (err) {
+          console.error(err);
+        }
+      };
+
+      div.querySelector(".deleteBtn").onclick = async () => {
+        if (!confirm(`Permanently delete ${r.name}?`)) return;
+
+        try {
+          const delRes = await fetch(`authController.php?action=deleteResident&id=${r.id}`, { method: "POST" });
+          const data = await delRes.json();
+          alert(data.message);
+          loadRejectedResidents();
+        } catch (err) {
+          console.error(err);
+        }
+      };
+    });
+  } catch (err) {
+    console.error("Error loading rejected residents:", err);
+  }
+}
+
+loadRejectedResidents();
+
+</script>
+
+</body>
+</html>

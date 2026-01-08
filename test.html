@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Manage Residents</title>
+  <link rel="stylesheet" href="style.css"> <!-- optional: use same CSS as registration -->
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    button {
+      padding: 5px 10px;
+      margin: 2px;
+      cursor: pointer;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      max-height: 90%;
+      overflow-y: auto;
+    }
+    .modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4);
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  width: 400px;
+  border-radius: 8px;
+  text-align: center;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation: popIn 0.3s ease;
+}
+
+@keyframes popIn {
+  0% { transform: translate(-50%, -60%) scale(0.8); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: nowrap; /* para di bumaba sa next line */
+}
+
+.filter-buttons button {
+  margin: 0; /* alisin yung dating margin */
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.2s;
+  background: #eee;
+  white-space: nowrap; /* siguradong di mag-break ang text */
+}
+
+
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+    <h1>Resident Management</h1>
+    <br>
+  <div>
+  <input type="text" id="searchInput" placeholder="Search by name...">
+  <button onclick="openAddResident()">Add Resident</button>
+  <button id="sortOld">Oldest First</button>
+  <button id="sortNew">Newest First</button>
+  <button id="openFilter">Filter</button>
+  <button id="printList">Print List</button>
+</div>
+
+<table id="residentTable" border="1">
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>Password</th>
+      <th>First Name</th>
+      <th>Middle Name</th>
+      <th>Last Name</th>
+      <th>Phone</th>
+      <th>Age</th>
+      <th>Sex</th>
+      <th>Birthday</th>
+      <th>Address</th>
+      <th>Status</th>
+      <th>PWD</th>
+      <th>4Ps</th>
+      <th>Senior</th>
+      <th>School Levels</th>
+      <th>School Name</th>
+      <th>Occupation</th>
+      <th>Vaccinated</th>
+      <th>Voter</th>
+      <th>Valid ID</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+
+
+<!-- Centered Filter Modal -->
+<div id="filterModal" class="modal">
+  <div class="modal-content">
+    <h3>Filters</h3>
+    <div class="filter-buttons">
+      <label><input type="checkbox" class="filterCheckbox" value="pwd"> PWD</label>
+  <label><input type="checkbox" class="filterCheckbox" value="seniorCitizen"> Senior</label>
+  <label><input type="checkbox" class="filterCheckbox" value="college"> College</label>
+  <label><input type="checkbox" class="filterCheckbox" value="voter"> Voter</label>
+  <label><input type="checkbox" class="filterCheckbox" value="fourPs"> 4Ps</label>
+  <label><input type="checkbox" class="filterCheckbox" value="occupation"> Occupation</label>
+    </div>
+    <div style="margin-top: 20px;">
+      <button id="applyFilter">Apply</button>
+      <button id="closeFilter">Close</button>
+    </div>
+  </div>
+</div>
+
+  <!-- Add/Edit Resident Modal -->
+  <div id="residentModal" class="modal">
+    <div class="modal-content">
+      <span style="float:right;cursor:pointer" onclick="closeModal()">&times;</span>
+      <h2 id="modalTitle">Add Resident</h2>
+      <form id="residentForm">
+        <!-- Use same fields as registration form -->
+        <div class="form-group">
+          <input type="text" id="username" placeholder=" " required>
+          <label>Username</label>
+        </div>
+        <div class="form-group">
+          <input type="password" id="password" placeholder=" ">
+          <label>Password</label>
+        </div>
+        <div class="form-group">
+          <input type="text" id="fname" placeholder=" " required>
+          <label>First Name</label>
+        </div>
+        <div class="form-group">
+          <input type="text" id="mname" placeholder=" " required>
+          <label>Middle Name</label>
+        </div>
+        <div class="form-group">
+          <input type="text" id="lname" placeholder=" " required>
+          <label>Last Name</label>
+        </div>
+        <div class="form-group">
+          <input type="text" id="mPhone" placeholder=" " required>
+          <label>CP Number</label>
+        </div>
+        <div class="form-group">
+          <input type="number" id="age" placeholder=" " min="1" required>
+          <label>Age</label>
+        </div>
+        <div class="form-group">
+          <select id="sex" required>
+            <option value="" disabled selected hidden></option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+          <label>Sex</label>
+        </div>
+        <div class="form-group">
+          <input type="date" id="birthday" placeholder=" " required>
+          <label>Birthday</label>
+        </div>
+        <div class="form-group">
+          <input type="text" id="address" placeholder=" " required>
+          <label>Street, Barangay, City/Municipality, Province/State</label>
+        </div>
+        <div class="form-group">
+          <select id="status" required>
+            <option value="" disabled selected hidden></option>
+            <option value="Single">Single</option>
+            <option value="Married">Married</option>
+            <option value="Widowed">Widowed</option>
+            <option value="Separated">Separated</option>
+          </select>
+          <label>Civil Status</label>
+        </div>
+        <div class="form-group">
+          <select id="pwd" required>
+            <option value="" disabled selected hidden></option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+          <label>PWD</label>
+        </div>
+        <div class="form-group">
+          <select id="mFourPs" required>
+            <option value="" disabled selected hidden></option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+          <label>4Ps</label>
+        </div>
+        <fieldset>
+          <label><input type="checkbox" id="seniorCitizen"> Senior Citizen</label>
+        </fieldset>
+        <fieldset>
+          <legend>School Level</legend>
+          <label><input type="checkbox" class="school" value="Elementary"> Elementary</label>
+          <label><input type="checkbox" class="school" value="Junior High"> Junior High</label>
+          <label><input type="checkbox" class="school" value="Senior High"> Senior High</label>
+          <label><input type="checkbox" class="school" value="College"> College</label>
+        </fieldset>
+        <div class="form-group">
+          <input type="text" id="schoolName" placeholder=" " required>
+          <label>Name of School</label>
+        </div>
+        <div class="form-group">
+          <input type="text" id="occupation" placeholder=" " required>
+          <label>Occupation</label>
+        </div>
+        <fieldset>
+          <label><input type="checkbox" id="vaccinated"> Vaccinated</label>
+        </fieldset>
+        <fieldset>
+          <label><input type="checkbox" id="voter"> Voter</label>
+        </fieldset>
+        <div class="form-group">
+          <input type="file" id="validId" accept="image/*">
+          <label>Upload Valid ID</label>
+          <img id="previewImg" alt="ID Preview" style="width:100px;margin-top:10px;">
+        </div>
+        <button type="submit">Save Resident</button>
+     
+      </form>
+    </div>
+  </div>
+
+  <script>
+  /*
+  const residentTable = document.getElementById("residentTable");
+const residentModal = document.getElementById("residentModal");
+const residentForm = document.getElementById("residentForm");
+const modalTitle = document.getElementById("modalTitle");
+let editResidentId = null;
+
+
+let residentsData = [];
+let filteredData = []; 
+let currentSort = null;
+
+
+async function loadResidents() {
+  try {
+    const res = await fetch("authController.php?action=adminGetResidents");
+    residentsData = await res.json();
+    filteredData = [...residentsData];
+    renderTable(filteredData);
+  } catch (err) {
+    console.error(err);
+    alert("Failed to load residents");
+  }
+}
+
+function renderTable(data) {
+  const tbody = document.querySelector("#residentTable tbody");
+  tbody.innerHTML = "";
+
+  data.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.email}</td>
+      <td>********</td>
+      <td>${r.name}</td>
+      <td>${r.middlename}</td>
+      <td>${r.lastname}</td>
+      <td>${r.phone}</td>
+      <td>${r.age}</td>
+      <td>${r.sex}</td>
+      <td>${r.birthday}</td>
+      <td>${r.address}</td>
+      <td>${r.status}</td>
+      <td>${r.pwd}</td>
+      <td>${r.fourPs}</td>
+      <td>${r.seniorCitizen ? "Yes" : "No"}</td>
+      <td>${r.schoolLevels}</td>
+      <td>${r.schoolName}</td>
+      <td>${r.occupation}</td>
+      <td>${r.vaccinated ? "Yes" : "No"}</td>
+      <td>${r.voter ? "Yes" : "No"}</td>
+      <td>${r.validId ? `<img src="${r.validId}" width="50">` : ""}</td>
+      <td>
+        <button onclick="editResident(${r.id})">Edit</button>
+        <button onclick="deleteResident(${r.id})">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+
+function sortResidents(order) {
+  currentSort = order;
+  filteredData.sort((a,b) => order === "old" ? a.id - b.id : b.id - a.id);
+  renderTable(filteredData);
+}
+
+document.getElementById("searchInput").addEventListener("input", e => {
+  const q = e.target.value.toLowerCase();
+  filteredData = residentsData.filter(r => 
+    r.name.toLowerCase().includes(q) ||
+    r.middlename.toLowerCase().includes(q) ||
+    r.lastname.toLowerCase().includes(q)
+  );
+  if(currentSort) sortResidents(currentSort);
+  else renderTable(filteredData);
+});
+
+
+document.getElementById("openFilter").onclick = () => {
+  document.getElementById("filterModal").style.display = "block";
+};
+document.getElementById("closeFilter").onclick = () => {
+  document.getElementById("filterModal").style.display = "none";
+};
+
+document.getElementById("applyFilter").onclick = () => {
+  const checkboxes = document.querySelectorAll(".filterCheckbox:checked");
+  if(checkboxes.length === 0) {
+    filteredData = [...residentsData]; // no filter
+  } else {
+    filteredData = residentsData.filter(r => {
+      return Array.from(checkboxes).every(cb => {
+        switch(cb.value) {
+          case "pwd": return r.pwd === "Yes";
+          case "seniorCitizen": return r.seniorCitizen == 1;
+          case "college": return r.schoolLevels?.includes("College");
+          case "voter": return r.voter == 1;
+          case "fourPs": return r.fourPs === "Yes";
+          case "occupation": return r.occupation && r.occupation.trim() !== "";
+        }
+      });
+    });
+  }
+  if(currentSort) sortResidents(currentSort);
+  else renderTable(filteredData);
+  document.getElementById("filterModal").style.display = "none";
+};
+
+document.getElementById("printList").onclick = () => {
+  const printContents = document.getElementById("residentTable").outerHTML;
+  const w = window.open("");
+  w.document.write("<html><head><title>Residents</title></head><body>");
+  w.document.write(printContents);
+  w.document.write("</body></html>");
+  w.document.close();
+  w.print();
+};
+
+document.getElementById("sortOld").onclick = () => sortResidents("old");
+document.getElementById("sortNew").onclick = () => sortResidents("new");
+
+
+loadResidents();
+
+
+
+function openAddResident() {
+  editResidentId = null;
+  modalTitle.textContent = "Add Resident";
+  residentForm.reset();
+  residentModal.style.display = "block";
+}
+
+
+async function editResident(id) {
+  editResidentId = id;
+  modalTitle.textContent = "Edit Resident";
+  try {
+    const res = await fetch(`authController.php?action=adminGetResidents`);
+    const data = await res.json();
+    const resident = data.find(r => r.id == id);
+    if (!resident) throw new Error("Resident not found");
+
+
+    document.getElementById("username").value = resident.email;
+    document.getElementById("password").value = "";
+    document.getElementById("fname").value = resident.name;
+    document.getElementById("mname").value = resident.middlename;
+    document.getElementById("lname").value = resident.lastname;
+    document.getElementById("mPhone").value = resident.phone;
+    document.getElementById("age").value = resident.age;
+    document.getElementById("sex").value = resident.sex;
+    document.getElementById("birthday").value = resident.birthday;
+    document.getElementById("address").value = resident.address;
+    document.getElementById("status").value = resident.status;
+    document.getElementById("pwd").value = resident.pwd;
+    document.getElementById("mFourPs").value = resident.fourPs;
+    document.getElementById("schoolName").value = resident.schoolName;
+    document.getElementById("occupation").value = resident.occupation;
+    document.getElementById("seniorCitizen").checked = resident.seniorCitizen == 1;
+    document.getElementById("vaccinated").checked = resident.vaccinated == 1;
+    document.getElementById("voter").checked = resident.voter == 1;
+    document.querySelectorAll(".school").forEach(cb => {
+      cb.checked = resident.schoolLevels?.split(",").includes(cb.value);
+    });
+    if (resident.validId) document.getElementById("previewImg").src = resident.validId;
+
+    residentModal.style.display = "block";
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+}
+
+async function deleteResident(id) {
+  if (!confirm("Are you sure you want to delete this resident?")) return;
+  try {
+    const res = await fetch(`authController.php?action=adminDeleteResident&id=${id}`);
+    const data = await res.json();
+    alert(data.message);
+    loadResidents();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to delete resident");
+  }
+}
+
+
+residentForm.addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const formData = new FormData();
+  if (editResidentId) formData.append("id", editResidentId);
+  formData.append("username", document.getElementById("username").value);
+  formData.append("password", document.getElementById("password").value);
+  formData.append("fname", document.getElementById("fname").value);
+  formData.append("mname", document.getElementById("mname").value);
+  formData.append("lname", document.getElementById("lname").value);
+  formData.append("mPhone", document.getElementById("mPhone").value);
+  formData.append("age", document.getElementById("age").value);
+  formData.append("sex", document.getElementById("sex").value);
+  formData.append("birthday", document.getElementById("birthday").value);
+  formData.append("address", document.getElementById("address").value);
+  formData.append("status", document.getElementById("status").value);
+  formData.append("pwd", document.getElementById("pwd").value);
+  formData.append("mFourPs", document.getElementById("mFourPs").value);
+  formData.append("seniorCitizen", document.getElementById("seniorCitizen").checked ? 1 : 0);
+  formData.append("schoolLevels", Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value).join(","));
+  formData.append("schoolName", document.getElementById("schoolName").value);
+  formData.append("occupation", document.getElementById("occupation").value);
+  formData.append("vaccinated", document.getElementById("vaccinated").checked ? 1 : 0);
+  formData.append("voter", document.getElementById("voter").checked ? 1 : 0);
+
+  const file = document.getElementById("validId").files[0];
+  if (file) formData.append("validId", file);
+
+  try {
+    const res = await fetch("authController.php?action=adminSaveResident", {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    alert(data.message);
+    residentModal.style.display = "none";
+    loadResidents();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to save resident");
+  }
+});
+
+document.getElementById("validId").addEventListener("change", function() {
+  const file = this.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => document.getElementById("previewImg").src = e.target.result;
+  reader.readAsDataURL(file);
+});
+
+function closeModal() {
+  residentModal.style.display = "none";
+}
+
+
+loadResidents();
+*/
+</script>
+
+  
+  <script src="adminScript.js"></script>
+</body>
+</html>
