@@ -1,0 +1,187 @@
+<style>
+/* ====== GENERAL CONTENT BOX ====== */
+.content-box {
+  background: rgba(37, 99, 235, 0.1); /* semi-transparent sharp blue */
+  backdrop-filter: blur(12px); /* glassy effect */
+  border-radius: 16px;
+  padding: 25px 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15); /* soft blue shadow */
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.content-box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(37, 99, 235, 0.25);
+}
+
+/* Headings */
+.content-box h3 {
+  margin-bottom: 15px;
+  font-size: 1.4rem;
+  color: #1f2937;
+}
+button.danger {
+  background: #e74c3c;
+  color: #fff;
+}
+
+
+/* Inputs & selects */
+.content-box input[type="text"],
+.content-box select,
+.content-box input[type="file"] {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  padding: 10px 12px;
+  margin-bottom: 15px;
+  border: 1px solid rgba(37,99,235,0.4);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border 0.2s, box-shadow 0.2s;
+  background: rgba(255,255,255,0.7);
+}
+
+.content-box input:focus,
+.content-box select:focus {
+  border-color: #2563eb;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37,99,235,0.3);
+}
+
+/* Buttons */
+.content-box button {
+  position: relative;
+  overflow: hidden;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background-color: #2563eb; /* sharp blue */
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.content-box button:hover {
+  background-color: #1d4ed8;
+}
+
+.content-box button:after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255,255,255,0.4);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.content-box button:active:after {
+  width: 200px;
+  height: 200px;
+  transition: 0s;
+}
+
+/* ====== OFFICIALS LIST ====== */
+#officialsList {
+  margin-top: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.official-card {
+  background: rgba(37, 99, 235, 0.08); /* light blue glass */
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 15px;
+  width: 220px;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: pointer;
+}
+
+.official-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 30px rgba(37, 99, 235, 0.25);
+}
+
+.official-card img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.official-card h4 {
+  margin: 5px 0;
+  font-size: 1.1rem;
+  color: #1e293b;
+  text-align: center;
+}
+
+.official-card span.role-tag {
+  font-size: 0.85rem;
+  background-color: #2563eb;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-top: 5px;
+}
+
+/* Skeleton loading */
+.skeleton-card {
+  background: linear-gradient(90deg, rgba(37,99,235,0.1) 25%, rgba(255,255,255,0.3) 50%, rgba(37,99,235,0.1) 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 16px;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+</style>
+
+
+<div class="content-box">
+  <h3>Add / Edit Official</h3>
+  <input type="hidden" id="officialId">
+
+  <input type="text" id="officialName" placeholder="Full Name">
+  <select id="officialRole">
+    <option value="">Select Position</option>
+    <option>Barangay Chairman</option>
+    <option>Kagawad</option>
+    <option>SK Chairman</option>
+    <option>Secretary</option>
+    <option>Treasurer</option>
+  </select>
+  <input type="file" id="officialPhoto" accept="image/*">
+  <br>
+  <button id="saveOfficialBtn">Save Official</button>
+</div>
+
+<div class="content-box">
+  <h3>Officials List</h3>
+  <button onclick="printOfficials()">🖨 Print List</button>
+  <div id="officialsList">
+    <!-- skeleton placeholders -->
+    <div class="official-card skeleton-card" style="height:120px;"></div>
+    <div class="official-card skeleton-card" style="height:120px;"></div>
+    <div class="official-card skeleton-card" style="height:120px;"></div>
+    <div class="official-card skeleton-card" style="height:120px;"></div>
+  </div>
+</div>
+
+
+

@@ -1,0 +1,261 @@
+
+<style>
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  background: rgba(37, 99, 235, 0.05); /* subtle blue tint for page */
+}
+
+/* ===== ANNOUNCEMENT CONTAINER ===== */
+.announcement-container {
+  background: rgba(37, 99, 235, 0.1); /* semi-transparent sharp blue */
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 25px 20px;
+  max-width: 800px;
+  margin: 40px auto;
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.announcement-container:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(37, 99, 235, 0.25);
+}
+
+/* Headings */
+.announcement-container h2,
+.announcement-container h3 {
+  color: #1f2937;
+  margin-bottom: 15px;
+}
+
+/* Input and textarea */
+.announcement-container input[type="text"],
+.announcement-container textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(37,99,235,0.4);
+  font-size: 1rem;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.announcement-container input[type="text"]:focus,
+.announcement-container textarea:focus {
+  border-color: #2563eb;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37,99,235,0.3);
+}
+
+/* Resident list */
+.resident-list {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid rgba(37,99,235,0.4);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.7);
+}
+
+/* Buttons */
+.announcement-container button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background-color: #2563eb;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.announcement-container button:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(37,99,235,0.25);
+}
+
+/* Special button colors */
+#deleteBtn {
+  background-color: #b91c1c;
+}
+
+#deleteBtn:hover {
+  background-color: #991b1b;
+}
+
+#sendAllBtn {
+  background-color: #d97706;
+}
+
+#sendAllBtn:hover {
+  background-color: #b45309;
+}
+
+/* Sent messages list */
+#sentMessages li {
+  padding: 10px;
+  border-bottom: 1px solid rgba(37,99,235,0.2);
+  color: #1f2937;
+}
+
+#sentMessages li:last-child {
+  border-bottom: none;
+}
+
+/* Optional: scroll styling */
+.resident-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.resident-list::-webkit-scrollbar-thumb {
+  background-color: rgba(37,99,235,0.5);
+  border-radius: 3px;
+}
+
+.resident-list::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.2);
+}
+
+
+</style>
+
+<div class="announcement-container" style="padding:20px; max-width:800px; margin:auto;">
+  <h2>Announcements</h2>
+
+
+  <input type="text" id="searchResident" placeholder="Search resident names..." style="width:100%; padding:5px; margin-bottom:10px;" />
+
+  <div id="residentList" class="resident-list" style="max-height:200px; overflow-y:auto; border:1px solid #ccc; padding:10px; margin-bottom:10px;"></div>
+
+  <textarea id="announcementMessage" placeholder="Type your announcement here..." style="width:100%; height:100px; padding:10px; margin-bottom:10px;"></textarea>
+
+ 
+  <div style="display:flex; gap:10px; margin-bottom:20px;">
+    <button id="sendBtn" style="padding:10px;">Send</button>
+    <button id="sendAllBtn" style="padding:10px;">Send to All</button>
+  </div>
+
+
+<h3>Sent Announcements</h3>
+<button id="deleteSelectedBtn" style="margin-bottom:10px; background:#b91c1c; color:white;">
+  Delete Selected
+</button>
+<ul id="sentMessages" style="list-style:none; padding:0;"></ul>
+
+</div>
+
+<script>
+  /*
+const residentList = document.getElementById("residentList");
+const searchResident = document.getElementById("searchResident");
+const announcementMessage = document.getElementById("announcementMessage");
+const sentMessages = document.getElementById("sentMessages");
+
+let residents = [];
+
+
+async function loadResidents() {
+  const res = await fetch("authController.php?action=getResidents");
+  residents = await res.json();
+  renderResidents();
+}
+
+function renderResidents() {
+  const key = searchResident.value.toLowerCase();
+  residentList.innerHTML = residents
+    .filter(r =>
+      (r.name + " " + r.lastname).toLowerCase().includes(key)
+    )
+    .map(r =>
+      `<label>
+        <input type="checkbox" value="${r.email}">
+        ${r.name} ${r.lastname}
+      </label>`
+    ).join("");
+}
+
+
+async function sendAnnouncement(recipients) {
+  const msg = announcementMessage.value.trim();
+  if (!msg) return alert("Message empty");
+
+  const fd = new FormData();
+  fd.append("message", msg);
+  fd.append("recipients", JSON.stringify(recipients));
+
+  const res = await fetch("authController.php?action=sendAnnouncement", {
+    method: "POST",
+    body: fd
+  });
+  const data = await res.json();
+  alert(data.message);
+
+  announcementMessage.value = "";
+  loadSent();
+}
+
+
+document.getElementById("sendBtn").onclick = () => {
+  const selected = [...residentList.querySelectorAll("input:checked")]
+    .map(i => i.value);
+  if (!selected.length) return alert("Select resident");
+  sendAnnouncement(selected);
+};
+
+document.getElementById("sendAllBtn").onclick = () => sendAnnouncement(["all"]);
+document.getElementById("deleteBtn").onclick = () => announcementMessage.value = "";
+
+async function loadSent() {
+  const res = await fetch("authController.php?action=getAnnouncements");
+  const data = await res.json();
+
+  if (!data.length) {
+    sentMessages.innerHTML = "<li>No announcements yet.</li>";
+    return;
+  }
+
+  sentMessages.innerHTML = data.map(a => `
+    <li style="padding:10px; border-bottom:1px solid #ccc;">
+      <label style="cursor:pointer;">
+        <input type="checkbox" class="deleteAnnouncement" value="${a.id}">
+        <b>${a.recipient}</b> — ${a.message}
+        <br>
+        <small>${a.date_sent}</small>
+      </label>
+    </li>
+  `).join("");
+}
+
+document.getElementById("deleteSelectedBtn").onclick = async () => {
+  const ids = [...document.querySelectorAll(".deleteAnnouncement:checked")]
+    .map(cb => cb.value);
+
+  if (!ids.length) return alert("Select announcement to delete");
+
+  if (!confirm("Delete selected announcements?")) return;
+
+  const fd = new FormData();
+  fd.append("ids", JSON.stringify(ids));
+
+  const res = await fetch("authController.php?action=deleteAnnouncements", {
+    method: "POST",
+    body: fd
+  });
+
+  const data = await res.json();
+  alert(data.message);
+  loadSent();
+};
+
+
+searchResident.addEventListener("input", renderResidents);
+
+loadResidents();
+loadSent();
+setInterval(loadSent, 5000);
+*/
+</script>

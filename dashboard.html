@@ -1,0 +1,44 @@
+<h2>Dashboard</h2>
+<p>Dashboard Overview</p>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barangay Dashboard</title>
+
+
+
+
+
+<div class="dashboard-content">
+  <!-- LEFT: Chart Section -->
+  <div class="dashboard-left">
+    <div class="dashboard-card chart-card">
+      <h3>📊 Residents Data</h3>
+      <canvas id="residentsChart"></canvas>
+    </div>
+  </div>
+
+  <!-- RIGHT: Cards -->
+  <div class="dashboard-right">
+    <!-- Pending Requests Card -->
+    <a href="pendingRegistered.html" class="dashboard-card pending">
+      <h4>Pending Requests</h4>
+      <div class="count" id="pendingCount">0</div>
+    </a>
+
+   <a href="rejected-account.html" class="dashboard-card rejected">
+  <h4>Rejected Request</h4>
+  <div class="count" id="rejectedCount">0</div>
+</a>
+
+  <a href="CertificateRequest.html" class="dashboard-card online">
+  <h4>Online Request</h4>
+  <div class="count" id="PendingCountClearance">0</div>
+</a>
+
+
+<div class="dashboard-card red">
+  <h4>Number of  Residence</h4>
+  <div class="count" id="approvedCount">0</div>
+</div>
+

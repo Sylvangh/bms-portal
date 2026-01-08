@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Barangay Clearance</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f4f8;
+    margin: 0;
+    padding: 20px;
+  }
+
+  h2 {
+    text-align: center;
+    font-size: clamp(26px, 6vw, 36px);
+    margin-bottom: 20px;
+    color: #2c3e50;
+  }
+
+  .certificate-form {
+    max-width: 480px;
+    margin: auto;
+    background: #ffffff;
+    padding: 28px;
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  }
+
+  label {
+    display: block;
+    font-weight: bold;
+    font-size: clamp(16px, 4vw, 18px);
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+
+  input {
+    width: 100%;
+    padding: 16px;
+    font-size: clamp(16px, 4vw, 18px);
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+
+  button {
+    margin-top: 24px;
+    width: 100%;
+    padding: 18px;
+    font-size: clamp(16px, 4vw, 20px);
+    background: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s, transform 0.2s;
+  }
+
+  button:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+  <h2>Barangay Clearance Certificate</h2>
+  <div class="certificate-form">
+    <label for="name">Full Name:</label>
+    <input type="text" id="name" placeholder="Enter full name">
+    <label for="age">Age:</label>
+    <input type="text" id="age" placeholder="Age">
+    <label for="gender">Purpose:</label>
+    <input type="text" id="gender" placeholder="Purpose">
+      <label for="paid">Amount paid:</label>
+    <input type="text" id="paid" placeholder="paid">
+   
+
+
+    <button id="printBtn">Print Certificate</button>
+  </div>
+
+  <script>
+
+     const today = new Date().toLocaleDateString();
+     
+    document.getElementById("printBtn").addEventListener("click", () => {
+      const name = document.getElementById("name").value;
+      const age = document.getElementById("age").value;
+      const gender = document.getElementById("gender").value;
+      const paid = document.getElementById("paid").value;
+
+      if (!name||!age||!gender||!paid) {
+        alert("Please fill out all fields.");
+        return;
+      }
+
+      const win = window.open("", "_blank");
+      win.document.write(`
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Barangay Clearance</title>
+
+<style>
+  @page {
+    size: 8.5in 11in;
+    margin: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;  /* <-- all text uses Arial */
+  }
+
+  .page {
+    width: 8.5in;
+    height: 11in;
+    position: relative;
+    background: url("template1.png") center/cover no-repeat; /* template as background */
+  }
+
+  .right {
+    position: absolute;   /* overlay content on template */
+    top: 2.5in;           /* adjust vertical position to fit template */
+    left: 3.5in;            /* left margin */
+    right: 1in;           /* right margin */
+    font-size: 12pt;
+    line-height: 1.4;
+    text-align: justify;
+  }
+.right h1 {
+  text-align: center;
+  font-size: 20pt;
+  line-height: 20pt;   /* exact height */
+  margin-top: 0;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+    position: relative;
+  top: -50px;     /* 👈 moves ONLY the title */
+}
+
+ .right p {
+  margin: 0 0 25px 0;     /* bottom spacing between paragraphs */
+  text-indent: 0.7in;     /* first-line indent */
+  margin-left: 0.15in;     /* shift whole paragraph closer to the left */
+  line-height: 1.5;
+}
+
+  .right .no-indent {
+    text-indent: 0;
+    margin-bottom: 12px;
+  }
+
+  .highlight {
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .signature {
+    margin-top: 100px;
+    text-align: left;
+    
+  }
+
+  .signature b {
+    display: block;
+    margin-top: 10px;
+  }
+
+ .or-details {
+    margin-top: 80px;
+    margin-left: 0.50in;   /* move left */
+    font-size: 12pt;
+    line-height: 1.3;
+}
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <div class="right">
+    <h1>BARANGAY CLEARANCE</h1>
+
+    <p class="no-indent"><b>TO WHOM IT MAY CONCERN:</b></p>
+
+    <p>
+      THIS IS TO CERTIFY that <span class="highlight"><b>${name}</b></span>,
+     <b>${age}</b> years old, Filipino citizen, is a bonafide resident of Purok <b></b>,
+      Barangay Peñafrancia, Sta. Magdalena, Sorsogon and has no derogatory
+      record in this community.
+    </p>
+
+    <p>
+      THIS CERTIFICATION is issued upon request of the interested party
+      for <span class="highlight"><b>${gender}</b></span> purposes.
+    </p>
+
+    <p>
+      Issued this 6<sup>th</sup> day of January 2026 at the Barangay Hall,
+      Barangay Peñafrancia, Sta. Magdalena, Sorsogon.
+    </p>
+
+    <div class="signature">
+      Approved by:
+      <b>ROLLY C. FULGAR</b>
+      PUNONG BARANGAY
+    </div>
+
+    <div class="or-details">
+      OR No.: 00001<br>
+      Issued on: January 06, 2026<br>
+      Issued at: Brgy. Peñafrancia<br>
+      Amount Paid: ₱${paid}.00
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
+
+       `);
+   // Close the document to finish rendering
+  win.document.close();
+
+  // Wait until the new window finishes loading before printing
+  win.focus();
+  win.onload = function() {
+    win.print();
+    // Optionally close the window after printing
+    // win.close();
+  }
+    });
+  </script>
+</body>
+</html>

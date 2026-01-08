@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login</title>
+<style>
+  :root {
+  --card: #ffffff;
+  --accent: #1a67b9;
+}
+
+* { 
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background: linear-gradient(135deg,#e0e4e7,#b4cbee);
+  min-height: 100vh;
+  padding: 10px;     
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(50px); /* start slightly below */
+  animation: slideIn 1s ease forwards;
+  animation-delay: 0.1s; /* matches intro timeout */
+}
+
+.container {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* --- Logo on top --- */
+.logo {
+  width: 100px;
+  height: auto;
+  margin-bottom: 1px;
+}
+
+/* --- Headings --- */
+h1 {
+  text-align: center;
+  color: #063680;
+  margin-bottom: 15px;
+}
+h2 {
+  color: #063680;
+}
+
+/* --- Text colors --- */
+label {
+  color: rgb(255, 255, 255);
+}
+.muted {  
+  color: rgb(255, 255, 255);
+  text-align: center;
+}
+
+/* --- Cards --- */
+.card {
+  background: linear-gradient(135deg,#aad2ebc5,#0b50919f);
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 11px 10px 3px rgba(0, 0, 0, 0.116);
+  margin-bottom: 16px;
+  margin-top: 0px;
+  width: 100%;
+}
+.card.login-card{
+  min-height: 10vh;
+}
+
+/* --- Inputs --- */
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ffffff;
+  border-radius: 8px;
+  margin-top: 6px;
+  font-size: 1rem;
+}
+
+/* --- Buttons --- */
+button { 
+  background: var(--accent);
+  color: white;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 18px;
+}
+button:hover {
+  background-color: #134b93;
+}
+
+/* --- Footer --- */
+footer {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #150479;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.075);
+  padding: 12px 0;
+  margin-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.3);
+  width: 100%;
+  position: relative; /* changed from fixed to prevent keyboard issues */
+}
+footer b {
+  color: #48399b;
+}
+
+/* --- Mobile responsiveness --- */
+@media (max-width: 480px) {
+  body {
+    padding: 5px;
+  }
+
+  .container {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+  }
+
+  h2 {
+    font-size: 1.1rem;
+  }
+
+  input, button {
+    font-size: 0.95rem;
+  }
+}
+/* --- Background logo matching form width --- */
+.container::before {
+  content: '';
+  position: absolute;
+  top: 90px; /* adjust this value to move it down */
+  left: 50%;
+  transform: translateX(-50%);
+  background: url('logo.png') no-repeat center;
+  background-size: contain; /* scale to container width */
+  opacity: 0.05;
+  width: 100%;  /* match container width */
+  height: 100%; /* match container height */
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 12px; /* match card rounding if desired */
+  
+}
+
+/* --- Ensure keyboard doesn't break layout --- */
+input:focus {
+  outline: 2px solid var(--accent);
+}
+
+/* --- Intro Screen --- */
+.intro {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg,#e0e4e7,#b4cbee);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.intro-logo {
+  width: 150px;
+  height: auto;
+  opacity: 0;
+  transform: scale(0.5);
+  animation: introLogo 2s ease forwards;
+}
+
+@keyframes introLogo {
+  0% { opacity: 0; transform: scale(0.5);}
+  50% { opacity: 1; transform: scale(1.1);}
+  100% { opacity: 1; transform: scale(1);}
+}
+
+/* fade out screen */
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  100% {
+    opacity: 0;
+    pointer-events: none;
+    display: none;
+  }
+}
+
+/* Slide up and fade in */
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+#togglePassword {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #666;
+}
+
+#togglePassword:hover {
+  color: #000;
+}
+
+
+</style>
+</head>
+<body>
+  <div class="wrapper">
+  <div class="container">
+    <h1>Admin Login</h1>
+    <div class="card login-card">
+      <label>Username
+        <input id="admin-username" type="text" autocomplete="username" />
+      </label>
+<label>Password
+  <div class="password-wrapper">
+    <input
+      id="admin-password"
+      type="password"
+      autocomplete="current-password"
+    />
+    <i id="togglePassword" class="fas fa-eye"></i>
+  </div>
+</label>
+
+
+      <button id="btn-admin-login">Login</button>
+      <p class="muted">
+        <a href="allLogin.html">Back to Resident Login</a>
+      </p>
+    </div>
+  </div>
+     <footer>
+  Developed by <b>@SylvanDR2</b>
+</footer>
+  </div>
+<script>
+  const btnLogin = document.getElementById("btn-admin-login");
+
+  btnLogin.addEventListener("click", async function () {
+    const username = document.getElementById("admin-username").value.trim();
+    const password = document.getElementById("admin-password").value.trim();
+
+    if (!username || !password) {
+      alert("Please enter username and password");
+      return;
+    }
+
+    try {
+      const res = await fetch("authController.php?action=adminLogin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+
+      if (data.status === "success") {
+        alert("Welcome, Admin!");
+
+        // ❌ tanggalin na ang localStorage token
+        // localStorage.setItem("token", data.token);
+
+        // ✅ redirect sa PHP dashboard (secured by session)
+        window.location.href = "adminDashboard.php";
+
+      } else {
+        alert(data.message || "Admin login failed");
+      }
+
+    } catch (err) {
+      alert("Error connecting to server");
+      console.error(err);
+    }
+  });
+
+  const togglePassword = document.getElementById("togglePassword");
+  const passwordInput = document.getElementById("admin-password");
+
+  togglePassword.addEventListener("click", () => {
+    const isHidden = passwordInput.type === "password";
+
+    passwordInput.type = isHidden ? "text" : "password";
+
+    togglePassword.classList.toggle("fa-eye");
+    togglePassword.classList.toggle("fa-eye-slash");
+  });
+  
+</script>
+
+
+</body>
+</html>
