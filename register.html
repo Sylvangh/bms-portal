@@ -483,7 +483,7 @@ footer b {
 </div>
 <script>
 // ===============================
-// Resident Registration JS (robust for PHP errors)
+// Resident Registration JS (improved for server error messages)
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("registerForm");
@@ -510,7 +510,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById(id).addEventListener("input", updatePreviewName);
   });
 
-  updatePreviewName(); // initial call
+  updatePreviewName();
 
   // --- Preview uploaded ID ---
   validIdInput.addEventListener("change", e => {
@@ -519,7 +519,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const reader = new FileReader();
       reader.onload = function(event) {
         previewImg.src = event.target.result;
-        selectedIdBase64 = event.target.result; // Save Base64
+        selectedIdBase64 = event.target.result;
       };
       reader.readAsDataURL(file);
     } else {
@@ -532,7 +532,6 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", e => {
     e.preventDefault();
 
-    // Validate at least one school level is selected
     const schoolLevels = Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value);
     if (schoolLevels.length === 0) {
       schoolError.textContent = "Select at least one school level";
@@ -540,7 +539,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     schoolError.textContent = "";
 
-    // Show confirmation modal
     confirmModal.classList.remove("hidden");
   });
 
@@ -578,18 +576,18 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify(data)
       });
 
-      // --- Safe JSON parsing ---
-      const text = await res.text();
+      // Try parsing JSON, if fails, show raw text
       let result;
       try {
-        result = JSON.parse(text);
+        result = await res.json();
       } catch (err) {
-        console.error("PHP returned invalid JSON:", text);
-        alert("Server error (check console).");
+        const text = await res.text();
+        alert("PHP returned invalid JSON:\n" + text);
         return;
       }
 
-      alert(result.message);
+      // Display server message
+      alert(result.message || result.status || "Unknown response");
 
       if (result.message === "Registration request submitted") {
         form.reset();
@@ -598,7 +596,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     } catch (err) {
       console.error(err);
-      alert("Network error. Try again.");
+      alert("Network or server error occurred. Try again.");
     }
   });
 
@@ -611,5 +609,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
 
