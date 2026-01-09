@@ -282,60 +282,64 @@ input:focus {
 </footer>
   </div>
 <script>
-  const btnLogin = document.getElementById("btn-admin-login");
+const btnLogin = document.getElementById("btn-admin-login");
 
-  btnLogin.addEventListener("click", async function () {
-    const username = document.getElementById("admin-username").value.trim();
-    const password = document.getElementById("admin-password").value.trim();
+btnLogin.addEventListener("click", async function () {
+  const username = document.getElementById("admin-username").value.trim();
+  const password = document.getElementById("admin-password").value.trim();
 
-    if (!username || !password) {
-      alert("Please enter username and password");
-      return;
+  if (!username || !password) {
+    alert("Please enter username and password");
+    return;
+  }
+
+  try {
+    const res = await fetch("authController.php?action=adminLogin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+
+    // ✅ Check HTTP response
+    if (!res.ok) {
+      throw new Error(`Server responded with status ${res.status}`);
     }
 
+    let data;
     try {
-      const res = await fetch("authController.php?action=adminLogin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-      });
-
-      const data = await res.json();
-
-      if (data.status === "success") {
-        alert("Welcome, Admin!");
-
-        // ❌ tanggalin na ang localStorage token
-        // localStorage.setItem("token", data.token);
-
-        // ✅ redirect sa PHP dashboard (secured by session)
-        window.location.href = "adminDashboard.php";
-
-      } else {
-        alert(data.message || "Admin login failed");
-      }
-
-    } catch (err) {
-      alert("Error connecting to server");
-      console.error(err);
+      data = await res.json(); // ✅ Try parsing JSON
+    } catch (jsonErr) {
+      throw new Error("Server returned invalid JSON");
     }
-  });
 
-  const togglePassword = document.getElementById("togglePassword");
-  const passwordInput = document.getElementById("admin-password");
+    if (data.status === "success") {
+      alert("Welcome, Admin!");
+      window.location.href = "adminDashboard.php";
+    } else {
+      alert(data.message || "Admin login failed");
+    }
 
-  togglePassword.addEventListener("click", () => {
-    const isHidden = passwordInput.type === "password";
+  } catch (err) {
+    // ✅ Show detailed error
+    alert(`Login failed: ${err.message}`);
+    console.error("Full error details:", err);
+  }
+});
 
-    passwordInput.type = isHidden ? "text" : "password";
+const togglePassword = document.getElementById("togglePassword");
+const passwordInput = document.getElementById("admin-password");
 
-    togglePassword.classList.toggle("fa-eye");
-    togglePassword.classList.toggle("fa-eye-slash");
-  });
-  
+togglePassword.addEventListener("click", () => {
+  const isHidden = passwordInput.type === "password";
+  passwordInput.type = isHidden ? "text" : "password";
+  togglePassword.classList.toggle("fa-eye");
+  togglePassword.classList.toggle("fa-eye-slash");
+});
 </script>
+
 
 
 </body>
 
 </html>
+
