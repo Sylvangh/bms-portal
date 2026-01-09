@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 session_start();
 error_reporting(E_ALL);
-ini_set('display_errors', 0); // Hide PHP warnings from breaking JSON
+ini_set('display_errors', 0); // hide PHP warnings from breaking JSON
 
 try {
     // --- Check action parameter ---
@@ -10,19 +10,6 @@ try {
     if ($action !== 'adminLogin') {
         echo json_encode(["status" => "error", "message" => "Invalid action"]);
         exit();
-    }
-
-    // --- PostgreSQL connection (optional if you need DB later) ---
-    $host = "dpg-d5g6o614tr6s73e42630-a.oregon-postgres.render.com";
-    $db   = "bms_pen_db";
-    $user = "bms_pen_db_user";
-    $pass = "PuV1lCJedCOHqq2ZRJ2DYPCPWuWC5Ux6";
-    $port = 5432;
-
-    $conn_string = "host=$host port=$port dbname=$db user=$user password=$pass sslmode=require";
-    $conn = pg_connect($conn_string);
-    if (!$conn) {
-        throw new Exception("Database connection failed");
     }
 
     // --- Hard-coded admin credentials ---
@@ -51,4 +38,4 @@ try {
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);
 }
 
-exit(); // Stop any further output
+exit(); // ensure nothing else is output
