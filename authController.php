@@ -2,18 +2,17 @@
 header('Content-Type: application/json');
 
 // --- MySQL connection for Docker / Render ---
-$host = getenv('DB_HOST') ?: "db";         // fallback to 'db' if env not set
-$db   = getenv('DB_NAME') ?: "registrations"; // use your actual DB name
-$user = getenv('DB_USER') ?: "bms_user";   // fallback user
-$pass = getenv('DB_PASS') ?: "mypassword123"; // fallback password
+$host = "sql101.infinityfree.com";  // InfinityFree MySQL Hostname
+$db   = "if0_40793198";             // Your database name (same as username here)
+$user = "if0_40793198";             // Your MySQL username
+$pass = "REljRlinmTM4u";            // Your MySQL password
 $port = 3306;
 
 try {
-    // Use PDO for better compatibility
     $pdo = new PDO("mysql:host=$host;dbname=$db;port=$port", $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die(json_encode(["message" => "Database connection failed: " . $e->getMessage()]));
+    die("Database connection failed: " . $e->getMessage());
 }
 
 
@@ -1248,6 +1247,7 @@ if($action === 'updateCertificateFees') {
 
 
 ?>
+
 
 
 
