@@ -1,161 +1,98 @@
 <?php
-
 header('Content-Type: application/json');
+session_start();
 
-// --- PostgreSQL connection on Render ---
-$host = "dpg-d5g6o614tr6s73e42630-a.oregon-postgres.render.com"; // Render host
-$db   = "bms_pen_db";       // Your database name
-$user = "bms_pen_db_user";  // Render DB username
-$pass = "PuV1lCJedCOHqq2ZRJ2DYPCPWuWC5Ux6"; // Render DB password
-$port = 5432;               // default PostgreSQL port
+// --- Hide HTML errors ---
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
 
-// Force SSL connection
+// --- PostgreSQL connection ---
+$host = "dpg-d5g6o614tr6s73e42630-a.oregon-postgres.render.com";
+$db   = "bms_pen_db";
+$user = "bms_pen_db_user";
+$pass = "PuV1lCJedCOHqq2ZRJ2DYPCPWuWC5Ux6";
+$port = 5432;
+
 $conn_string = "host=$host port=$port dbname=$db user=$user password=$pass sslmode=require";
 $conn = pg_connect($conn_string);
 
 if (!$conn) {
-    die(json_encode(["message" => "Connection failed: " . pg_last_error()]));
+    echo json_encode(["status" => "error", "message" => "Database connection failed"]);
+    exit;
 }
 
-/////////////
-header('Content-Type: application/json');
-session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 0); // hide PHP warnings from breaking JSON
-
-try {
-    // --- Check action parameter ---
-    $action = $_GET['action'] ?? '';
-    if ($action !== 'adminLogin') {
-        echo json_encode(["status" => "error", "message" => "Invalid action"]);
-        exit();
-    }
-
-    // --- Hard-coded admin credentials ---
-    $ADMIN_USERNAME = "admin";
-    $ADMIN_PASSWORD = "#KapTata2026";
-
-    // --- Get POSTed JSON ---
-    $input = json_decode(file_get_contents("php://input"), true);
-    $username = trim($input['username'] ?? '');
-    $password = trim($input['password'] ?? '');
-
-    if (!$username || !$password) {
-        echo json_encode(["status" => "error", "message" => "Username and password required"]);
-        exit();
-    }
-
-    // --- Check credentials ---
-    if ($username === $ADMIN_USERNAME && $password === $ADMIN_PASSWORD) {
-        $_SESSION['admin_logged_in'] = true;
-        echo json_encode(["status" => "success", "message" => "Login successful"]);
-    } else {
-        echo json_encode(["status" => "error", "message" => "Invalid username or password"]);
-    }
-
-} catch (Exception $e) {
-    echo json_encode(["status" => "error", "message" => $e->getMessage()]);
-}
-
-exit(); // ensure nothing else is output
-//////////////////
-
-header('Content-Type: application/json');
-session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 0); // hide PHP warnings from breaking JSON
-
-try {
-    // --- Check action parameter ---
-    $action = $_GET['action'] ?? '';
-    if ($action !== 'adminLogin') {
-        echo json_encode(["status" => "error", "message" => "Invalid action"]);
-        exit();
-    }
-
-    // --- Hard-coded admin credentials ---
-    $ADMIN_USERNAME = "admin";
-    $ADMIN_PASSWORD = "#KapTata2026";
-
-    // --- Get POSTed JSON ---
-    $input = json_decode(file_get_contents("php://input"), true);
-    $username = trim($input['username'] ?? '');
-    $password = trim($input['password'] ?? '');
-
-    if (!$username || !$password) {
-        echo json_encode(["status" => "error", "message" => "Username and password required"]);
-        exit();
-    }
-
-    // --- Check credentials ---
-    if ($username === $ADMIN_USERNAME && $password === $ADMIN_PASSWORD) {
-        $_SESSION['admin_logged_in'] = true;
-        echo json_encode(["status" => "success", "message" => "Login successful"]);
-    } else {
-        echo json_encode(["status" => "error", "message" => "Invalid username or password"]);
-    }
-
-} catch (Exception $e) {
-    echo json_encode(["status" => "error", "message" => $e->getMessage()]);
-}
-
-exit(); // ensure nothing else is output
-
+// --- Get action ---
 $action = $_GET['action'] ?? '';
 
-if ($action === "register") {
+if ($action === 'register') {
     $data = json_decode(file_get_contents("php://input"), true);
-
     if (!$data) {
-        echo json_encode(["message" => "No input received"]);
+        echo json_encode(["status" => "error", "message" => "No input received"]);
         exit;
     }
 
-    // --- Sanitize inputs for PostgreSQL ---
-     // --- Sanitize inputs for PostgreSQL ---
-    $name = pg_escape_string($data['name'] ?? '');
-    $middlename = pg_escape_string($data['middlename'] ?? '');
-    $lastname = pg_escape_string($data['lastname'] ?? '');
-    $email = pg_escape_string($data['email'] ?? '');
-    $password = password_hash($data['password'] ?? '', PASSWORD_BCRYPT);
-    $phone = pg_escape_string($data['phone'] ?? '');
+    // --- Sanitize inputs ---
+    $name = pg_escape_string(trim($data['name'] ?? ''));
+    $middlename = pg_escape_string(trim($data['middlename'] ?? ''));
+    $lastname = pg_escape_string(trim($data['lastname'] ?? ''));
+    $email = pg_escape_string(trim($data['email'] ?? ''));
+    $password_raw = trim($data['password'] ?? '');
+    $password = $password_raw ? password_hash($password_raw, PASSWORD_BCRYPT) : null;
+    $phone = pg_escape_string(trim($data['phone'] ?? ''));
     $age = isset($data['age']) ? (int)$data['age'] : 0;
-    $sex = pg_escape_string($data['sex'] ?? '');
-    $birthday = pg_escape_string($data['birthday'] ?? '');
-    $address = pg_escape_string($data['address'] ?? '');
-    $status = pg_escape_string($data['status'] ?? '');
-    $pwd = pg_escape_string($data['pwd'] ?? '');
-    $fourps = pg_escape_string($data['fourps'] ?? '');
+    $sex = pg_escape_string(trim($data['sex'] ?? ''));
+    $birthday = pg_escape_string(trim($data['birthday'] ?? ''));
+    $address = pg_escape_string(trim($data['address'] ?? ''));
+    $status = pg_escape_string(trim($data['status'] ?? ''));
+    $pwd = pg_escape_string(trim($data['pwd'] ?? ''));
+    $fourps = pg_escape_string(trim($data['fourps'] ?? ''));
     $seniorcitizen = !empty($data['seniorcitizen']) ? 1 : 0;
     $schoollevels = !empty($data['schoollevels']) ? implode(",", $data['schoollevels']) : '';
-    $schoolname = pg_escape_string($data['schoolname'] ?? '');
-    $occupation = pg_escape_string($data['occupation'] ?? '');
+    $schoolname = pg_escape_string(trim($data['schoolname'] ?? ''));
+    $occupation = pg_escape_string(trim($data['occupation'] ?? ''));
     $vaccinated = !empty($data['vaccinated']) ? 1 : 0;
     $voter = !empty($data['voter']) ? 1 : 0;
     $validIdBase64 = $data['validid'] ?? '';
-    // --- Save Base64 ID as a file ---
 
+    // --- Validate required fields ---
+    if (!$name || !$lastname || !$email || !$password_raw) {
+        echo json_encode(["status" => "error", "message" => "Name, Lastname, Email, and Password are required"]);
+        exit;
+    }
+
+    // --- Save Base64 ID as file ---
     $validid = null;
     if (!empty($validIdBase64)) {
-        $validIdData = explode(',', $validIdBase64); // remove "data:image/png;base64," if present
-        $decoded = base64_decode($validIdData[1] ?? '');
-        if ($decoded) {
-            $filename = uniqid('id_') . '.png';
-            $validid = 'uploads/' . $filename; // folder must exist and writable
-            file_put_contents($validid, $decoded);
+        $parts = explode(',', $validIdBase64);
+        if (isset($parts[1])) {
+            $decoded = base64_decode($parts[1]);
+            if ($decoded) {
+                $filename = uniqid('id_') . '.png';
+                $validid = 'uploads/' . $filename;
+                if (!file_put_contents($validid, $decoded)) {
+                    echo json_encode(["status" => "error", "message" => "Failed to save ID image"]);
+                    exit;
+                }
+            } else {
+                echo json_encode(["status" => "error", "message" => "Invalid Base64 ID data"]);
+                exit;
+            }
         }
     }
 
     // --- Check duplicate email ---
-    $checkQuery = "SELECT * FROM registrations WHERE email='$email'";
+    $checkQuery = "SELECT id FROM registrations WHERE email='$email'";
     $check = pg_query($conn, $checkQuery);
-
+    if (!$check) {
+        echo json_encode(["status" => "error", "message" => "Database error: " . pg_last_error($conn)]);
+        exit;
+    }
     if (pg_num_rows($check) > 0) {
-        echo json_encode(["message" => "Email already exists"]);
+        echo json_encode(["status" => "error", "message" => "Email already exists"]);
         exit;
     }
 
-    // --- Insert into database (columns must match your PostgreSQL table) ---
+    // --- Insert into database ---
     $sql = "INSERT INTO registrations 
         (name, middlename, lastname, email, password, accountstatus, phone, age, sex, birthday, address, status, pwd, fourps, seniorcitizen, schoollevels, schoolname, occupation, vaccinated, voter, validid)
         VALUES
@@ -164,14 +101,16 @@ if ($action === "register") {
     $result = pg_query($conn, $sql);
 
     if ($result) {
-        echo json_encode(["message" => "Registration request submitted"]);
+        echo json_encode(["status" => "success", "message" => "Registration request submitted"]);
     } else {
-        echo json_encode(["message" => "Error: " . pg_last_error($conn)]);
+        echo json_encode(["status" => "error", "message" => "Database insert error: " . pg_last_error($conn)]);
     }
 
     pg_close($conn);
     exit;
 }
 
-    
+// --- Invalid action fallback ---
+echo json_encode(["status" => "error", "message" => "Invalid action"]);
+exit;
 ?>
