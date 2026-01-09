@@ -1,14 +1,15 @@
 <?php
 header('Content-Type: application/json');
 
-// --- PostgreSQL connection ---
-$host = "127.0.0.1";
-$db   = "registrations"; // palitan ng actual database name mo
-$user = "postgres";      // PostgreSQL default user
-$pass = "your_password"; // password for PostgreSQL
-$port = 5432;             // default PostgreSQL port
+// --- PostgreSQL connection on Render ---
+$host = "dpg-d5g6o614tr6s73e42630-a.oregon-postgres.render.com"; // Render host
+$db   = "bms_pen_db";       // Your database name
+$user = "bms_pen_db_user";  // Render DB username
+$pass = "PuV1lCJedCOHqq2ZRJ2DYPCPWuWC5Ux6"; // Render DB password
+$port = 5432;               // default PostgreSQL port
 
-$conn_string = "host=$host port=$port dbname=$db user=$user password=$pass";
+// Optional: Force SSL
+$conn_string = "host=$host port=$port dbname=$db user=$user password=$pass sslmode=require";
 $conn = pg_connect($conn_string);
 
 if (!$conn) {
@@ -1418,6 +1419,7 @@ if ($action === 'updateCertificateFees') {
     }
     exit;
 }
+
 
 
 
