@@ -481,9 +481,9 @@ footer b {
 </footer>
 
 </div>
-  <script>
+<script>
 // ===============================
-// Resident Registration JS (fixed for PHP keys)
+// Resident Registration JS (robust for PHP errors)
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("registerForm");
@@ -548,7 +548,6 @@ document.addEventListener("DOMContentLoaded", () => {
   confirmYes.addEventListener("click", async () => {
     confirmModal.classList.add("hidden");
 
-    // Collect form data (keys match PHP exactly)
     const data = {
       name: document.getElementById("fname").value.trim(),
       middlename: document.getElementById("mname").value.trim(),
@@ -562,14 +561,14 @@ document.addEventListener("DOMContentLoaded", () => {
       address: document.getElementById("address").value.trim(),
       status: document.getElementById("status").value,
       pwd: document.getElementById("pwd").value,
-      fourps: document.getElementById("mFourPs").value,        // lowercase 'fourps' for PHP
-      seniorcitizen: document.getElementById("seniorCitizen").checked, // lowercase 'seniorcitizen'
-      schoollevels: Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value), // lowercase 'schoollevels'
-      schoolname: document.getElementById("schoolName").value.trim(),  // lowercase 'schoolname'
+      fourps: document.getElementById("mFourPs").value,
+      seniorcitizen: document.getElementById("seniorCitizen").checked,
+      schoollevels: Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value),
+      schoolname: document.getElementById("schoolName").value.trim(),
       occupation: document.getElementById("occupation").value.trim(),
       vaccinated: document.getElementById("vaccinated").checked,
       voter: document.getElementById("voter").checked,
-      validid: selectedIdBase64    // lowercase 'validid'
+      validid: selectedIdBase64
     };
 
     try {
@@ -579,16 +578,27 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify(data)
       });
 
-      const result = await res.json();
+      // --- Safe JSON parsing ---
+      const text = await res.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (err) {
+        console.error("PHP returned invalid JSON:", text);
+        alert("Server error (check console).");
+        return;
+      }
+
       alert(result.message);
 
       if (result.message === "Registration request submitted") {
         form.reset();
         previewImg.src = "default-avatar.png";
       }
+
     } catch (err) {
       console.error(err);
-      alert("An error occurred. Try again.");
+      alert("Network error. Try again.");
     }
   });
 
@@ -601,4 +611,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
