@@ -90,33 +90,82 @@ pg_close($conn);
 exit;
 }
 
-if ($action === "adminLogin") {
-    $data = json_decode(file_get_contents("php://input"), true);
+<?php
+// Force JSON output
+header('Content-Type: application/json');
 
-    $username = $data['username'];
-    $password = $data['password'];
+// Enable full error reporting (for debugging)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-    // HARD CODED CREDENTIALS
-    $ADMIN_USERNAME = "admin";
-    $ADMIN_PASSWORD = "#KapTata2026";
+// Make sure no extra whitespace before/after this file
 
-    if ($username === $ADMIN_USERNAME && $password === $ADMIN_PASSWORD) {
-
-        session_start();
-        $_SESSION['admin_logged_in'] = true;
-
+try {
+    // Check if action parameter exists
+    if (!isset($_GET['action'])) {
         echo json_encode([
-            "status" => "success",
-            "message" => "Login successful"
+            "status" => "error",
+            "message" => "No action specified"
         ]);
+        exit;
+    }
+
+    $action = $_GET['action'];
+
+    if ($action === "adminLogin") {
+
+        // Get raw POST data
+        $input = file_get_contents("php://input");
+        $data = json_decode($input, true);
+
+        if (!$data || !isset($data['username'], $data['password'])) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Missing username or password"
+            ]);
+            exit;
+        }
+
+        $username = trim($data['username']);
+        $password = trim($data['password']);
+
+        // HARD CODED CREDENTIALS
+        $ADMIN_USERNAME = "admin";
+        $ADMIN_PASSWORD = "#KapTata2026";
+
+        if ($username === $ADMIN_USERNAME && $password === $ADMIN_PASSWORD) {
+            // Start session for secured dashboard
+            session_start();
+            $_SESSION['admin_logged_in'] = true;
+
+            echo json_encode([
+                "status" => "success",
+                "message" => "Login successful"
+            ]);
+        } else {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Invalid username or password"
+            ]);
+        }
+
+        exit;
     } else {
         echo json_encode([
             "status" => "error",
-            "message" => "Invalid username or password"
+            "message" => "Unknown action"
         ]);
+        exit;
     }
+} catch (Exception $e) {
+    // Catch any unexpected errors and return JSON
+    echo json_encode([
+        "status" => "error",
+        "message" => "Server error: " . $e->getMessage()
+    ]);
     exit;
 }
+
 
 
 
@@ -1419,6 +1468,7 @@ if ($action === 'updateCertificateFees') {
     }
     exit;
 }
+
 
 
 
