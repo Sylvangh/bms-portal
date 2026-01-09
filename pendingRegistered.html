@@ -248,8 +248,7 @@
       </div>
     </div>
   </div>
-<script>
-const residentList = document.getElementById("residentList");
+<script>const residentList = document.getElementById("residentList");
 const messageModal = document.getElementById("messageModal");
 const rejectMessage = document.getElementById("rejectMessage");
 const sendReject = document.getElementById("sendReject");
@@ -261,15 +260,18 @@ let currentRejectId = null;
 async function fetchPending() {
   try {
     const res = await fetch("adminControllers.php?action=getPending");
+    if (!res.ok) throw new Error("Failed to fetch pending requests");
 
-    if (!res.ok) {
-      console.error("API ERROR");
+    const data = await res.json();
+    if (data.status === "error") {
+      alert("Error: " + data.message);
       return [];
     }
 
-    return await res.json();
+    return Array.isArray(data) ? data : [];
   } catch (err) {
     console.error(err);
+    alert("Could not fetch pending requests. Check console.");
     return [];
   }
 }
@@ -279,7 +281,7 @@ async function renderResidents() {
   const pending = await fetchPending();
   residentList.innerHTML = "";
 
-  if (!Array.isArray(pending) || pending.length === 0) {
+  if (!pending.length) {
     residentList.innerHTML = "<p>No pending requests.</p>";
     return;
   }
@@ -287,16 +289,14 @@ async function renderResidents() {
   pending.forEach(r => {
     const div = document.createElement("div");
     div.className = "request";
-    div.dataset.id = r.id; // ✅ MySQL id
+    div.dataset.id = r.id;
 
     div.innerHTML = `
-      <p><b>${r.name}</b></p>
+      <p><b>${r.name} ${r.middlename} ${r.lastname}</b></p>
       <p>Email: ${r.email}</p>
       <p>Age: ${r.age} | Sex: ${r.sex}</p>
       <p>Address: ${r.address}</p>
-
-      ${r.validId ? `<img src="${r.validId}" class="img-preview">` : ""}
-
+      ${r.validid ? `<img src="${r.validid}" class="img-preview">` : ""}
       <div style="margin-top:10px;">
         <button class="approveBtn">Approve</button>
         <button class="rejectBtn secondary">Reject</button>
@@ -307,14 +307,13 @@ async function renderResidents() {
     residentList.appendChild(div);
   });
 
+  // Attach events
   document.querySelectorAll(".approveBtn").forEach(btn =>
     btn.onclick = () => approveResident(btn.closest(".request").dataset.id)
   );
-
   document.querySelectorAll(".rejectBtn").forEach(btn =>
     btn.onclick = () => rejectResident(btn.closest(".request").dataset.id)
   );
-
   document.querySelectorAll(".removeBtn").forEach(btn =>
     btn.onclick = () => removeResident(btn.closest(".request").dataset.id)
   );
@@ -322,10 +321,15 @@ async function renderResidents() {
 
 // ---------------- APPROVE ----------------
 async function approveResident(id) {
-  const res = await fetch(`adminControllers.php?action=approve&id=${id}`);
-  const data = await res.json();
-  alert(data.message);
-  renderResidents();
+  try {
+    const res = await fetch(`adminControllers.php?action=approve&id=${id}`);
+    const data = await res.json();
+    alert(data.message);
+    renderResidents();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to approve request.");
+  }
 }
 
 // ---------------- REJECT ----------------
@@ -336,19 +340,26 @@ function rejectResident(id) {
 }
 
 sendReject.onclick = async () => {
-  const res = await fetch(
-    `adminControllers.php?action=reject&id=${currentRejectId}`,
-    {
+  if (!rejectMessage.value.trim()) {
+    alert("Enter a rejection message.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`adminControllers.php?action=reject&id=${currentRejectId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: rejectMessage.value })
-    }
-  );
+    });
 
-  const data = await res.json();
-  alert(data.message);
-  messageModal.classList.add("hidden");
-  renderResidents();
+    const data = await res.json();
+    alert(data.message);
+    messageModal.classList.add("hidden");
+    renderResidents();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to reject request.");
+  }
 };
 
 cancelReject.onclick = () => messageModal.classList.add("hidden");
@@ -357,17 +368,24 @@ cancelReject.onclick = () => messageModal.classList.add("hidden");
 async function removeResident(id) {
   if (!confirm("Remove this request?")) return;
 
-  const res = await fetch(`adminControllers.php?action=remove&id=${id}`);
-  const data = await res.json();
-  alert(data.message);
-  renderResidents();
+  try {
+    const res = await fetch(`adminControllers.php?action=remove&id=${id}`);
+    const data = await res.json();
+    alert(data.message);
+    renderResidents();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to remove request.");
+  }
 }
 
 // INITIAL LOAD
 renderResidents();
+
 
 </script>
 
 
 </body>
 </html>
+
