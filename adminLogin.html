@@ -280,8 +280,7 @@ input:focus {
      <footer>
   Developed by <b>@SylvanDR2</b>
 </footer>
-  </div>
-<script>
+  </div><script>
 const btnLogin = document.getElementById("btn-admin-login");
 
 btnLogin.addEventListener("click", async function () {
@@ -300,32 +299,33 @@ btnLogin.addEventListener("click", async function () {
       body: JSON.stringify({ username, password })
     });
 
-    // ✅ Check HTTP response
+    // Check if HTTP request was successful
     if (!res.ok) {
       throw new Error(`Server responded with status ${res.status}`);
     }
 
     let data;
     try {
-      data = await res.json(); // ✅ Try parsing JSON
-    } catch (jsonErr) {
+      data = await res.json(); // Parse JSON
+    } catch {
       throw new Error("Server returned invalid JSON");
     }
 
+    // Check login success
     if (data.status === "success") {
       alert("Welcome, Admin!");
-      window.location.href = "adminDashboard.php";
+      window.location.href = "adminDashboard.php"; // Redirect after login
     } else {
-      alert(data.message || "Admin login failed");
+      alert(data.message || "Invalid username or password");
     }
 
   } catch (err) {
-    // ✅ Show detailed error
     alert(`Login failed: ${err.message}`);
     console.error("Full error details:", err);
   }
 });
 
+// Toggle password visibility
 const togglePassword = document.getElementById("togglePassword");
 const passwordInput = document.getElementById("admin-password");
 
@@ -339,7 +339,9 @@ togglePassword.addEventListener("click", () => {
 
 
 
+
 </body>
 
 </html>
+
 
