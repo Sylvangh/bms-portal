@@ -2,11 +2,11 @@
 header('Content-Type: application/json');
 
 // --- MySQL connection for Docker / Render ---
-$host = "sql101.infinityfree.com";  // InfinityFree MySQL Hostname
-$db   = "if0_40793198";             // Your database name (same as username here)
-$user = "if0_40793198";             // Your MySQL username
-$pass = "REljRlinmTM4u";            // Your MySQL password
-$port = 3306;
+$host = "sql101.infinityfree.com";        // MySQL Hostname
+$db   = "if0_40793198_registrations";     // Database Name
+$user = "if0_40793198";                   // MySQL Username
+$pass = "REljRlinmTM4u";                  // MySQL Password
+$port = 3306;                              // MySQL Port
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;port=$port", $user, $pass);
@@ -14,7 +14,6 @@ try {
 } catch (PDOException $e) {
     die("Database connection failed: " . $e->getMessage());
 }
-
 
 // --- Get action from URL ---
 $action = $_GET['action'] ?? '';
@@ -1247,6 +1246,7 @@ if($action === 'updateCertificateFees') {
 
 
 ?>
+
 
 
 
