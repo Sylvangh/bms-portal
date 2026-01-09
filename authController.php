@@ -1,18 +1,21 @@
 <?php
 header('Content-Type: application/json');
 
-// --- MySQL connection for XAMPP ---
-$host = "127.0.0.1";
-$db   = "registrations"; // palitan ng actual database name mo
-$user = "root";
-$pass = "";             // default sa XAMPP
+// --- MySQL connection for Docker / Render ---
+$host = getenv('DB_HOST') ?: "db";         // fallback to 'db' if env not set
+$db   = getenv('DB_NAME') ?: "registrations"; // use your actual DB name
+$user = getenv('DB_USER') ?: "bms_user";   // fallback user
+$pass = getenv('DB_PASS') ?: "mypassword123"; // fallback password
 $port = 3306;
 
-$conn = new mysqli($host, $user, $pass, $db, $port);
-
-if ($conn->connect_error) {
-    die(json_encode(["message" => "Connection failed: " . $conn->connect_error]));
+try {
+    // Use PDO for better compatibility
+    $pdo = new PDO("mysql:host=$host;dbname=$db;port=$port", $user, $pass);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die(json_encode(["message" => "Database connection failed: " . $e->getMessage()]));
 }
+
 
 // --- Get action from URL ---
 $action = $_GET['action'] ?? '';
@@ -1245,6 +1248,7 @@ if($action === 'updateCertificateFees') {
 
 
 ?>
+
 
 
 
