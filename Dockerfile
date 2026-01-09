@@ -1,14 +1,11 @@
-# Use official PHP CLI image
-FROM php:8.2-cli
+# Use PHP with Apache
+FROM php:8.2-apache
 
-# Set working directory inside container
-WORKDIR /app
+# Install MySQL extensions
+RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Copy all files into the container
-COPY . .
+# Copy all your BMS PHP files into Apache's web root
+COPY . /var/www/html/
 
-# Expose port 10000
-EXPOSE 10000
-
-# Start PHP built-in server
-CMD ["php", "-S", "0.0.0.0:10000", "-t", "."]
+# Expose port 80 (Render expects this)
+EXPOSE 80
