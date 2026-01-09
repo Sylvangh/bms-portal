@@ -7,15 +7,17 @@ services:
       DB_HOST: db
       DB_USER: bms_user
       DB_PASS: mypassword123
-      DB_NAME: bms_portal_db
+      DB_NAME: registrations   # <-- your actual DB name
     depends_on:
       - db
+    ports:
+      - "10000:80"  # map container port 80 to host 10000 for testing
 
   db:
     image: mysql:8
     environment:
       MYSQL_ROOT_PASSWORD: root123
-      MYSQL_DATABASE: bms_portal_db
+      MYSQL_DATABASE: registrations   # <-- match your DB name
       MYSQL_USER: bms_user
       MYSQL_PASSWORD: mypassword123
     ports:
