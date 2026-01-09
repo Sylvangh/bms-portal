@@ -480,9 +480,10 @@ footer b {
   Developed by <b>@SylvanDL2</b>
 </footer>
 
-</div><script>
+</div>
+  <script>
 // ===============================
-// Resident Registration JS
+// Resident Registration JS (fixed for PHP keys)
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("registerForm");
@@ -495,20 +496,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let selectedIdBase64 = "";
 
-
   // --- Show default preview on load ---
-  previewImg.src = "default-avatar.png"; // make sure this file is in the same folder
-  previewImg.style.display = "block"; // make sure it’s visible
+  previewImg.src = "default-avatar.png";
+  previewImg.style.display = "block";
 
   // --- Update preview name dynamically ---
   function updatePreviewName() {
-    const fullName = `${fname.value} ${mname.value} ${lname.value}`.trim();
+    const fullName = `${document.getElementById("fname").value} ${document.getElementById("mname").value} ${document.getElementById("lname").value}`.trim();
     previewImg.alt = fullName || "Default Name";
   }
 
-  fname.addEventListener("input", updatePreviewName);
-  mname.addEventListener("input", updatePreviewName);
-  lname.addEventListener("input", updatePreviewName);
+  ["fname", "mname", "lname"].forEach(id => {
+    document.getElementById(id).addEventListener("input", updatePreviewName);
+  });
 
   updatePreviewName(); // initial call
 
@@ -523,15 +523,13 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       reader.readAsDataURL(file);
     } else {
-      previewImg.src = "default-avatar.png"; // reset to default if cleared
+      previewImg.src = "default-avatar.png";
       selectedIdBase64 = "";
     }
   });
 
-
-
   // --- Form submit ---
-  form.addEventListener("submit", async e => {
+  form.addEventListener("submit", e => {
     e.preventDefault();
 
     // Validate at least one school level is selected
@@ -550,7 +548,7 @@ document.addEventListener("DOMContentLoaded", () => {
   confirmYes.addEventListener("click", async () => {
     confirmModal.classList.add("hidden");
 
-    // Collect form data
+    // Collect form data (keys match PHP exactly)
     const data = {
       name: document.getElementById("fname").value.trim(),
       middlename: document.getElementById("mname").value.trim(),
@@ -564,14 +562,14 @@ document.addEventListener("DOMContentLoaded", () => {
       address: document.getElementById("address").value.trim(),
       status: document.getElementById("status").value,
       pwd: document.getElementById("pwd").value,
-      fourPs: document.getElementById("mFourPs").value,
-      seniorCitizen: document.getElementById("seniorCitizen").checked,
-      schoolLevels: Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value),
-      schoolName: document.getElementById("schoolName").value.trim(),
+      fourps: document.getElementById("mFourPs").value,        // lowercase 'fourps' for PHP
+      seniorcitizen: document.getElementById("seniorCitizen").checked, // lowercase 'seniorcitizen'
+      schoollevels: Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value), // lowercase 'schoollevels'
+      schoolname: document.getElementById("schoolName").value.trim(),  // lowercase 'schoolname'
       occupation: document.getElementById("occupation").value.trim(),
       vaccinated: document.getElementById("vaccinated").checked,
       voter: document.getElementById("voter").checked,
-      validId: selectedIdBase64
+      validid: selectedIdBase64    // lowercase 'validid'
     };
 
     try {
@@ -580,12 +578,13 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
       });
+
       const result = await res.json();
       alert(result.message);
 
       if (result.message === "Registration request submitted") {
         form.reset();
-        previewImg.src = "";
+        previewImg.src = "default-avatar.png";
       }
     } catch (err) {
       console.error(err);
@@ -597,8 +596,9 @@ document.addEventListener("DOMContentLoaded", () => {
     confirmModal.classList.add("hidden");
   });
 });
-
 </script>
+
 
 </body>
 </html>
+
