@@ -18,7 +18,8 @@ $conn_string = "host=$host port=$port dbname=$db user=$user password=$pass sslmo
 try {
     $conn = @pg_connect($conn_string); // @ suppress warnings
     if (!$conn) {
-        throw new Exception("PostgreSQL connection failed");
+        // Optional: just log the error but continue, since login is hardcoded
+        // error_log("PostgreSQL connection failed");
     }
 
     // Check action parameter
@@ -41,18 +42,12 @@ try {
         $username = trim($data['username']);
         $password = trim($data['password']);
 
-        // --- Use PostgreSQL query instead of hard-coded credentials ---
-        $query = "SELECT * FROM admins WHERE username = $1 LIMIT 1";
-        $result = pg_query_params($conn, $query, [$username]);
+        // --- HARD-CODED admin credentials ---
+        $ADMIN_USERNAME = "admin";
+        $ADMIN_PASSWORD = "#KapTata2026";
 
-        if (!$result) {
-            echo json_encode(["status" => "error", "message" => "Database query failed"]);
-            exit;
-        }
-
-        $admin = pg_fetch_assoc($result);
-
-        if ($admin && $admin['password'] === $password) {
+        // Use hardcoded login instead of PostgreSQL query
+        if ($username === $ADMIN_USERNAME && $password === $ADMIN_PASSWORD) {
             session_start();
             $_SESSION['admin_logged_in'] = true;
 
@@ -1452,6 +1447,7 @@ if ($action === 'updateCertificateFees') {
     }
     exit;
 }
+
 
 
 
