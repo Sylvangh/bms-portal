@@ -283,7 +283,7 @@ input:focus {
   </div><script>
 const btnLogin = document.getElementById("btn-admin-login");
 
-btnLogin.addEventListener("click", async function () {
+btnLogin.addEventListener("click", async () => {
   const username = document.getElementById("admin-username").value.trim();
   const password = document.getElementById("admin-password").value.trim();
 
@@ -299,29 +299,27 @@ btnLogin.addEventListener("click", async function () {
       body: JSON.stringify({ username, password })
     });
 
-    // Check if HTTP request was successful
+    // Check HTTP status
     if (!res.ok) {
       throw new Error(`Server responded with status ${res.status}`);
     }
 
-    let data;
-    try {
-      data = await res.json(); // Parse JSON
-    } catch {
+    // Parse JSON safely
+    const data = await res.json().catch(() => {
       throw new Error("Server returned invalid JSON");
-    }
+    });
 
-    // Check login success
+    // Handle response
     if (data.status === "success") {
       alert("Welcome, Admin!");
-      window.location.href = "adminDashboard.php"; // Redirect after login
+      window.location.href = "adminDashboard.php"; // redirect
     } else {
       alert(data.message || "Invalid username or password");
     }
 
   } catch (err) {
     alert(`Login failed: ${err.message}`);
-    console.error("Full error details:", err);
+    console.error("Error details:", err);
   }
 });
 
@@ -330,11 +328,12 @@ const togglePassword = document.getElementById("togglePassword");
 const passwordInput = document.getElementById("admin-password");
 
 togglePassword.addEventListener("click", () => {
-  const isHidden = passwordInput.type === "password";
-  passwordInput.type = isHidden ? "text" : "password";
+  const hidden = passwordInput.type === "password";
+  passwordInput.type = hidden ? "text" : "password";
   togglePassword.classList.toggle("fa-eye");
   togglePassword.classList.toggle("fa-eye-slash");
 });
+
 </script>
 
 
@@ -343,5 +342,6 @@ togglePassword.addEventListener("click", () => {
 </body>
 
 </html>
+
 
 
