@@ -1448,6 +1448,7 @@ if ($action === 'updateCertificateFees') {
     exit;
 }
 
+?>
 
 
 
