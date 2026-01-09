@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    environment:
+      DB_HOST: db
+      DB_USER: bms_user
+      DB_PASS: mypassword123
+      DB_NAME: bms_portal_db
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: bms_portal_db
+      MYSQL_USER: bms_user
+      MYSQL_PASSWORD: mypassword123
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_USER: bms_user
+      PMA_PASSWORD: mypassword123
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
