@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 session_start();
 error_reporting(E_ALL);
-ini_set('display_errors', 0); // hide warnings from breaking JSON
+ini_set('display_errors', 0);
 
 $response = [];
 
@@ -14,22 +14,17 @@ try {
     $pass = "PuV1lCJedCOHqq2ZRJ2DYPCPWuWC5Ux6";
     $port = 5432;
 
-    if (!function_exists('pg_connect')) {
-        throw new Exception("PostgreSQL extension is not installed in PHP.");
-    }
-
     $conn_string = "host=$host port=$port dbname=$db user=$user password=$pass sslmode=require";
     $conn = @pg_connect($conn_string);
     if (!$conn) throw new Exception("Connection failed: " . pg_last_error());
 
-    // --- Get action ---
     $action = $_GET['action'] ?? '';
 
     if ($action === 'register') {
         $data = json_decode(file_get_contents("php://input"), true);
         if (!$data) throw new Exception("No input received");
 
-        // --- Sanitize inputs ---
+        // --- sanitize and insert registration (as you already have) ---
         $name = pg_escape_string($data['name'] ?? '');
         $middlename = pg_escape_string($data['middlename'] ?? '');
         $lastname = pg_escape_string($data['lastname'] ?? '');
@@ -51,7 +46,7 @@ try {
         $voter = !empty($data['voter']) ? 'TRUE' : 'FALSE';
         $validIdBase64 = $data['validid'] ?? '';
 
-        // --- Save Base64 ID ---
+        // Save Base64 ID
         $validid = null;
         if (!empty($validIdBase64)) {
             $validIdData = explode(',', $validIdBase64);
@@ -64,14 +59,13 @@ try {
             }
         }
 
-        // --- Check duplicate email ---
+        // Check duplicate email
         $checkQuery = "SELECT 1 FROM registrations WHERE email='$email'";
         $check = pg_query($conn, $checkQuery);
         if (!$check) throw new Exception("Failed to query database: " . pg_last_error($conn));
         if (pg_num_rows($check) > 0) {
             $response = ["status" => "error", "message" => "Email already exists"];
         } else {
-            // --- Insert registration ---
             $sql = "INSERT INTO registrations 
                 (name, middlename, lastname, email, password, accountstatus, phone, age, sex, birthday, address, status, pwd, fourps, seniorcitizen, schoollevels, schoolname, occupation, vaccinated, voter, validid)
                 VALUES
@@ -79,9 +73,27 @@ try {
 
             $result = pg_query($conn, $sql);
             if (!$result) throw new Exception("Failed to insert registration: " . pg_last_error($conn));
-
             $response = ["status" => "success", "message" => "Registration request submitted"];
         }
+
+    } elseif ($action === 'adminLogin') {
+        // --- Admin login ---
+        $ADMIN_USERNAME = "admin";
+        $ADMIN_PASSWORD = "#KapTata2026";
+
+        $input = json_decode(file_get_contents("php://input"), true);
+        $username = trim($input['username'] ?? '');
+        $password = trim($input['password'] ?? '');
+
+        if (!$username || !$password) throw new Exception("Username and password required");
+
+        if ($username === $ADMIN_USERNAME && $password === $ADMIN_PASSWORD) {
+            $_SESSION['admin_logged_in'] = true;
+            $response = ["status" => "success", "message" => "Login successful"];
+        } else {
+            $response = ["status" => "error", "message" => "Invalid username or password"];
+        }
+
     } else {
         throw new Exception("Invalid action");
     }
@@ -92,37 +104,3 @@ try {
 
 echo json_encode($response);
 exit();
-
-
-
-
-// Force JSON output
-header('Content-Type: application/json');
-session_start(); // start session immediately
-
-// Enable full error reporting (for debugging)
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-// --- Hard-coded admin credentials ---
-$ADMIN_USERNAME = "admin";
-$ADMIN_PASSWORD = "#KapTata2026";
-
-// --- Get POSTed JSON ---
-$input = json_decode(file_get_contents("php://input"), true);
-$username = trim($input['username'] ?? '');
-$password = trim($input['password'] ?? '');
-
-// --- Check credentials ---
-if ($username === $ADMIN_USERNAME && $password === $ADMIN_PASSWORD) {
-    $_SESSION['admin_logged_in'] = true;
-    echo json_encode([
-        "status" => "success",
-        "message" => "Login successful"
-    ]);
-} else {
-    echo json_encode([
-        "status" => "error",
-        "message" => "Invalid username or password"
-    ]);
-}
