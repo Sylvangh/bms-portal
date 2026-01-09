@@ -1,18 +1,18 @@
 <?php
 header('Content-Type: application/json');
 
-// --- MySQL connection for Docker / Render ---
-$host = "sql101.infinityfree.com";        // MySQL Hostname
-$db   = "if0_40793198_registrations";     // Database Name
-$user = "if0_40793198";                   // MySQL Username
-$pass = "REljRlinmTM4u";                  // MySQL Password
-$port = 3306;                              // MySQL Port
+// --- PostgreSQL connection ---
+$host = "127.0.0.1";
+$db   = "registrations"; // palitan ng actual database name mo
+$user = "postgres";      // PostgreSQL default user
+$pass = "your_password"; // password for PostgreSQL
+$port = 5432;             // default PostgreSQL port
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db;port=$port", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+$conn_string = "host=$host port=$port dbname=$db user=$user password=$pass";
+$conn = pg_connect($conn_string);
+
+if (!$conn) {
+    die(json_encode(["message" => "Connection failed: " . pg_last_error()]));
 }
 
 // --- Get action from URL ---
@@ -26,46 +26,50 @@ if ($action === "register") {
         exit;
     }
 
-    // Sanitize inputs
-    $name = $conn->real_escape_string($data['name']);
-    $middlename = $conn->real_escape_string($data['middlename']);
-    $lastname = $conn->real_escape_string($data['lastname']);
-    $email = $conn->real_escape_string($data['email']);
-    $password = password_hash($data['password'], PASSWORD_BCRYPT);
-    $phone = $conn->real_escape_string($data['phone']);
-    $age = (int)$data['age'];
-    $sex = $conn->real_escape_string($data['sex']);
-    $birthday = $conn->real_escape_string($data['birthday']);
-    $address = $conn->real_escape_string($data['address']);
-    $status = $conn->real_escape_string($data['status']);
-    $pwd = $conn->real_escape_string($data['pwd']);
-    $fourPs = $conn->real_escape_string($data['fourPs']);
-    $seniorCitizen = $data['seniorCitizen'] ? 1 : 0;
-    $schoolLevels = implode(",", $data['schoolLevels']);
-    $schoolName = $conn->real_escape_string($data['schoolName']);
-    $occupation = $conn->real_escape_string($data['occupation']);
-    $vaccinated = $data['vaccinated'] ? 1 : 0;
-    $voter = $data['voter'] ? 1 : 0;
-    $validIdBase64 = $data['validId'] ?? '';
+  // Sanitize inputs for PostgreSQL
+$name = pg_escape_string($data['name'] ?? '');
+$middlename = pg_escape_string($data['middlename'] ?? '');
+$lastname = pg_escape_string($data['lastname'] ?? '');
+$email = pg_escape_string($data['email'] ?? '');
+$password = password_hash($data['password'] ?? '', PASSWORD_BCRYPT);
+$phone = pg_escape_string($data['phone'] ?? '');
+$age = isset($data['age']) ? (int)$data['age'] : 0;
+$sex = pg_escape_string($data['sex'] ?? '');
+$birthday = pg_escape_string($data['birthday'] ?? '');
+$address = pg_escape_string($data['address'] ?? '');
+$status = pg_escape_string($data['status'] ?? '');
+$pwd = pg_escape_string($data['pwd'] ?? '');
+$fourPs = pg_escape_string($data['fourPs'] ?? '');
+$seniorCitizen = !empty($data['seniorCitizen']) ? 1 : 0;
+$schoolLevels = !empty($data['schoolLevels']) ? implode(",", $data['schoolLevels']) : '';
+$schoolName = pg_escape_string($data['schoolName'] ?? '');
+$occupation = pg_escape_string($data['occupation'] ?? '');
+$vaccinated = !empty($data['vaccinated']) ? 1 : 0;
+$voter = !empty($data['voter']) ? 1 : 0;
+$validIdBase64 = $data['validId'] ?? '';
 
-    // --- Save Base64 ID as a file ---
-    $validIdPath = null;
-    if ($validIdBase64) {
-        $validIdData = explode(',', $validIdBase64); // remove "data:image/png;base64,"
-        $decoded = base64_decode($validIdData[1] ?? '');
-        if ($decoded) {
-            $filename = uniqid('id_') . '.png';
-            $validIdPath = 'uploads/' . $filename; // make sure folder "uploads" exists
-            file_put_contents($validIdPath, $decoded);
-        }
+  // --- Save Base64 ID as a file ---
+$validIdPath = null;
+if (!empty($validIdBase64)) {
+    $validIdData = explode(',', $validIdBase64); // remove "data:image/png;base64," if present
+    $decoded = base64_decode($validIdData[1] ?? '');
+    if ($decoded) {
+        $filename = uniqid('id_') . '.png';
+        $validIdPath = 'uploads/' . $filename; // make sure folder "uploads" exists and is writable
+        file_put_contents($validIdPath, $decoded);
     }
+}
 
-    // --- Check duplicate email ---
-    $check = $conn->query("SELECT * FROM registrations WHERE email='$email'");
-    if ($check->num_rows > 0) {
-        echo json_encode(["message" => "Email already exists"]);
-        exit;
-    }
+
+ // --- Check duplicate email ---
+$checkQuery = "SELECT * FROM registrations WHERE email='$email'";
+$check = pg_query($conn, $checkQuery);
+
+if (pg_num_rows($check) > 0) {
+    echo json_encode(["message" => "Email already exists"]);
+    exit;
+}
+
 
     // --- Insert into database ---
 $sql = "INSERT INTO registrations 
@@ -73,15 +77,16 @@ $sql = "INSERT INTO registrations
 VALUES
 ('$name', '$middlename', '$lastname', '$email', '$password', 'pending', '$phone', $age, '$sex', '$birthday', '$address', '$status', '$pwd', '$fourPs', $seniorCitizen, '$schoolLevels', '$schoolName', '$occupation', $vaccinated, $voter, '$validIdPath')";
 
-    if ($conn->query($sql) === TRUE) {
-        echo json_encode(["message" => "Registration request submitted"]);
-    } else {
-        echo json_encode(["message" => "Error: " . $conn->error]);
-    }
+$result = pg_query($conn, $sql);
 
-    $conn->close();
-    exit;  
+if ($result) {
+    echo json_encode(["message" => "Registration request submitted"]);
+} else {
+    echo json_encode(["message" => "Error: " . pg_last_error($conn)]);
+}
 
+pg_close($conn);
+exit;
 }
 
 if ($action === "adminLogin") {
@@ -114,15 +119,18 @@ if ($action === "adminLogin") {
 
 
 
+
 if ($action === "getAllResidents") {
-    $result = $conn->query("SELECT * FROM registrations");
+    $result = pg_query($conn, "SELECT * FROM registrations");
     $residents = [];
-    while($row = $result->fetch_assoc()) {
+
+    while ($row = pg_fetch_assoc($result)) {
         $row['accountStatus'] = strtolower($row['accountStatus']); // para siguradong lowercase
         $residents[] = $row;
     }
+
     echo json_encode($residents);
-    $conn->close();
+    pg_close($conn);
     exit;
 }
 
@@ -130,32 +138,35 @@ if ($action === "getAllResidents") {
 // Get pending clearance count
 // ----------------------------
 if ($action === "getPendingClearanceCount") {
-    $result = $conn->query("SELECT COUNT(*) as pendingCount FROM certificate_requests WHERE status='Pending'");
-    $row = $result->fetch_assoc();
+    $result = pg_query($conn, "SELECT COUNT(*) as pendingCount FROM certificate_requests WHERE status='Pending'");
+    $row = pg_fetch_assoc($result);
     echo json_encode(['pendingClearance' => intval($row['pendingCount'])]);
     exit;
 }
 
-
 // --- NEW: Update resident status (approve/reject) ---
 if ($action === "updateStatus") {
-    $id = intval($_GET['id'] ?? 0);
+    $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
     $status = $_GET['status'] ?? '';
 
     if (!$id || !$status) {
         echo json_encode(["message" => "Missing id or status"]);
         exit;
     }
+$status = pg_escape_string($status);
+$sql = "UPDATE registrations SET accountStatus='$status' WHERE id=$id";
 
-    $status = $conn->real_escape_string($status);
-    $sql = "UPDATE registrations SET accountStatus='$status' WHERE id=$id";
-    if ($conn->query($sql) === TRUE) {
-        echo json_encode(["message" => "Resident status updated to $status"]);
-    } else {
-        echo json_encode(["message" => "Error updating status: ".$conn->error]);
-    }
-    $conn->close();
-    exit;
+$result = pg_query($conn, $sql);
+
+if ($result) {
+    echo json_encode(["message" => "Resident status updated to $status"]);
+} else {
+    echo json_encode(["message" => "Error updating status: " . pg_last_error($conn)]);
+}
+
+pg_close($conn);
+exit;
+
 }
 
 // --- NEW: Delete resident permanently ---
@@ -167,35 +178,39 @@ if ($action === "deleteResident") {
     }
 
     $sql = "DELETE FROM registrations WHERE id=$id";
-    if ($conn->query($sql) === TRUE) {
+    $result = pg_query($conn, $sql);
+
+    if ($result) {
         echo json_encode(["message" => "Resident deleted successfully"]);
     } else {
-        echo json_encode(["message" => "Error deleting resident: ".$conn->error]);
+        echo json_encode(["message" => "Error deleting resident: " . pg_last_error($conn)]);
     }
-    $conn->close();
+
+    pg_close($conn);
     exit;
 }
+
 
 // --- NEW: Resident login ---
 if ($action === "residentLogin") {
     $data = json_decode(file_get_contents("php://input"), true);
 
-    $email = $conn->real_escape_string($data['email'] ?? '');
+    $email = pg_escape_string($data['email'] ?? '');
     $password = $data['password'] ?? '';
 
-    $result = $conn->query("
+    $result = pg_query($conn, "
         SELECT * FROM registrations 
         WHERE email='$email' AND accountStatus='approved' 
         LIMIT 1
     ");
 
-    if ($result->num_rows === 0) {
+    if (pg_num_rows($result) === 0) {
         http_response_code(401);
         echo json_encode(["message" => "Resident not found or not approved"]);
         exit;
     }
 
-    $resident = $result->fetch_assoc();
+    $resident = pg_fetch_assoc($result);
 
     if (!password_verify($password, $resident['password'])) {
         http_response_code(401);
@@ -218,92 +233,100 @@ if ($action === "residentLogin") {
 
     exit;
 }
+
 ///////// user dashboard editor ----
 
 // --- Get resident info by email ---
 if ($action === "getResident") {
-    $email = $conn->real_escape_string($_GET['email'] ?? '');
+    $email = pg_escape_string($_GET['email'] ?? '');
     if (!$email) {
-        echo json_encode(["message"=>"Missing email"]);
+        echo json_encode(["message" => "Missing email"]);
         exit;
     }
 
-    $result = $conn->query("SELECT * FROM registrations WHERE email='$email' AND accountStatus='approved' LIMIT 1");
-    if ($result->num_rows === 0) {
-        echo json_encode(["message"=>"Resident not found or not approved"]);
+    $result = pg_query($conn, "SELECT * FROM registrations WHERE email='$email' AND accountStatus='approved' LIMIT 1");
+    if (pg_num_rows($result) === 0) {
+        echo json_encode(["message" => "Resident not found or not approved"]);
         exit;
     }
 
-    $resident = $result->fetch_assoc();
+    $resident = pg_fetch_assoc($result);
     echo json_encode($resident);
-    $conn->close();
+    pg_close($conn);
     exit;
 }
 
 // --- Update resident ---
 if ($action === "updateResident") {
-    $id = intval($_POST['id'] ?? 0);
+    $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
     if (!$id) {
         echo json_encode(["message" => "Missing user ID"]);
         exit;
     }
 
-    // Handle file upload
-    $validIdPath = null;
-    if (isset($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
-        $filename = uniqid('id_') . '_' . $_FILES['validId']['name'];
-        $validIdPath = 'uploads/' . $filename;
-        move_uploaded_file($_FILES['validId']['tmp_name'], $validIdPath);
-    }
+  // Handle file upload
+$validIdPath = null;
+if (isset($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
+    $filename = uniqid('id_') . '_' . basename($_FILES['validId']['name']);
+    $validIdPath = 'uploads/' . $filename;
+    move_uploaded_file($_FILES['validId']['tmp_name'], $validIdPath);
+}
+
 
     // Update query
 $fields = [
-    "email" => $_POST['username'],  
+    "email" => $_POST['username'] ?? '',  
     "password" => !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_BCRYPT) : null,
-    "name" => $_POST['fname'],
-    "middlename" => $_POST['mname'],
-    "lastname" => $_POST['lname'],
-    "phone" => $_POST['mPhone'],
-    "age" => intval($_POST['age']),
-    "sex" => $_POST['sex'],
-    "birthday" => $_POST['birthday'],
-    "address" => $_POST['address'],
-    "status" => $_POST['status'],
-    "pwd" => ($_POST['pwd'] ?? 0) == 1 ? "Yes" : "No",
-    "fourPs" => ($_POST['fourPs'] ?? 0) == 1 ? "Yes" : "No",
-    "seniorCitizen" => ($_POST['seniorCitizen'] ?? 0) == 1 ? 1 : 0,
+    "name" => $_POST['fname'] ?? '',
+    "middlename" => $_POST['mname'] ?? '',
+    "lastname" => $_POST['lname'] ?? '',
+    "phone" => $_POST['mPhone'] ?? '',
+    "age" => isset($_POST['age']) ? intval($_POST['age']) : 0,
+    "sex" => $_POST['sex'] ?? '',
+    "birthday" => $_POST['birthday'] ?? '',
+    "address" => $_POST['address'] ?? '',
+    "status" => $_POST['status'] ?? '',
+    "pwd" => (($_POST['pwd'] ?? 0) == 1) ? "Yes" : "No",
+    "fourPs" => (($_POST['fourPs'] ?? 0) == 1) ? "Yes" : "No",
+    "seniorCitizen" => (($_POST['seniorCitizen'] ?? 0) == 1) ? 1 : 0,
     "schoolLevels" => $_POST['schoolLevels'] ?? "",
-    "schoolName" => $_POST['schoolName'],
-    "occupation" => $_POST['occupation'],
-    "vaccinated" => ($_POST['vaccinated'] ?? 0) == 1 ? 1 : 0,
-    "voter" => ($_POST['voter'] ?? 0) == 1 ? 1 : 0,
-    "blotterTheft" => ($_POST['blotter1'] ?? 'No') === 'Yes' ? "Yes" : "No",
-    "blotterDisturbance" => ($_POST['blotter2'] ?? 'No') === 'Yes' ? "Yes" : "No",
-    "blotterOther" => ($_POST['blotter3'] ?? 'No') === 'Yes' ? "Yes" : "No"
+    "schoolName" => $_POST['schoolName'] ?? '',
+    "occupation" => $_POST['occupation'] ?? '',
+    "vaccinated" => (($_POST['vaccinated'] ?? 0) == 1) ? 1 : 0,
+    "voter" => (($_POST['voter'] ?? 0) == 1) ? 1 : 0,
+    "blotterTheft" => (($_POST['blotter1'] ?? 'No') === 'Yes') ? "Yes" : "No",
+    "blotterDisturbance" => (($_POST['blotter2'] ?? 'No') === 'Yes') ? "Yes" : "No",
+    "blotterOther" => (($_POST['blotter3'] ?? 'No') === 'Yes') ? "Yes" : "No"
 ];
 
-        // ✅ Optional password: only hash & add if user typed something
-    if (!empty($_POST['password'])) {
-        $fields['password'] = password_hash($_POST['password'], PASSWORD_BCRYPT);
-    }
 
-    if ($validIdPath) $fields['validId'] = $validIdPath;
+   // ✅ Optional password: only hash & add if user typed something
+if (!empty($_POST['password'])) {
+    $fields['password'] = password_hash($_POST['password'], PASSWORD_BCRYPT);
+}
 
-    $set = [];
-    foreach ($fields as $k => $v) {
-        $set[] = "$k='" . $conn->real_escape_string($v) . "'";
-    }
+ if ($validIdPath) $fields['validId'] = $validIdPath;
 
-    $sql = "UPDATE registrations SET " . implode(",", $set) . " WHERE id=$id";
+$set = [];
+foreach ($fields as $k => $v) {
+    // Skip null values (e.g., password not provided)
+    if ($v === null) continue;
+    $set[] = "$k='" . pg_escape_string($v) . "'";
+}
 
-    if ($conn->query($sql)) {
-        echo json_encode(["message" => "User updated successfully"]);
-    } else {
-        echo json_encode(["message" => "Error: " . $conn->error]);
-    }
+$sql = "UPDATE registrations SET " . implode(",", $set) . " WHERE id=$id";
 
-    $conn->close();
-    exit;
+$result = pg_query($conn, $sql);
+
+if ($result) {
+    echo json_encode(["message" => "User updated successfully"]);
+} else {
+    echo json_encode(["message" => "Error: " . pg_last_error($conn)]);
+}
+
+pg_close($conn);
+exit;
+
 }
 
 
@@ -313,15 +336,18 @@ $fields = [
 
 
 if ($action === "adminGetResidents") {
-    $result = $conn->query("SELECT * FROM registrations WHERE accountStatus = 'approved'");
+    $result = pg_query($conn, "SELECT * FROM registrations WHERE accountStatus = 'approved'");
     $residents = [];
-    while($row = $result->fetch_assoc()) {
+
+    while ($row = pg_fetch_assoc($result)) {
         $residents[] = $row;
     }
+
     echo json_encode($residents);
-    $conn->close();
+    pg_close($conn);
     exit;
 }
+
 
 
 if ($action === "adminSaveResident") {
@@ -343,73 +369,87 @@ if ($action === "adminSaveResident") {
             exit;
         }
     }
-
-    // --- Collect all fields ---
+// --- Collect all fields ---
 $fields = [
-    "email" => $_POST['username'],  // email ang ginagamit
+    "email" => $_POST['username'] ?? '',  // email ang ginagamit
     "password" => !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_BCRYPT) : null,
-    "name" => $_POST['fname'],
-    "middlename" => $_POST['mname'],
-    "lastname" => $_POST['lname'],
-    "phone" => $_POST['mPhone'],
-    "age" => intval($_POST['age']),
-    "sex" => $_POST['sex'],
-    "birthday" => $_POST['birthday'],
-    "address" => $_POST['address'],
-    "status" => $_POST['status'],
-    "pwd" => ($_POST['pwd'] ?? 'No') === 'Yes' ? "Yes" : "No",
-    "fourPs" => ($_POST['fourPs'] ?? 'No') === 'Yes' ? "Yes" : "No",
-    "seniorCitizen" => ($_POST['seniorCitizen'] ?? '0') === '1' ? 1 : 0,
+    "name" => $_POST['fname'] ?? '',
+    "middlename" => $_POST['mname'] ?? '',
+    "lastname" => $_POST['lname'] ?? '',
+    "phone" => $_POST['mPhone'] ?? '',
+    "age" => isset($_POST['age']) ? intval($_POST['age']) : 0,
+    "sex" => $_POST['sex'] ?? '',
+    "birthday" => $_POST['birthday'] ?? '',
+    "address" => $_POST['address'] ?? '',
+    "status" => $_POST['status'] ?? '',
+    "pwd" => (($_POST['pwd'] ?? 'No') === 'Yes') ? "Yes" : "No",
+    "fourPs" => (($_POST['fourPs'] ?? 'No') === 'Yes') ? "Yes" : "No",
+    "seniorCitizen" => (($_POST['seniorCitizen'] ?? '0') === '1') ? 1 : 0,
     "schoolLevels" => $_POST['schoolLevels'] ?? "",
-    "schoolName" => $_POST['schoolName'],
-    "occupation" => $_POST['occupation'],
-    "vaccinated" => ($_POST['vaccinated'] ?? '0') === '1' ? 1 : 0,
-    "voter" => ($_POST['voter'] ?? '0') === '1' ? 1 : 0,
+    "schoolName" => $_POST['schoolName'] ?? '',
+    "occupation" => $_POST['occupation'] ?? '',
+    "vaccinated" => (($_POST['vaccinated'] ?? '0') === '1') ? 1 : 0,
+    "voter" => (($_POST['voter'] ?? '0') === '1') ? 1 : 0,
 
-       // ✅ Blotter Records
-    "blotterTheft" => ($_POST['blotter1'] ?? 'No') === 'Yes' ? "Yes" : "No",
-    "blotterDisturbance" => ($_POST['blotter2'] ?? 'No') === 'Yes' ? "Yes" : "No",
-    "blotterOther" => ($_POST['blotter3'] ?? 'No') === 'Yes' ? "Yes" : "No"
+    // ✅ Blotter Records
+    "blotterTheft" => (($_POST['blotter1'] ?? 'No') === 'Yes') ? "Yes" : "No",
+    "blotterDisturbance" => (($_POST['blotter2'] ?? 'No') === 'Yes') ? "Yes" : "No",
+    "blotterOther" => (($_POST['blotter3'] ?? 'No') === 'Yes') ? "Yes" : "No"
 ];
+
 
 
     if ($validIdPath) $fields['validId'] = $validIdPath;
 
     // --- Add resident ---
-    if (!$id) {
-        $columns = [];
-        $values = [];
-        foreach ($fields as $k => $v) {
-            if ($v !== null) {
-                $columns[] = $k;
-                $values[] = "'" . $conn->real_escape_string($v) . "'";
-            }
-        }
-        $sql = "INSERT INTO registrations (" . implode(",", $columns) . ") VALUES (" . implode(",", $values) . ")";
-        if ($conn->query($sql)) {
-            echo json_encode(["message" => "Resident added successfully"]);
-        } else {
-            echo json_encode(["message" => "Error: " . $conn->error]);
-        }
-        $conn->close();
-        exit;
-    }
+if (!$id) {
+    $columns = [];
+    $placeholders = [];
+    $values = [];
+    $i = 1;
 
-    // --- Edit resident ---
-    $set = [];
     foreach ($fields as $k => $v) {
         if ($v !== null) {
-            $set[] = "$k='" . $conn->real_escape_string($v) . "'";
+            $columns[] = $k;
+            $placeholders[] = '$' . $i; // pg placeholders
+            $values[] = $v;
+            $i++;
         }
     }
-    $sql = "UPDATE registrations SET " . implode(",", $set) . " WHERE id=$id";
-    if ($conn->query($sql)) {
-        echo json_encode(["message" => "Resident updated successfully"]);
+
+    $sql = "INSERT INTO registrations (" . implode(",", $columns) . ") VALUES (" . implode(",", $placeholders) . ")";
+    $result = pg_query_params($conn, $sql, $values);
+
+    if ($result) {
+        echo json_encode(["message" => "Resident added successfully"]);
     } else {
-        echo json_encode(["message" => "Error: " . $conn->error]);
+        echo json_encode(["message" => "Error: " . pg_last_error($conn)]);
     }
-    $conn->close();
+
+    pg_close($conn);
     exit;
+}
+
+
+// --- Edit resident ---
+$set = [];
+foreach ($fields as $k => $v) {
+    if ($v !== null) {
+        $set[] = "$k='" . pg_escape_string($v) . "'";
+    }
+}
+
+$sql = "UPDATE registrations SET " . implode(",", $set) . " WHERE id=$id";
+$result = pg_query($conn, $sql);
+
+if ($result) {
+    echo json_encode(["message" => "Resident updated successfully"]);
+} else {
+    echo json_encode(["message" => "Error: " . pg_last_error($conn)]);
+}
+
+pg_close($conn);
+exit;
 }
 
 
@@ -421,15 +461,18 @@ if ($action === "adminDeleteResident") {
     }
 
     $sql = "DELETE FROM registrations WHERE id=$id";
-    if ($conn->query($sql)) {
+    $result = pg_query($conn, $sql);
+
+    if ($result) {
         echo json_encode(["message" => "Resident deleted successfully"]);
     } else {
-        echo json_encode(["message" => "Error deleting resident: " . $conn->error]);
+        echo json_encode(["message" => "Error deleting resident: " . pg_last_error($conn)]);
     }
-    $conn->close();
-    exit;
 
+    pg_close($conn);
+    exit;
 }
+
 
 
 
@@ -441,7 +484,6 @@ if ($action === "adminDeleteResident") {
 
 
 
-// Assume $conn is your MySQLi connection
 $action = $_GET['action'] ?? '';
 
 header('Content-Type: application/json');
@@ -451,33 +493,52 @@ header('Content-Type: application/json');
 // ----------------------------
 if ($action === "getRequests") {
     $email = $_POST['email'] ?? '';
-    if (!$email) { echo json_encode([]); exit; }
+    if (!$email) { 
+        echo json_encode([]); 
+        exit; 
+    }
 
-    $stmt = $conn->prepare("SELECT * FROM certificate_requests WHERE username=? AND type='clearance' ORDER BY date DESC");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $requests = $result->fetch_all(MYSQLI_ASSOC);
+    // Use pg_query_params for safe parameterized query
+    $result = pg_query_params(
+        $conn, 
+        "SELECT * FROM certificate_requests WHERE username=$1 AND type='clearance' ORDER BY date DESC", 
+        [$email]
+    );
+
+    $requests = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $requests[] = $row;
+    }
+
     echo json_encode($requests);
     exit;
 }
+
 
 // ----------------------------
 // Delete request
 // ----------------------------
 if ($action === "deleteRequest") {
     $id = $_POST['id'] ?? 0;
-    if (!$id) { echo json_encode(['message' => 'Missing request ID']); exit; }
+    if (!$id) { 
+        echo json_encode(['message' => 'Missing request ID']); 
+        exit; 
+    }
 
-    $stmt = $conn->prepare("DELETE FROM certificate_requests WHERE id=?");
-    $stmt->bind_param("i", $id);
-    echo json_encode(['message' => $stmt->execute() ? 'Request deleted successfully' : 'Failed to delete request']);
+    // Use pg_query_params for safe parameterized query
+    $result = pg_query_params(
+        $conn, 
+        "DELETE FROM certificate_requests WHERE id=$1", 
+        [$id]
+    );
+
+    echo json_encode([
+        'message' => $result ? 'Request deleted successfully' : 'Failed to delete request'
+    ]);
     exit;
 }
 
-// ----------------------------
-// Submit or update request
-// ----------------------------
+
 // ----------------------------
 // Submit or update request
 if ($action === "saveRequest") {
@@ -498,54 +559,61 @@ if ($action === "saveRequest") {
         exit;
     }
 
-    if ($id) {
-        // UPDATE request
-        $stmt = $conn->prepare("
-            UPDATE certificate_requests 
-            SET purpose=?, price=?, age=?, purok=? 
-            WHERE id=? AND username=?
-        ");
-        // s = string, d = double, i = int
-        $stmt->bind_param("sdissi", $purpose, $price, $age, $purok, $id, $email);
+if ($id) {
+    // UPDATE request
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests 
+         SET purpose=$1, price=$2, age=$3, purok=$4 
+         WHERE id=$5 AND username=$6",
+        [$purpose, $price, $age, $purok, $id, $email]
+    );
 
-        $success = $stmt->execute();
-        echo json_encode([
-            'message' => $success ? "Request updated successfully" : "Failed to update request"
-        ]);
-    } else {
-        // INSERT new request
-        $stmt = $conn->prepare("
-            INSERT INTO certificate_requests 
-            (username, type, purpose, price, age, purok, status, date) 
-            VALUES (?, ?, ?, ?, ?, ?, 'Pending', NOW())
-        ");
-        $stmt->bind_param("sssdis", $email, $type, $purpose, $price, $age, $purok);
+    echo json_encode([
+        'message' => $result ? "Request updated successfully" : "Failed to update request"
+    ]);
+} else {
 
-        $success = $stmt->execute();
-        echo json_encode([
-            'message' => $success ? "Request submitted successfully" : "Failed to submit request"
-        ]);
-    }
 
-    exit;
+ // INSERT new request
+$result = pg_query_params(
+    $conn,
+    "INSERT INTO certificate_requests 
+     (username, type, purpose, price, age, purok, status, date) 
+     VALUES ($1, $2, $3, $4, $5, $6, 'Pending', NOW())",
+    [$email, $type, $purpose, $price, $age, $purok]
+);
+
+echo json_encode([
+    'message' => $result ? "Request submitted successfully" : "Failed to submit request"
+]);
+
+exit;
+
 }
 
-
+}
 
 /////////
 
 if ($action === "adminGetClearanceRequests") {
-    $result = $conn->query("
+    $result = pg_query($conn, "
         SELECT cr.*, r.name, r.lastname
         FROM certificate_requests cr
         LEFT JOIN registrations r ON cr.username = r.email
         WHERE cr.type='clearance'
         ORDER BY cr.date DESC
     ");
-    $data = $result->fetch_all(MYSQLI_ASSOC);
+
+    $data = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $data[] = $row;
+    }
+
     echo json_encode($data);
     exit;
 }
+
 
 
 if ($action === "adminUpdateRequest") {
@@ -554,79 +622,82 @@ if ($action === "adminUpdateRequest") {
     $msg = $_POST['adminMessage'] ?? '';
 
     if (!$id || !$status) {
-        echo json_encode(["message"=>"Missing fields"]);
+        echo json_encode(["message" => "Missing fields"]);
         exit;
     }
 
-    $stmt = $conn->prepare("
-        UPDATE certificate_requests 
-        SET status=?, adminMessage=? 
-        WHERE id=?
-    ");
-    $stmt->bind_param("ssi", $status, $msg, $id);
-    echo json_encode(["message"=>$stmt->execute() ? "Updated" : "Failed"]);
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests 
+         SET status=$1, adminMessage=$2 
+         WHERE id=$3",
+        [$status, $msg, $id]
+    );
+
+    echo json_encode([
+        "message" => $result ? "Updated" : "Failed"
+    ]);
     exit;
 }
+
+
 if ($action === "adminMarkPaid") {
     $id = intval($_POST['id'] ?? 0);
     if (!$id) { 
-        echo json_encode(["message"=>"Missing ID"]); 
+        echo json_encode(["message" => "Missing ID"]); 
         exit; 
     }
 
-    $stmt = $conn->prepare("UPDATE certificate_requests SET paid=1 WHERE id=?");
-    $stmt->bind_param("i", $id);
-    $success = $stmt->execute();
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests SET paid=1 WHERE id=$1",
+        [$id]
+    );
 
-    echo json_encode(["message" => $success ? "Marked as paid" : "Failed to mark as paid"]);
+    echo json_encode([
+        "message" => $result ? "Marked as paid" : "Failed to mark as paid"
+    ]);
     exit;
 }
 
 
 if ($action === "adminDeleteRequest") {
     $id = intval($_POST['id'] ?? 0);
-    if (!$id) { echo json_encode(["message"=>"Missing ID"]); exit; }
+    if (!$id) { 
+        echo json_encode(["message" => "Missing ID"]); 
+        exit; 
+    }
 
-    $conn->query("DELETE FROM certificate_requests WHERE id=$id");
-    echo json_encode(["message"=>"Deleted"]);
+    // PostgreSQL safe deletion
+    $result = pg_query_params($conn, "DELETE FROM certificate_requests WHERE id=$1", [$id]);
+
+    echo json_encode(["message" => "Deleted"]);
     exit;
 }
 
 
-
-
-
-// ----------------------------
-// Certificate of Residency Requests
-// ----------------------------
-/*
-if ($action === "getResidencyRequests") {
-    $email = $_POST['email'] ?? '';
-    if (!$email) { echo json_encode([]); exit; }
-
-    $stmt = $conn->prepare("SELECT * FROM certificate_requests WHERE username=? AND type='residency' ORDER BY date DESC");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $requests = $result->fetch_all(MYSQLI_ASSOC);
-    echo json_encode($requests);
-    exit;
-}
-*/
 
 
 if ($action === "AdmingetResidencyRequests") {
-    $result = $conn->query("
+    $result = pg_query($conn, "
         SELECT cr.*, r.name, r.lastname
         FROM certificate_requests cr
         LEFT JOIN registrations r ON cr.username = r.email
         WHERE cr.type='residency'
         ORDER BY cr.date DESC
     ");
-    $data = $result->fetch_all(MYSQLI_ASSOC);
+
+    $data = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $data[] = $row;
+    }
+
     echo json_encode($data);
     exit;
 }
+
 
 if ($action === "saveRequest1") {
 
@@ -646,53 +717,31 @@ if ($action === "saveRequest1") {
     }
 
     if ($id) {
-        // UPDATE
-        $stmt = $conn->prepare("
-            UPDATE certificate_requests 
-            SET purpose=?, age=?, purok=?, bioName=?, price=?, type=?
-            WHERE id=? AND username=?
-        ");
-
-        // s = string, i = int, d = double
-        $stmt->bind_param(
-            "sissdsis",
-            $purpose,
-            $age,
-            $purok,
-            $bioName,
-            $price,
-            $type,
-            $id,
-            $email
+        // UPDATE existing request
+        $result = pg_query_params(
+            $conn,
+            "UPDATE certificate_requests 
+             SET purpose=$1, age=$2, purok=$3, bioName=$4, price=$5, type=$6
+             WHERE id=$7 AND username=$8",
+            [$purpose, $age, $purok, $bioName, $price, $type, $id, $email]
         );
 
-        $success = $stmt->execute();
         echo json_encode([
-            'message' => $success ? 'Request updated successfully' : 'Failed to update request'
+            'message' => $result ? 'Request updated successfully' : 'Failed to update request'
         ]);
 
     } else {
-        // INSERT
-        $stmt = $conn->prepare("
-            INSERT INTO certificate_requests
-            (username, type, purpose, age, purok, bioName, price, status, date)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', NOW())
-        ");
-
-        $stmt->bind_param(
-            "sssissd",
-            $email,
-            $type,
-            $purpose,
-            $age,
-            $purok,
-            $bioName,
-            $price
+        // INSERT new request
+        $result = pg_query_params(
+            $conn,
+            "INSERT INTO certificate_requests
+             (username, type, purpose, age, purok, bioName, price, status, date)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, 'Pending', NOW())",
+            [$email, $type, $purpose, $age, $purok, $bioName, $price]
         );
 
-        $success = $stmt->execute();
         echo json_encode([
-            'message' => $success ? 'Request submitted successfully' : 'Failed to submit request'
+            'message' => $result ? 'Request submitted successfully' : 'Failed to submit request'
         ]);
     }
 
@@ -700,16 +749,27 @@ if ($action === "saveRequest1") {
 }
 
 
+
 if ($action === "deleteRequest1") {
     $id = $_POST['id'] ?? 0;
-    if (!$id) { echo json_encode(['message'=>'Missing request ID']); exit; }
+    if (!$id) { 
+        echo json_encode(['message' => 'Missing request ID']); 
+        exit; 
+    }
 
-    $stmt = $conn->prepare("DELETE FROM certificate_requests WHERE id=?");
-    $stmt->bind_param("i", $id);
-    $success = $stmt->execute();
-    echo json_encode(['message'=>$success ? 'Request deleted successfully' : 'Failed to delete request']);
+    // PostgreSQL safe deletion
+    $result = pg_query_params(
+        $conn,
+        "DELETE FROM certificate_requests WHERE id=$1",
+        [$id]
+    );
+
+    echo json_encode([
+        'message' => $result ? 'Request deleted successfully' : 'Failed to delete request'
+    ]);
     exit;
 }
+
 
 if ($action === "getRequests1") {
     $email = $_POST['email'] ?? '';
@@ -718,16 +778,21 @@ if ($action === "getRequests1") {
         exit; 
     }
 
-    $stmt = $conn->prepare("
-        SELECT id, username, type, purpose, purok, age, bioName, status,price, adminMessage, paid, date
-        FROM certificate_requests
-        WHERE username=? AND type='residency'
-        ORDER BY date DESC
-    ");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $requests = $result->fetch_all(MYSQLI_ASSOC);
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "SELECT id, username, type, purpose, purok, age, bioName, status, price, adminMessage, paid, date
+         FROM certificate_requests
+         WHERE username=$1 AND type='residency'
+         ORDER BY date DESC",
+        [$email]
+    );
+
+    $requests = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $requests[] = $row;
+    }
+
     echo json_encode($requests);
     exit;
 }
@@ -739,52 +804,68 @@ if ($action === "adminUpdateRequest1") {
     $msg = $_POST['adminMessage'] ?? '';
 
     if (!$id || !$status) {
-        echo json_encode(["message"=>"Missing fields"]);
+        echo json_encode(["message" => "Missing fields"]);
         exit;
     }
 
-    $stmt = $conn->prepare("
-        UPDATE certificate_requests 
-        SET status=?, adminMessage=? 
-        WHERE id=?
-    ");
-    $stmt->bind_param("ssi", $status, $msg, $id);
-    echo json_encode(["message"=>$stmt->execute() ? "Updated" : "Failed"]);
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests 
+         SET status=$1, adminMessage=$2 
+         WHERE id=$3",
+        [$status, $msg, $id]
+    );
+
+    echo json_encode([
+        "message" => $result ? "Updated" : "Failed"
+    ]);
     exit;
 }
+
 
 if ($action === "adminMarkPaid1") {
     $id = intval($_POST['id'] ?? 0);
     if (!$id) { 
-        echo json_encode(["message"=>"Missing ID"]); 
+        echo json_encode(["message" => "Missing ID"]); 
         exit; 
     }
 
-    $stmt = $conn->prepare("UPDATE certificate_requests SET paid=1 WHERE id=?");
-    $stmt->bind_param("i", $id);
-    $success = $stmt->execute();
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests SET paid=1 WHERE id=$1",
+        [$id]
+    );
 
-    echo json_encode(["message" => $success ? "Marked as paid" : "Failed to mark as paid"]);
+    echo json_encode([
+        "message" => $result ? "Marked as paid" : "Failed to mark as paid"
+    ]);
     exit;
 }
+
 
 if ($action === "adminDeleteRequest1") {
     $id = intval($_POST['id'] ?? 0);
-    if (!$id) { echo json_encode(["message"=>"Missing ID"]); exit; }
+    if (!$id) { 
+        echo json_encode(["message" => "Missing ID"]); 
+        exit; 
+    }
 
-    $conn->query("DELETE FROM certificate_requests WHERE id=$id");
-    echo json_encode(["message"=>"Deleted"]);
+    // PostgreSQL safe deletion
+    $result = pg_query_params(
+        $conn,
+        "DELETE FROM certificate_requests WHERE id=$1",
+        [$id]
+    );
+
+    echo json_encode(["message" => "Deleted"]);
     exit;
 }
 
 
 
 
-
-
-/////////indigency
-
-// Assume $conn is your MySQLi connection
 
 header('Content-Type: application/json');
 
@@ -798,18 +879,22 @@ if ($action === "getRequests2") {
         exit;
     }
 
-    // Select only the columns you need
-    $stmt = $conn->prepare("SELECT id, purok, price, date FROM certificate_requests WHERE username=? AND type='indigency' ORDER BY date DESC");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "SELECT id, purok, price, date 
+         FROM certificate_requests 
+         WHERE username=$1 AND type='indigency' 
+         ORDER BY date DESC",
+        [$email]
+    );
 
     $requests = [];
-    while ($row = $result->fetch_assoc()) {
+    while ($row = pg_fetch_assoc($result)) {
         // Convert to string to avoid JS errors
         $row['purok'] = (string)($row['purok'] ?? '');
         $row['price'] = (string)($row['price'] ?? '0.00');
-        $row['date'] = $row['date'] ?? '';
+        $row['date']  = $row['date'] ?? '';
         $requests[] = $row;
     }
 
@@ -825,13 +910,24 @@ if ($action === "getRequests2") {
 // ----------------------------
 if ($action === "deleteRequest2") {
     $id = $_POST['id'] ?? 0;
-    if (!$id) { echo json_encode(['message' => 'Missing request ID']); exit; }
+    if (!$id) { 
+        echo json_encode(['message' => 'Missing request ID']); 
+        exit; 
+    }
 
-    $stmt = $conn->prepare("DELETE FROM certificate_requests WHERE id=?");
-    $stmt->bind_param("i", $id);
-    echo json_encode(['message' => $stmt->execute() ? 'Request deleted successfully' : 'Failed to delete request']);
+    // PostgreSQL safe deletion
+    $result = pg_query_params(
+        $conn,
+        "DELETE FROM certificate_requests WHERE id=$1",
+        [$id]
+    );
+
+    echo json_encode([
+        'message' => $result ? 'Request deleted successfully' : 'Failed to delete request'
+    ]);
     exit;
 }
+
 
 // ----------------------------
 // Submit or update request
@@ -843,42 +939,62 @@ if ($action === "saveRequest2") {
     $id = $_POST['id'] ?? null;
     $type = 'indigency'; // default type
 
-    // Validate required fields
+    // Validation
     if (!$email || !$purok || $price === '') {
-        echo json_encode(['message' => 'Missing fields']);
+        echo json_encode(['message' => 'All fields are required']);
         exit;
     }
+if ($id) {
+    // Update existing request
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests 
+         SET purok=$1, price=$2 
+         WHERE id=$3 AND username=$4",
+        [$purok, $price, $id, $email]
+    );
 
-    if ($id) {
-        // Update existing request
-        $stmt = $conn->prepare("UPDATE certificate_requests SET purok=?, price=? WHERE id=? AND username=?");
-        $stmt->bind_param("sdis", $purok, $price, $id, $email); // s=string, d=decimal, i=integer
-        $success = $stmt->execute();
-        echo json_encode(['message' => $success ? "Request updated successfully" : "Failed to update request"]);
-    } else {
-        // Insert new request
-        $status = 'Pending';
-        $stmt = $conn->prepare("INSERT INTO certificate_requests (username, type, purok, price, status, date) VALUES (?, ?, ?, ?, ?, NOW())");
-        $stmt->bind_param("sssds", $email, $type, $purok, $price, $status); // s=string, s=string, s=string, d=decimal, s=string
-        $success = $stmt->execute();
-        echo json_encode(['message' => $success ? "Request submitted successfully" : "Failed to submit request"]);
-    }
-    exit;
+    echo json_encode([
+        'message' => $result ? "Request updated successfully" : "Failed to update request"
+    ]);
+
+} else {
+    // Insert new request
+    $status = 'Pending';
+    $result = pg_query_params(
+        $conn,
+        "INSERT INTO certificate_requests (username, type, purok, price, status, date) 
+         VALUES ($1, $2, $3, $4, $5, NOW())",
+        [$email, $type, $purok, $price, $status]
+    );
+
+    echo json_encode([
+        'message' => $result ? "Request submitted successfully" : "Failed to submit request"
+    ]);
 }
 
+exit;
+
+}
 
 if ($action === "adminGetIndigencyRequests") {
-    $result = $conn->query("
+    $result = pg_query($conn, "
         SELECT cr.*, r.name, r.lastname
         FROM certificate_requests cr
         LEFT JOIN registrations r ON cr.username = r.email
         WHERE cr.type='indigency'
         ORDER BY cr.date DESC
     ");
-    $data = $result->fetch_all(MYSQLI_ASSOC);
+
+    $data = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $data[] = $row;
+    }
+
     echo json_encode($data);
     exit;
 }
+
 
 
 if ($action === "adminUpdateRequest2") {
@@ -887,43 +1003,65 @@ if ($action === "adminUpdateRequest2") {
     $msg = $_POST['adminMessage'] ?? '';
 
     if (!$id || !$status) {
-        echo json_encode(["message"=>"Missing fields"]);
+        echo json_encode(["message" => "Missing fields"]);
         exit;
     }
 
-    $stmt = $conn->prepare("
-        UPDATE certificate_requests 
-        SET status=?, adminMessage=? 
-        WHERE id=?
-    ");
-    $stmt->bind_param("ssi", $status, $msg, $id);
-    echo json_encode(["message"=>$stmt->execute() ? "Updated" : "Failed"]);
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests 
+         SET status=$1, adminMessage=$2 
+         WHERE id=$3",
+        [$status, $msg, $id]
+    );
+
+    echo json_encode([
+        "message" => $result ? "Updated" : "Failed"
+    ]);
     exit;
 }
+
 if ($action === "adminMarkPaid2") {
     $id = intval($_POST['id'] ?? 0);
     if (!$id) { 
-        echo json_encode(["message"=>"Missing ID"]); 
+        echo json_encode(["message" => "Missing ID"]); 
         exit; 
     }
 
-    $stmt = $conn->prepare("UPDATE certificate_requests SET paid=1 WHERE id=?");
-    $stmt->bind_param("i", $id);
-    $success = $stmt->execute();
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests SET paid=1 WHERE id=$1",
+        [$id]
+    );
 
-    echo json_encode(["message" => $success ? "Marked as paid" : "Failed to mark as paid"]);
+    echo json_encode([
+        "message" => $result ? "Marked as paid" : "Failed to mark as paid"
+    ]);
     exit;
 }
+
 
 
 if ($action === "adminDeleteRequest2") {
     $id = intval($_POST['id'] ?? 0);
-    if (!$id) { echo json_encode(["message"=>"Missing ID"]); exit; }
+    if (!$id) { 
+        echo json_encode(["message" => "Missing ID"]); 
+        exit; 
+    }
 
-    $conn->query("DELETE FROM certificate_requests WHERE id=$id");
-    echo json_encode(["message"=>"Deleted"]);
+    // PostgreSQL safe deletion
+    $result = pg_query_params(
+        $conn,
+        "DELETE FROM certificate_requests WHERE id=$1",
+        [$id]
+    );
+
+    echo json_encode(["message" => "Deleted"]);
     exit;
 }
+
 
 
 
@@ -931,17 +1069,23 @@ if ($action === "adminDeleteRequest2") {
 // Business Clearance 
 // ----------------------------
 if ($action === "adminGetBusinessRequests") {
-    $result = $conn->query("
+    $result = pg_query($conn, "
         SELECT cr.*, r.name, r.lastname
         FROM certificate_requests cr
         LEFT JOIN registrations r ON cr.username = r.email
         WHERE cr.type='business'
         ORDER BY cr.date DESC
     ");
-    $data = $result->fetch_all(MYSQLI_ASSOC);
+
+    $data = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $data[] = $row;
+    }
+
     echo json_encode($data);
     exit;
 }
+
 
 if ($action === "saveBusinessRequest") {
     $email = $_POST['email'] ?? '';
@@ -953,38 +1097,42 @@ if ($action === "saveBusinessRequest") {
     $type = 'business';
     $id = $_POST['id'] ?? null;
 
-    // Validate required fields
+    // Validation
     if (!$email || !$purpose || !$businessType || !$businessName || !$businessAddress || $price === null || $price < 0) {
-        echo json_encode(['message' => 'All fields are required and price must be valid']);
+        echo json_encode(['message' => 'All fields are required and price must be valid.']);
         exit;
     }
 
     if ($id) {
         // UPDATE existing request
-        $stmt = $conn->prepare("
-            UPDATE certificate_requests
-            SET purpose=?, businessType=?, businessName=?, businessAddress=?, price=?, type=?
-            WHERE id=?
-        ");
-        $stmt->bind_param("ssssdsi", $purpose, $businessType, $businessName, $businessAddress, $price, $type, $id);
-        $success = $stmt->execute();
+        $result = pg_query_params(
+            $conn,
+            "UPDATE certificate_requests
+             SET purpose=$1, businessType=$2, businessName=$3, businessAddress=$4, price=$5, type=$6
+             WHERE id=$7",
+            [$purpose, $businessType, $businessName, $businessAddress, $price, $type, $id]
+        );
+
         echo json_encode([
-            'message' => $success ? 'Business request updated successfully' : 'Failed to update request'
+            'message' => $result ? 'Business request updated successfully' : 'Failed to update request'
         ]);
+        exit;
+
     } else {
         // INSERT new request
-        $stmt = $conn->prepare("
-            INSERT INTO certificate_requests 
-            (username, type, purpose, businessType, businessName, businessAddress, price, status, date) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', NOW())
-        ");
-        $stmt->bind_param("ssssssd", $email, $type, $purpose, $businessType, $businessName, $businessAddress, $price);
-        $success = $stmt->execute();
+        $result = pg_query_params(
+            $conn,
+            "INSERT INTO certificate_requests 
+             (username, type, purpose, businessType, businessName, businessAddress, price, status, date) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, 'Pending', NOW())",
+            [$email, $type, $purpose, $businessType, $businessName, $businessAddress, $price]
+        );
+
         echo json_encode([
-            'message' => $success ? 'Business request submitted successfully' : 'Failed to submit request'
+            'message' => $result ? 'Business request submitted successfully' : 'Failed to submit request'
         ]);
+        exit;
     }
-    exit;
 }
 
 
@@ -995,38 +1143,46 @@ if ($action === "getBusinessRequests") {
         exit; 
     }
 
-    $stmt = $conn->prepare("
-        SELECT id, username, type, purpose, businessType, businessName, businessAddress,
-               price, status, adminMessage, paid, date
-        FROM certificate_requests
-        WHERE username=? AND type='business'
-        ORDER BY date DESC
-    ");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    echo json_encode($result->fetch_all(MYSQLI_ASSOC));
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "SELECT id, username, type, purpose, businessType, businessName, businessAddress,
+                price, status, adminMessage, paid, date
+         FROM certificate_requests
+         WHERE username=$1 AND type='business'
+         ORDER BY date DESC",
+        [$email]
+    );
+
+    $requests = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $requests[] = $row;
+    }
+
+    echo json_encode($requests);
     exit;
 }
-
 
 
 if ($action === "deleteBusinessRequest") {
     $id = intval($_POST['id'] ?? 0);
     if (!$id) {
-        echo json_encode(['message'=>'Missing ID']);
+        echo json_encode(['message' => 'Missing ID']);
         exit;
     }
 
-    $stmt = $conn->prepare("DELETE FROM certificate_requests WHERE id=?");
-    $stmt->bind_param("i", $id);
-    $success = $stmt->execute();
+    // PostgreSQL safe deletion
+    $result = pg_query_params(
+        $conn,
+        "DELETE FROM certificate_requests WHERE id=$1",
+        [$id]
+    );
+
     echo json_encode([
-        'message' => $success ? 'Request deleted successfully' : 'Failed to delete request'
+        'message' => $result ? 'Request deleted successfully' : 'Failed to delete request'
     ]);
     exit;
 }
-
 
 if ($action === "adminUpdateBusinessRequest") {
     $id = intval($_POST['id'] ?? 0);
@@ -1034,31 +1190,42 @@ if ($action === "adminUpdateBusinessRequest") {
     $msg = $_POST['adminMessage'] ?? '';
 
     if (!$id || !$status) {
-        echo json_encode(["message"=>"Missing fields"]);
+        echo json_encode(["message" => "Missing fields"]);
         exit;
     }
 
-    $stmt = $conn->prepare("
-        UPDATE certificate_requests 
-        SET status=?, adminMessage=? 
-        WHERE id=?
-    ");
-    $stmt->bind_param("ssi", $status, $msg, $id);
-    echo json_encode(["message"=>$stmt->execute() ? "Updated" : "Failed"]);
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests 
+         SET status=$1, adminMessage=$2 
+         WHERE id=$3",
+        [$status, $msg, $id]
+    );
+
+    echo json_encode([
+        "message" => $result ? "Updated" : "Failed"
+    ]);
     exit;
 }
+
 
 if ($action === "adminMarkBusinessPaid") {
     $id = intval($_POST['id'] ?? 0);
     if (!$id) {
-        echo json_encode(["message"=>"Missing ID"]);
+        echo json_encode(["message" => "Missing ID"]);
         exit;
     }
 
-    $stmt = $conn->prepare("UPDATE certificate_requests SET paid=1 WHERE id=?");
-    $stmt->bind_param("i", $id);
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests SET paid=1 WHERE id=$1",
+        [$id]
+    );
+
     echo json_encode([
-        "message" => $stmt->execute() ? "Marked as paid" : "Failed"
+        "message" => $result ? "Marked as paid" : "Failed"
     ]);
     exit;
 }
@@ -1070,17 +1237,23 @@ if ($action === "adminMarkBusinessPaid") {
 // ANNOUNCEMENTS SYSTEM
 // ================================
 
-// GET ALL RESIDENTS (ADMIN SIDE)
+// GET ALL RESIDENTS (ADMIN SIDE) 
 if ($action === "getResidents") {
-    $result = $conn->query("
+    $result = pg_query($conn, "
         SELECT email, name, lastname 
         FROM registrations
         ORDER BY name ASC
     ");
 
-    echo json_encode($result->fetch_all(MYSQLI_ASSOC));
+    $residents = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $residents[] = $row;
+    }
+
+    echo json_encode($residents);
     exit;
 }
+
 
 
 // SEND ANNOUNCEMENT (ADMIN)
@@ -1095,14 +1268,14 @@ if ($action === "sendAnnouncement") {
         exit;
     }
 
-    $stmt = $conn->prepare("
-        INSERT INTO announcements (sender, recipient, message, date_sent)
-        VALUES (?, ?, ?, NOW())
-    ");
-
     foreach ($recipients as $recipient) {
-        $stmt->bind_param("sss", $sender, $recipient, $message);
-        $stmt->execute();
+        // PostgreSQL safe insertion
+        pg_query_params(
+            $conn,
+            "INSERT INTO announcements (sender, recipient, message, date_sent)
+             VALUES ($1, $2, $3, NOW())",
+            [$sender, $recipient, $message]
+        );
     }
 
     echo json_encode(["message" => "Announcement sent successfully"]);
@@ -1110,19 +1283,22 @@ if ($action === "sendAnnouncement") {
 }
 
 
-
 // GET ANNOUNCEMENTS (ADMIN & USER)
 if ($action === "getAnnouncements") {
-    $result = $conn->query("
+    $result = pg_query($conn, "
         SELECT id, sender, recipient, message, date_sent
         FROM announcements
         ORDER BY date_sent DESC
     ");
 
-    echo json_encode($result->fetch_all(MYSQLI_ASSOC));
+    $announcements = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $announcements[] = $row;
+    }
+
+    echo json_encode($announcements);
     exit;
 }
-
 
 // DELETE MULTIPLE ANNOUNCEMENTS (ADMIN)
 if ($action === "deleteAnnouncements") {
@@ -1133,28 +1309,20 @@ if ($action === "deleteAnnouncements") {
         exit;
     }
 
-    // prepare placeholders (?, ?, ?)
-    $placeholders = implode(",", array_fill(0, count($ids), "?"));
-    $types = str_repeat("i", count($ids));
-
-    $stmt = $conn->prepare(
-        "DELETE FROM announcements WHERE id IN ($placeholders)"
+    // PostgreSQL-safe deletion using ANY($1)
+    $result = pg_query_params(
+        $conn,
+        "DELETE FROM announcements WHERE id = ANY($1::int[])",
+        [ $ids ]  // array of integers
     );
-    $stmt->bind_param($types, ...$ids);
-
-    $success = $stmt->execute();
 
     echo json_encode([
-        "message" => $success
+        "message" => $result
             ? "Selected announcements deleted"
             : "Failed to delete announcements"
     ]);
     exit;
 }
-
-
-
-
 
 // ======================
 // GET ANNOUNCEMENTS
@@ -1163,28 +1331,34 @@ if ($action === "deleteAnnouncements") {
 if ($action === "getUserAnnouncements") {
     // siguraduhin may session/current user
     session_start();
-// For user-side announcements
-$user_email = $_SESSION['currentUser']['email'] ?? ''; // or username, depending on your session
+    // For user-side announcements
+    $user_email = $_SESSION['currentUser']['email'] ?? ''; // or username, depending on your session
 
-// Fetch announcements either sent to this user OR sent to everyone (sender marked special)
-$stmt = $conn->prepare("
-    SELECT id, sender, recipient, message, date_sent
-    FROM announcements
-    WHERE recipient = ? OR recipient = 'all_users'
-    ORDER BY date_sent DESC
-");
+    if (!$user_email) {
+        echo json_encode([]);
+        exit;
+    }
 
-// If you want “all users” announcements to work, you must insert them with recipient = 'all_users'
-$stmt->bind_param("s", $user_email);
-$stmt->execute();
-$result = $stmt->get_result();
-$announcements = $result->fetch_all(MYSQLI_ASSOC);
+    // Fetch announcements either sent to this user OR sent to everyone (recipient = 'all_users')
+    $result = pg_query_params(
+        $conn,
+        "
+        SELECT id, sender, recipient, message, date_sent
+        FROM announcements
+        WHERE recipient = $1 OR recipient = 'all_users'
+        ORDER BY date_sent DESC
+        ",
+        [$user_email]
+    );
 
-echo json_encode($announcements);
-exit;
+    $announcements = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $announcements[] = $row;
+    }
 
+    echo json_encode($announcements);
+    exit;
 }
-
 
 ///////////////////////////////////////////
 
@@ -1195,16 +1369,15 @@ $input = json_decode(file_get_contents('php://input'), true);
 $action = $_GET['action'] ?? ($input['action'] ?? '');
 
 // ---------------- GET FEES ----------------
-if($action === 'getCertificateFees') {
-    $sql = "SELECT * FROM certificate_fees LIMIT 1";
-    $result = $conn->query($sql);
+if ($action === 'getCertificateFees') {
+    $result = pg_query($conn, "SELECT * FROM certificate_fees LIMIT 1");
 
-    if($result && $row = $result->fetch_assoc()) {
+    if ($result && $row = pg_fetch_assoc($result)) {
         echo json_encode([
-            'clearance' => $row['clearance'],
-            'residency' => $row['residency'],
-            'indigency' => $row['indigency'],
-            'business' => $row['business']
+            'clearance'  => $row['clearance'],
+            'residency'  => $row['residency'],
+            'indigency'  => $row['indigency'],
+            'business'   => $row['business']
         ]);
     } else {
         echo json_encode([]);
@@ -1213,39 +1386,38 @@ if($action === 'getCertificateFees') {
 }
 
 // ---------------- UPDATE FEES ----------------
-if($action === 'updateCertificateFees') {
+if ($action === 'updateCertificateFees') {
     $fees = $input['fees'] ?? null;
 
-    if($fees) {
+    if ($fees) {
         $clearance = intval($fees['clearance']);
         $residency = intval($fees['residency']);
         $indigency = intval($fees['indigency']);
-        $business = intval($fees['business']);
+        $business  = intval($fees['business']);
 
-        // Update table (assuming single row)
+        // PostgreSQL does NOT support LIMIT in UPDATE, so we just update all rows
         $sql = "UPDATE certificate_fees SET 
-                    clearance = $clearance,
-                    residency = $residency,
-                    indigency = $indigency,
-                    business = $business
-                LIMIT 1";
+                    clearance = $1,
+                    residency = $2,
+                    indigency = $3,
+                    business = $4";
 
-        if($conn->query($sql)) {
-            echo json_encode(['status'=>'success','message'=>'Fees updated successfully']);
+        $result = pg_query_params(
+            $conn,
+            $sql,
+            [$clearance, $residency, $indigency, $business]
+        );
+
+        if ($result) {
+            echo json_encode(['status' => 'success', 'message' => 'Fees updated successfully']);
         } else {
-            echo json_encode(['status'=>'error','message'=>'Failed to update fees: '.$conn->error]);
+            echo json_encode(['status' => 'error', 'message' => 'Failed to update fees']);
         }
     } else {
-        echo json_encode(['status'=>'error','message'=>'No fees data received']);
+        echo json_encode(['status' => 'error', 'message' => 'No fees data received']);
     }
     exit;
 }
-
-
-
-
-
-?>
 
 
 
