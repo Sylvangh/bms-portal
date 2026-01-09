@@ -1,20 +1,78 @@
 <?php
+// Force JSON output
 header('Content-Type: application/json');
 
-// --- PostgreSQL connection on Render ---
-$host = "dpg-d5g6o614tr6s73e42630-a.oregon-postgres.render.com"; // Render host
-$db   = "bms_pen_db";       // Your database name
-$user = "bms_pen_db_user";  // Render DB username
-$pass = "PuV1lCJedCOHqq2ZRJ2DYPCPWuWC5Ux6"; // Render DB password
-$port = 5432;               // default PostgreSQL port
+// Enable full error reporting (for debugging)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// Optional: Force SSL
+// --- PostgreSQL connection ---
+$host = "dpg-d5g6o614tr6s73e42630-a.oregon-postgres.render.com";
+$db   = "bms_pen_db";
+$user = "bms_pen_db_user";
+$pass = "PuV1lCJedCOHqq2ZRJ2DYPCPWuWC5Ux6";
+$port = 5432;
+
 $conn_string = "host=$host port=$port dbname=$db user=$user password=$pass sslmode=require";
-$conn = pg_connect($conn_string);
 
-if (!$conn) {
-    die(json_encode(["message" => "Connection failed: " . pg_last_error()]));
+try {
+    $conn = @pg_connect($conn_string); // @ suppress warnings
+    if (!$conn) {
+        throw new Exception("PostgreSQL connection failed");
+    }
+
+    // Check action parameter
+    if (!isset($_GET['action'])) {
+        echo json_encode(["status" => "error", "message" => "No action specified"]);
+        exit;
+    }
+
+    $action = $_GET['action'];
+
+    if ($action === "adminLogin") {
+        $input = file_get_contents("php://input");
+        $data = json_decode($input, true);
+
+        if (!$data || !isset($data['username'], $data['password'])) {
+            echo json_encode(["status" => "error", "message" => "Missing username or password"]);
+            exit;
+        }
+
+        $username = trim($data['username']);
+        $password = trim($data['password']);
+
+        // --- Use PostgreSQL query instead of hard-coded credentials ---
+        $query = "SELECT * FROM admins WHERE username = $1 LIMIT 1";
+        $result = pg_query_params($conn, $query, [$username]);
+
+        if (!$result) {
+            echo json_encode(["status" => "error", "message" => "Database query failed"]);
+            exit;
+        }
+
+        $admin = pg_fetch_assoc($result);
+
+        if ($admin && $admin['password'] === $password) {
+            session_start();
+            $_SESSION['admin_logged_in'] = true;
+
+            echo json_encode(["status" => "success", "message" => "Login successful"]);
+        } else {
+            echo json_encode(["status" => "error", "message" => "Invalid username or password"]);
+        }
+
+        exit;
+
+    } else {
+        echo json_encode(["status" => "error", "message" => "Unknown action"]);
+        exit;
+    }
+
+} catch (Exception $e) {
+    echo json_encode(["status" => "error", "message" => "Server error: " . $e->getMessage()]);
+    exit;
 }
+
 
 // --- Get action from URL ---
 $action = $_GET['action'] ?? '';
@@ -89,82 +147,8 @@ if ($result) {
 pg_close($conn);
 exit;
 }
+    
 
-<?php
-// Force JSON output
-header('Content-Type: application/json');
-
-// Enable full error reporting (for debugging)
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-// Make sure no extra whitespace before/after this file
-
-try {
-    // Check if action parameter exists
-    if (!isset($_GET['action'])) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "No action specified"
-        ]);
-        exit;
-    }
-
-    $action = $_GET['action'];
-
-    if ($action === "adminLogin") {
-
-        // Get raw POST data
-        $input = file_get_contents("php://input");
-        $data = json_decode($input, true);
-
-        if (!$data || !isset($data['username'], $data['password'])) {
-            echo json_encode([
-                "status" => "error",
-                "message" => "Missing username or password"
-            ]);
-            exit;
-        }
-
-        $username = trim($data['username']);
-        $password = trim($data['password']);
-
-        // HARD CODED CREDENTIALS
-        $ADMIN_USERNAME = "admin";
-        $ADMIN_PASSWORD = "#KapTata2026";
-
-        if ($username === $ADMIN_USERNAME && $password === $ADMIN_PASSWORD) {
-            // Start session for secured dashboard
-            session_start();
-            $_SESSION['admin_logged_in'] = true;
-
-            echo json_encode([
-                "status" => "success",
-                "message" => "Login successful"
-            ]);
-        } else {
-            echo json_encode([
-                "status" => "error",
-                "message" => "Invalid username or password"
-            ]);
-        }
-
-        exit;
-    } else {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Unknown action"
-        ]);
-        exit;
-    }
-} catch (Exception $e) {
-    // Catch any unexpected errors and return JSON
-    echo json_encode([
-        "status" => "error",
-        "message" => "Server error: " . $e->getMessage()
-    ]);
-    exit;
-}
 
 
 
