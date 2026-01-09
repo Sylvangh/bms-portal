@@ -480,9 +480,10 @@ footer b {
   Developed by <b>@SylvanDL2</b>
 </footer>
 
-</div><script>
+</div>
+<script>
 // ===============================
-// Resident Registration JS
+// Resident Registration JS (Fixed & Matched to PHP/DB)
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("registerForm");
@@ -495,10 +496,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let selectedIdBase64 = "";
 
+  // --- Declare name fields for preview ---
+  const fname = document.getElementById("fname");
+  const mname = document.getElementById("mname");
+  const lname = document.getElementById("lname");
 
   // --- Show default preview on load ---
-  previewImg.src = "default-avatar.png"; // make sure this file is in the same folder
-  previewImg.style.display = "block"; // make sure it’s visible
+  previewImg.src = "default-avatar.png";
+  previewImg.style.display = "block";
 
   // --- Update preview name dynamically ---
   function updatePreviewName() {
@@ -509,8 +514,7 @@ document.addEventListener("DOMContentLoaded", () => {
   fname.addEventListener("input", updatePreviewName);
   mname.addEventListener("input", updatePreviewName);
   lname.addEventListener("input", updatePreviewName);
-
-  updatePreviewName(); // initial call
+  updatePreviewName();
 
   // --- Preview uploaded ID ---
   validIdInput.addEventListener("change", e => {
@@ -519,19 +523,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const reader = new FileReader();
       reader.onload = function(event) {
         previewImg.src = event.target.result;
-        selectedIdBase64 = event.target.result; // Save Base64
+        selectedIdBase64 = event.target.result;
       };
       reader.readAsDataURL(file);
     } else {
-      previewImg.src = "default-avatar.png"; // reset to default if cleared
+      previewImg.src = "default-avatar.png";
       selectedIdBase64 = "";
     }
   });
 
-
-
   // --- Form submit ---
-  form.addEventListener("submit", async e => {
+  form.addEventListener("submit", e => {
     e.preventDefault();
 
     // Validate at least one school level is selected
@@ -550,11 +552,11 @@ document.addEventListener("DOMContentLoaded", () => {
   confirmYes.addEventListener("click", async () => {
     confirmModal.classList.add("hidden");
 
-    // Collect form data
+    // Collect form data and match PHP DB column names
     const data = {
-      name: document.getElementById("fname").value.trim(),
-      middlename: document.getElementById("mname").value.trim(),
-      lastname: document.getElementById("lname").value.trim(),
+      name: fname.value.trim(),
+      middlename: mname.value.trim(),
+      lastname: lname.value.trim(),
       email: document.getElementById("username").value.trim(),
       password: document.getElementById("password").value,
       phone: document.getElementById("mPhone").value.trim(),
@@ -564,14 +566,14 @@ document.addEventListener("DOMContentLoaded", () => {
       address: document.getElementById("address").value.trim(),
       status: document.getElementById("status").value,
       pwd: document.getElementById("pwd").value,
-      fourPs: document.getElementById("mFourPs").value,
-      seniorCitizen: document.getElementById("seniorCitizen").checked,
-      schoolLevels: Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value),
-      schoolName: document.getElementById("schoolName").value.trim(),
+      fourps: document.getElementById("mFourPs").value,        // lowercase to match PHP
+      seniorcitizen: document.getElementById("seniorCitizen").checked, // lowercase to match PHP
+      schoollevels: schoolLevels.join(","),                     // store as CSV string
+      schoolname: document.getElementById("schoolName").value.trim(),
       occupation: document.getElementById("occupation").value.trim(),
       vaccinated: document.getElementById("vaccinated").checked,
       voter: document.getElementById("voter").checked,
-      validId: selectedIdBase64
+      validid: selectedIdBase64                                     // lowercase to match PHP
     };
 
     try {
@@ -585,7 +587,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (result.message === "Registration request submitted") {
         form.reset();
-        previewImg.src = "";
+        previewImg.src = "default-avatar.png"; // reset to default
+        selectedIdBase64 = "";
       }
     } catch (err) {
       console.error(err);
@@ -597,7 +600,6 @@ document.addEventListener("DOMContentLoaded", () => {
     confirmModal.classList.add("hidden");
   });
 });
-
 </script>
 
 </body>
