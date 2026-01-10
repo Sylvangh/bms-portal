@@ -110,95 +110,8 @@ try {
             $response = ["status" => "success", "message" => "Login successful"];
         } else {
             $response = ["status" => "error", "message" => "Invalid username or password"];
-        }
-
-    }elseif ($action === "getAllResidents") {
-
-    $result = pg_query($conn, "SELECT * FROM registrations ORDER BY id DESC");
-
-    if (!$result) {
-        throw new Exception("Failed to fetch residents: " . pg_last_error($conn));
-    }
-
-    $residents = [];
-
-    while ($row = pg_fetch_assoc($result)) {
-        // Normalize column names / values
-        if (isset($row['accountstatus'])) {
-            $row['accountstatus'] = strtolower($row['accountstatus']);
-        } 
-
-        $residents[] = $row;
-    }
-
-    $response = $residents;
-}// --- Update resident status (approve/reject) ---
-elseif ($action === "updateStatus") {
-
-    $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-    $status = $_GET['status'] ?? '';
-
-    if (!$id || !$status) {
-        echo json_encode(["status" => "error", "message" => "Missing id or status"]);
-        exit;
-    }
-
-    $status = pg_escape_string($status);
-
-    // ✅ PostgreSQL column is LOWERCASE
-    $sql = "UPDATE registrations 
-            SET accountstatus='$status' 
-            WHERE id=$id";
-
-    $result = pg_query($conn, $sql);
-
-    if ($result) {
-        echo json_encode([
-            "status" => "success",
-            "message" => "Resident status updated to $status"
-        ]);
-    } // --- Delete resident permanently ---
-elseif ($action === "deleteResident") {
-
-    $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-
-    if (!$id) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Missing or invalid id"
-        ]);
-        exit;
-    }
-
-    $sql = "DELETE FROM registrations WHERE id = $id";
-    $result = pg_query($conn, $sql);
-
-    if ($result) {
-        echo json_encode([
-            "status" => "success",
-            "message" => "Resident deleted successfully"
-        ]);
+    } 
     } else {
-        echo json_encode([
-            "status" => "error",
-            "message" => pg_last_error($conn)
-        ]);
-    }
-
-    pg_close($conn);
-    exit;
-}
-{
-        echo json_encode([
-            "status" => "error",
-            "message" => pg_last_error($conn)
-        ]);
-    }
-
-    pg_close($conn);
-    exit;
-}
-{
         throw new Exception("Invalid action");
     }
 
@@ -208,5 +121,4 @@ elseif ($action === "deleteResident") {
 
 echo json_encode($response);
 exit();
-
 
