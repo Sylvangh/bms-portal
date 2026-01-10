@@ -577,14 +577,14 @@ function renderTable(data) {
   <td>${r.address}</td>
   <td>${r.status}</td>
   <td>${r.pwd}</td>
-  <td>${r.fourPs}</td>
-  <td>${r.seniorCitizen == 1 ? "Yes" : "No"}</td>
-  <td>${r.schoolLevels}</td>
-  <td>${r.schoolName}</td>
+  <td>${r.fourps}</td>
+  <td>${r.seniorcitizen == 1 ? "Yes" : "No"}</td>
+  <td>${r.schoollevels}</td>
+  <td>${r.schoolname}</td>
   <td>${r.occupation}</td>
   <td>${r.vaccinated == 1 ? "Yes" : "No"}</td>
   <td>${r.voter == 1 ? "Yes" : "No"}</td>
-  <td>${r.validId ? `<img src="${r.validId}" width="50">` : ""}</td>
+  <td>${r.validid ? `<img src="${r.validId}" width="50">` : ""}</td>
   <td>
     <button class="editBtn" data-id="${r.id}">Edit</button>
     <button class="deleteBtn" data-id="${r.id}">Delete</button>
@@ -645,10 +645,10 @@ function renderTable(data) {
       Array.from(checkboxes).every(cb => {
         switch(cb.value) {
           case "pwd": return r.pwd === "Yes";
-          case "seniorCitizen": return r.seniorCitizen == 1;
-          case "college": return r.schoolLevels?.includes("College");
+          case "seniorcitizen": return r.seniorcitizen == 1;
+          case "college": return r.schoollevels?.includes("College");
           case "voter": return r.voter == 1;
-          case "fourPs": return r.fourPs === "Yes";
+          case "fourps": return r.fourps === "Yes";
           case "occupation": return r.occupation && r.occupation.trim() !== "";
         }
       })
@@ -685,10 +685,10 @@ async function editResident(id) {
 
     // ----- PWD / 4Ps select -----
     document.getElementById("pwd").value = resident.pwd;
-    document.getElementById("mFourPs").value = resident.fourPs;
+    document.getElementById("mFourPs").value = resident.fourps;
 
     // ----- Checkboxes -----
-    document.getElementById("seniorCitizen").checked = resident.seniorCitizen == 1;
+    document.getElementById("seniorCitizen").checked = resident.seniorcitizen == 1;
     document.getElementById("vaccinated").checked = resident.vaccinated == 1;
     document.getElementById("voter").checked = resident.voter == 1;
 
@@ -698,12 +698,12 @@ async function editResident(id) {
     });
 
     // Blotters
-    document.getElementById("blotter1").checked = resident.blotterTheft === "Yes";
-    document.getElementById("blotter2").checked = resident.blotterDisturbance === "Yes";
-    document.getElementById("blotter3").checked = resident.blotterOther === "Yes";
+    document.getElementById("blotter1").checked = resident.blottertheft === "Yes";
+    document.getElementById("blotter2").checked = resident.blotterdisturbance === "Yes";
+    document.getElementById("blotter3").checked = resident.blotterother === "Yes";
 
     // Preview valid ID if exists
-    if (resident.validId) document.getElementById("previewImg").src = resident.validId;
+    if (resident.validid) document.getElementById("previewImg").src = resident.validid;
     else document.getElementById("previewImg").src = "";
 
     // Show modal
@@ -750,11 +750,11 @@ residentForm.addEventListener("submit", async e => {
 
   // ---------------- SELECTS (Yes/No) ----------------
   formData.set("pwd", document.getElementById("pwd")?.value || "No");
-formData.set("fourPs", document.getElementById("mFourPs")?.value || "No");
+formData.set("fourps", document.getElementById("mFourPs")?.value || "No");
 
 
   // ---------------- CHECKBOXES (1/0) ----------------
-  formData.set("seniorCitizen", document.getElementById("seniorCitizen")?.checked ? 1 : 0);
+  formData.set("seniorcitizen", document.getElementById("seniorCitizen")?.checked ? 1 : 0);
   formData.set("vaccinated", document.getElementById("vaccinated")?.checked ? 1 : 0);
   formData.set("voter", document.getElementById("voter")?.checked ? 1 : 0);
 
@@ -762,7 +762,7 @@ formData.set("fourPs", document.getElementById("mFourPs")?.value || "No");
   const schoolLevels = Array.from(document.querySelectorAll(".school:checked"))
     .map(cb => cb.value)
     .join(",");
-  formData.set("schoolLevels", schoolLevels);
+  formData.set("schoollevels", schoolLevels);
 
   // ---------------- BLOTTER RECORDS ----------------
   formData.set("blotter1", document.getElementById("blotter1")?.checked ? "Yes" : "No");
@@ -779,8 +779,6 @@ formData.set("fourPs", document.getElementById("mFourPs")?.value || "No");
   if (editResidentId) formData.set("id", editResidentId);
 
   try {
-
-
 
 
     const res = await fetch("authController.php?action=adminSaveResident", {
@@ -803,7 +801,6 @@ formData.set("fourPs", document.getElementById("mFourPs")?.value || "No");
 
 
 
-
   // ---------------- FILE PREVIEW ----------------
   const validIdInput = document.getElementById("validId");
   if (validIdInput) validIdInput.addEventListener("change", function() {
@@ -823,16 +820,16 @@ formData.set("fourPs", document.getElementById("mFourPs")?.value || "No");
         count = residentsData.filter(r => r.pwd === "Yes").length;
         break;
       case "seniorCitizen":
-        count = residentsData.filter(r => r.seniorCitizen == 1).length;
+        count = residentsData.filter(r => r.seniorcitizen == 1).length;
         break;
       case "college":
-        count = residentsData.filter(r => r.schoolLevels?.includes("College")).length;
+        count = residentsData.filter(r => r.schoollevels?.includes("College")).length;
         break;
       case "voter":
         count = residentsData.filter(r => r.voter == 1).length;
         break;
       case "fourPs":
-        count = residentsData.filter(r => r.fourPs === "Yes").length;
+        count = residentsData.filter(r => r.fourps === "Yes").length;
         break;
       case "occupation":
         count = residentsData.filter(r => r.occupation && r.occupation.trim() !== "").length;
@@ -864,10 +861,6 @@ tabButtons.forEach(btn => {
     btn.classList.add("active");
   });
 });
-
-
-
-
 
 
 
@@ -1687,3 +1680,4 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
