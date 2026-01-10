@@ -94,23 +94,6 @@ try {
             $response = ["status" => "error", "message" => "Invalid username or password"];
         }
 
-    }   } elseif ($action === 'adminLogin') {
-        // --- Admin login ---
-        $ADMIN_USERNAME = "admin";
-        $ADMIN_PASSWORD = "#KapTata2026";
-
-        $input = json_decode(file_get_contents("php://input"), true);
-        $username = trim($input['username'] ?? '');
-        $password = trim($input['password'] ?? '');
-
-        if (!$username || !$password) throw new Exception("Username and password required");
-
-        if ($username === $ADMIN_USERNAME && $password === $ADMIN_PASSWORD) {
-            $_SESSION['admin_logged_in'] = true;
-            $response = ["status" => "success", "message" => "Login successful"];
-        } else {
-            $response = ["status" => "error", "message" => "Invalid username or password"];
-    } 
     } else {
         throw new Exception("Invalid action");
     }
@@ -121,4 +104,3 @@ try {
 
 echo json_encode($response);
 exit();
-
