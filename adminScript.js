@@ -557,50 +557,44 @@ recordItems.forEach(item => {
 
 
 
-  // ---------------- RENDER TABLE ----------------
-function renderTable(data) {
+  // ---------------- RENDER TABLE ----------------function renderTable(data) {
   const tbody = residentTable.querySelector("tbody");
   tbody.innerHTML = "";
 
   data.forEach(r => {
     const tr = document.createElement("tr");
-  tr.innerHTML = `
-  <td>${r.email}</td>
-  <td>********</td>
-  <td>${r.name}</td>
-  <td>${r.middlename}</td>
-  <td>${r.lastname}</td>
-  <td>${r.phone}</td>
-  <td>${r.age}</td>
-  <td>${r.sex}</td>
-  <td>${r.birthday}</td>
-  <td>${r.address}</td>
-  <td>${r.status}</td>
-  <td>${r.pwd}</td>
-  <td>${r.fourps}</td>
-  <td>${r.seniorcitizen == 1 ? "Yes" : "No"}</td>
-  <td>${r.schoollevels}</td>
-  <td>${r.schoolname}</td>
-  <td>${r.occupation}</td>
-  <td>${r.vaccinated == 1 ? "Yes" : "No"}</td>
-  <td>${r.voter == 1 ? "Yes" : "No"}</td>
-  <td>${r.validid ? `<img src="${r.validId}" width="50">` : ""}</td>
-  <td>
-    <button class="editBtn" data-id="${r.id}">Edit</button>
-    <button class="deleteBtn" data-id="${r.id}">Delete</button>
-  </td>
-`;
-
+    tr.innerHTML = `
+      <td>${r.email}</td>
+      <td>********</td>
+      <td>${r.name}</td>
+      <td>${r.middlename}</td>
+      <td>${r.lastname}</td>
+      <td>${r.phone}</td>
+      <td>${r.age}</td>
+      <td>${r.sex}</td>
+      <td>${r.birthday}</td>
+      <td>${r.address}</td>
+      <td>${r.status}</td>
+      <td>${r.pwd}</td>
+      <td>${r.fourps}</td>
+      <td>${r.seniorcitizen === "Yes" ? "Yes" : "No"}</td>
+      <td>${r.schoollevels}</td>
+      <td>${r.schoolname}</td>
+      <td>${r.occupation}</td>
+      <td>${r.vaccinated === "Yes" ? "Yes" : "No"}</td>
+      <td>${r.voter === "Yes" ? "Yes" : "No"}</td>
+      <td>${r.validid ? `<img src="${r.validid}" width="50">` : ""}</td>
+      <td>
+        <button class="editBtn" data-id="${r.id}">Edit</button>
+        <button class="deleteBtn" data-id="${r.id}">Delete</button>
+      </td>
+    `;
     tbody.appendChild(tr);
   });
 
-  // ---------------- BUTTON EVENTS ----------------
-  tbody.querySelectorAll(".editBtn").forEach(btn => {
-    btn.onclick = () => editResident(btn.dataset.id);
-  });
-  tbody.querySelectorAll(".deleteBtn").forEach(btn => {
-    btn.onclick = () => deleteResident(btn.dataset.id);
-  });
+  // Attach buttons
+  tbody.querySelectorAll(".editBtn").forEach(btn => btn.onclick = () => editResident(btn.dataset.id));
+  tbody.querySelectorAll(".deleteBtn").forEach(btn => btn.onclick = () => deleteResident(btn.dataset.id));
 }
 
   
@@ -657,7 +651,6 @@ function renderTable(data) {
     document.getElementById("filterModal").style.display = "none";
   };
 
-
 async function editResident(id) {
   editResidentId = id;
   modalTitle.textContent = "Edit Resident";
@@ -670,7 +663,7 @@ async function editResident(id) {
     const resident = data.find(r => r.id == id);
     if (!resident) throw new Error("Resident not found");
 
-    // Text inputs
+    // ---------------- TEXT ----------------
     document.getElementById("username").value = resident.email || "";
     document.getElementById("password").value = "";
     document.getElementById("fname").value = resident.name || "";
@@ -685,27 +678,25 @@ async function editResident(id) {
     document.getElementById("schoolName").value = resident.schoolname || "";
     document.getElementById("occupation").value = resident.occupation || "";
 
-    // Yes/No selects
+    // ---------------- SELECTS ----------------
     document.getElementById("pwd").value = resident.pwd || "No";
     document.getElementById("mFourPs").value = resident.fourps || "No";
 
     // ---------------- CHECKBOXES ----------------
-    document.getElementById("seniorCitizen").checked = resident.seniorcitizen === "TRUE";
-    document.getElementById("vaccinated").checked = resident.vaccinated === "TRUE";
-    document.getElementById("voter").checked = resident.voter === "TRUE";
+    document.getElementById("seniorCitizen").checked = resident.seniorcitizen === "Yes";
+    document.getElementById("vaccinated").checked   = resident.vaccinated === "Yes";
+    document.getElementById("voter").checked        = resident.voter === "Yes";
 
-    // School levels
+    // ---------------- SCHOOL LEVELS ----------------
     const levels = resident.schoollevels ? resident.schoollevels.split(",") : [];
-    document.querySelectorAll(".school").forEach(cb => {
-      cb.checked = levels.includes(cb.value);
-    });
+    document.querySelectorAll(".school").forEach(cb => cb.checked = levels.includes(cb.value));
 
-    // Blotters
+    // ---------------- BLOTTERS ----------------
     document.getElementById("blotter1").checked = resident.blottertheft === "Yes";
     document.getElementById("blotter2").checked = resident.blotterdisturbance === "Yes";
     document.getElementById("blotter3").checked = resident.blotterother === "Yes";
 
-    // File preview
+    // ---------------- FILE PREVIEW ----------------
     document.getElementById("previewImg").src = resident.validid || "";
 
     residentModal.style.display = "block";
@@ -715,6 +706,7 @@ async function editResident(id) {
     alert(err.message);
   }
 }
+
 
 
   async function deleteResident(id) {
@@ -1681,6 +1673,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
