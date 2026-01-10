@@ -752,11 +752,11 @@ residentForm.addEventListener("submit", async e => {
   formData.set("pwd", document.getElementById("pwd")?.value || "No");
   formData.set("fourps", document.getElementById("mFourPs")?.value || "No");
 
-  // ---------------- CHECKBOXES (1/0) ----------------
-formData.set("seniorCitizen", document.getElementById("seniorCitizen")?.checked ? '1' : '0');
-formData.set("vaccinated",   document.getElementById("vaccinated")?.checked ? '1' : '0');
-formData.set("voter",        document.getElementById("voter")?.checked ? '1' : '0');
-
+   // ---------------- CHECKBOXES (1/0) ----------------
+  // ✅ FIXED: lowercase keys to match PHP
+  formData.set("seniorcitizen", document.getElementById("seniorCitizen")?.checked ? '1' : '0');
+  formData.set("vaccinated",    document.getElementById("vaccinated")?.checked ? '1' : '0');
+  formData.set("voter",         document.getElementById("voter")?.checked ? '1' : '0');
 
   // ---------------- SCHOOL LEVELS ----------------
   const schoolLevels = Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value);
@@ -1677,6 +1677,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
