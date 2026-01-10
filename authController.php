@@ -152,18 +152,29 @@ try {
             "message" => "Resident deleted successfully"
         ];
     }
+        /* ---------------- ADMIN GET APPROVED RESIDENTS ---------------- */
+      elseif ($action === "adminGetResidents") {
 
-    /* ---------------- INVALID ACTION ---------------- */
+        $result = pg_query($conn, "SELECT * FROM registrations WHERE accountstatus='approved'");
+        if (!$result) {
+            throw new Exception(pg_last_error($conn));
+        }
+
+        $residents = [];
+        while ($row = pg_fetch_assoc($result)) {
+            $residents[] = $row;
+        }
+
+        $response = $residents;
+    }
     else {
         throw new Exception("Invalid action");
     }
 
 } catch (Exception $e) {
-    $response = [
-        "status" => "error",
-        "message" => $e->getMessage()
-    ];
+    $response = ["status" => "error", "message" => $e->getMessage()];
 }
 
 echo json_encode($response);
 exit();
+
