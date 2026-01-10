@@ -659,20 +659,28 @@ function renderTable(data) {
 
 
 
-
 async function editResident(id) {
   editResidentId = id;
   modalTitle.textContent = "Edit Resident";
 
   try {
     const res = await fetch("authController.php?action=adminGetResidents");
-    const data = await res.json();
+    
+    // Handle non-JSON responses
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error("Invalid JSON from server:\n" + text);
+    }
+
     const resident = data.find(r => r.id == id);
     if (!resident) throw new Error("Resident not found");
 
     // ----- Fill form fields -----
     document.getElementById("username").value = resident.email;
-    document.getElementById("password").value = ""; // leave empty
+    document.getElementById("password").value = ""; 
     document.getElementById("fname").value = resident.name;
     document.getElementById("mname").value = resident.middlename;
     document.getElementById("lname").value = resident.lastname;
@@ -683,30 +691,23 @@ async function editResident(id) {
     document.getElementById("address").value = resident.address;
     document.getElementById("status").value = resident.status;
 
-    // ----- PWD / 4Ps select -----
     document.getElementById("pwd").value = resident.pwd;
     document.getElementById("mFourPs").value = resident.fourps;
 
-    // ----- Checkboxes -----
     document.getElementById("seniorCitizen").checked = resident.seniorcitizen == 1;
     document.getElementById("vaccinated").checked = resident.vaccinated == 1;
     document.getElementById("voter").checked = resident.voter == 1;
 
-    // School levels checkboxes
     document.querySelectorAll(".school").forEach(cb => {
-      cb.checked = resident.schoolLevels?.split(",").includes(cb.value);
+      cb.checked = resident.schoollevels?.split(",").includes(cb.value);
     });
 
-    // Blotters
     document.getElementById("blotter1").checked = resident.blottertheft === "Yes";
     document.getElementById("blotter2").checked = resident.blotterdisturbance === "Yes";
     document.getElementById("blotter3").checked = resident.blotterother === "Yes";
 
-    // Preview valid ID if exists
-    if (resident.validid) document.getElementById("previewImg").src = resident.validid;
-    else document.getElementById("previewImg").src = "";
+    document.getElementById("previewImg").src = resident.validid || "";
 
-    // Show modal
     residentModal.style.display = "block";
 
   } catch(err) {
@@ -1680,4 +1681,5 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
