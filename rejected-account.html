@@ -141,7 +141,7 @@ async function loadRejectedResidents() {
     const res = await fetch("authController.php?action=getAllResidents");
     const residents = await res.json();
 
-    const rejected = residents.filter(r => (r.accountStatus || "").toLowerCase() === "rejected");
+    const rejected = residents.filter(r => (r.accountstatus || "") === "rejected");
 
     const container = document.getElementById("rejectedList");
     container.innerHTML = "";
@@ -201,3 +201,4 @@ loadRejectedResidents();
 
 </body>
 </html>
+
