@@ -740,11 +740,12 @@ residentForm.addEventListener("submit", async e => {
   e.preventDefault();
   const formData = new FormData();
 
-  const textFields = [
-    "username", "password", "fname", "mname", "lname",
-    "mPhone", "age", "sex", "birthday", "address",
-    "status", "schoolname", "occupation"
-  ];
+ const textFields = [
+  "username", "password", "fname", "mname", "lname",
+  "mPhone", "age", "sex", "birthday", "address",
+  "status", "schoolName", "occupation"
+];
+
   textFields.forEach(id => {
     const el = document.getElementById(id);
     formData.set(id, el?.value || "");
@@ -1673,6 +1674,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
