@@ -170,7 +170,8 @@ elseif ($action === "adminGetResidents") {
 
     $response = $residents;
 }
-elseif ($action === "adminSaveResident") {
+
+    elseif ($action === "adminSaveResident") {
 
     $id = intval($_POST['id'] ?? 0);
     $params = [];
@@ -200,23 +201,29 @@ elseif ($action === "adminSaveResident") {
         "status" => $_POST['status'] ?? '',
         "pwd" => ($_POST['pwd'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
         "fourps" => ($_POST['fourps'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
-        
-        // CHECKBOXES
-        "seniorcitizen" => isset($_POST['seniorcitizen']) && $_POST['seniorcitizen'] === '1' ? 1 : 0,
-        "vaccinated"   => isset($_POST['vaccinated']) && $_POST['vaccinated'] === '1' ? 1 : 0,
-        "voter"        => isset($_POST['voter']) && $_POST['voter'] === '1' ? 1 : 0,
+
+        // ✅ CHECKBOXES (FORCED INT)
+        "seniorcitizen" => (int)($_POST['seniorcitizen'] ?? 0),
+        "vaccinated"   => (int)($_POST['vaccinated'] ?? 0),
+        "voter"        => (int)($_POST['voter'] ?? 0),
 
         // ---------------- SCHOOL ----------------
-        "schoollevels" => !empty($_POST['schoollevels']) ? (is_array($_POST['schoollevels']) ? implode(',', $_POST['schoollevels']) : $_POST['schoollevels']) : '',
+        "schoollevels" => !empty($_POST['schoollevels'])
+            ? (is_array($_POST['schoollevels']) ? implode(',', $_POST['schoollevels']) : $_POST['schoollevels'])
+            : '',
         "schoolname" => $_POST['schoolname'] ?? '',
         "occupation" => $_POST['occupation'] ?? '',
+
         // ---------------- BLOTTERS ----------------
         "blottertheft" => ($_POST['blotter1'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
         "blotterdisturbance" => ($_POST['blotter2'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
         "blotterother" => ($_POST['blotter3'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
-        // ---------------- FILE ----------------
-        "validid" => $validIdPath ?? null
     ];
+
+    // ✅ ADD validid ONLY IF UPLOADED (CRITICAL FIX)
+    if ($validIdPath !== null) {
+        $fields['validid'] = $validIdPath;
+    }
 
     // ---------------- INSERT OR UPDATE ----------------
     if (!$id) {
@@ -245,6 +252,7 @@ elseif ($action === "adminSaveResident") {
 
         echo json_encode(["status" => "success", "message" => "Resident added successfully"]);
         exit;
+
     } else {
         // UPDATE
         $set = [];
@@ -283,6 +291,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
