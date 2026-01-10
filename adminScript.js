@@ -689,7 +689,7 @@ async function editResident(id) {
     document.getElementById("pwd").value = resident.pwd || "No";
     document.getElementById("mFourPs").value = resident.fourps || "No";
 
-    // Checkboxes
+    // ---------------- CHECKBOXES ----------------
     document.getElementById("seniorCitizen").checked = resident.seniorcitizen === "TRUE";
     document.getElementById("vaccinated").checked = resident.vaccinated === "TRUE";
     document.getElementById("voter").checked = resident.voter === "TRUE";
@@ -1681,6 +1681,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
