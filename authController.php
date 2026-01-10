@@ -170,12 +170,12 @@ elseif ($action === "adminGetResidents") {
 
     $response = $residents;
 }
-  elseif ($action === "adminSaveResident") {
+elseif ($action === "adminSaveResident") {
 
     $id = intval($_POST['id'] ?? 0);
     $params = [];
 
-    // Handle file upload
+    // ---------------- FILE UPLOAD ----------------
     $validIdPath = null;
     if (!empty($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
         $uploadDir = "uploads/";
@@ -185,74 +185,90 @@ elseif ($action === "adminGetResidents") {
         move_uploaded_file($_FILES['validId']['tmp_name'], $validIdPath);
     }
 
-    // Prepare fields
-$fields = [
-    "email" => $_POST['username'] ?? '',
-    "password" => !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_BCRYPT) : null,
-    "name" => $_POST['fname'] ?? '',
-    "middlename" => $_POST['mname'] ?? '',
-    "lastname" => $_POST['lname'] ?? '',
-    "phone" => $_POST['mPhone'] ?? '',
-    "age" => intval($_POST['age'] ?? 0),
-    "sex" => $_POST['sex'] ?? '',
-    "birthday" => $_POST['birthday'] ?? null,
-    "address" => $_POST['address'] ?? '',
-    "status" => $_POST['status'] ?? '',
-    "pwd" => ($_POST['pwd'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
-    "fourps" => ($_POST['fourps'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
-    "seniorcitizen" => isset($_POST['seniorCitizen']) && $_POST['seniorCitizen'] == 1 ? 'TRUE' : 'FALSE',
-    "schoollevels" => !empty($_POST['schoollevels']) ? (is_array($_POST['schoollevels']) ? implode(',', $_POST['schoollevels']) : $_POST['schoollevels']) : '',
-    "schoolname" => $_POST['schoolname'] ?? '',
-    "occupation" => $_POST['occupation'] ?? '',
-    "vaccinated" => isset($_POST['vaccinated']) && $_POST['vaccinated'] == 1 ? 'TRUE' : 'FALSE',
-    "voter" => isset($_POST['voter']) && $_POST['voter'] == 1 ? 'TRUE' : 'FALSE',
-    "blottertheft" => ($_POST['blotter1'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
-    "blotterdisturbance" => ($_POST['blotter2'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
-    "blotterother" => ($_POST['blotter3'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
-    "validid" => $validIdPath ?? null
-];
+    // ---------------- PREPARE FIELDS ----------------
+    $fields = [
+        "email" => $_POST['username'] ?? '',
+        "password" => !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_BCRYPT) : null,
+        "name" => $_POST['fname'] ?? '',
+        "middlename" => $_POST['mname'] ?? '',
+        "lastname" => $_POST['lname'] ?? '',
+        "phone" => $_POST['mPhone'] ?? '',
+        "age" => intval($_POST['age'] ?? 0),
+        "sex" => $_POST['sex'] ?? '',
+        "birthday" => $_POST['birthday'] ?? null,
+        "address" => $_POST['address'] ?? '',
+        "status" => $_POST['status'] ?? '',
+        "pwd" => ($_POST['pwd'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+        "fourps" => ($_POST['fourps'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+        // ---------------- CHECKBOXES ----------------
+        "seniorcitizen" => isset($_POST['seniorCitizen']) && $_POST['seniorCitizen'] == 1 ? 'Yes' : 'No',
+        "vaccinated" => isset($_POST['vaccinated']) && $_POST['vaccinated'] == 1 ? 'Yes' : 'No',
+        "voter" => isset($_POST['voter']) && $_POST['voter'] == 1 ? 'Yes' : 'No',
+        // ---------------- SCHOOL ----------------
+        "schoollevels" => !empty($_POST['schoollevels']) ? (is_array($_POST['schoollevels']) ? implode(',', $_POST['schoollevels']) : $_POST['schoollevels']) : '',
+        "schoolname" => $_POST['schoolname'] ?? '',
+        "occupation" => $_POST['occupation'] ?? '',
+        // ---------------- BLOTTERS ----------------
+        "blottertheft" => ($_POST['blotter1'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+        "blotterdisturbance" => ($_POST['blotter2'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+        "blotterother" => ($_POST['blotter3'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+        // ---------------- FILE ----------------
+        "validid" => $validIdPath ?? null
+    ];
 
-
-
-    if ($validIdPath) $fields['validid'] = $validIdPath;
-
-    $cols = [];
-    $vals = [];
-    $i = 1;
-
-    foreach ($fields as $k => $v) {
-        if ($v !== null) {
-            $cols[] = $k;
-            $vals[] = '$' . $i;
-            $params[] = $v;
-            $i++;
-        }
-    }
-
+    // ---------------- INSERT OR UPDATE ----------------
     if (!$id) {
         // INSERT
+        $cols = [];
+        $vals = [];
+        $i = 1;
+
+        foreach ($fields as $k => $v) {
+            if ($v !== null) {
+                $cols[] = $k;
+                $vals[] = '$' . $i;
+                $params[] = $v;
+                $i++;
+            }
+        }
+
         $sql = "INSERT INTO registrations (" . implode(",", $cols) . ")
                 VALUES (" . implode(",", $vals) . ")";
+        $res = pg_query_params($conn, $sql, $params);
+
+        if (!$res) {
+            echo json_encode(["status" => "error", "message" => pg_last_error($conn)]);
+            exit;
+        }
+
+        echo json_encode(["status" => "success", "message" => "Resident added successfully"]);
+        exit;
     } else {
         // UPDATE
-        $updatePairs = [];
-        foreach ($cols as $index => $col) {
-            $updatePairs[] = "$col = $" . ($index + 1);
+        $set = [];
+        $i = 1;
+
+        foreach ($fields as $k => $v) {
+            if ($v !== null) {
+                $set[] = "$k = $" . $i;
+                $params[] = $v;
+                $i++;
+            }
         }
-        $sql = "UPDATE registrations SET " . implode(",", $updatePairs) . " WHERE id = $id";
-    }
 
-    $res = pg_query_params($conn, $sql, $params);
+        $params[] = $id;
+        $sql = "UPDATE registrations SET " . implode(",", $set) . " WHERE id = $" . $i;
+        $res = pg_query_params($conn, $sql, $params);
 
-    if ($res) {
-        echo json_encode(["status" => "success", "message" => "Resident saved successfully."]);
-    } else {
-        echo json_encode(["status" => "error", "message" => pg_last_error($conn)]);
+        if (!$res) {
+            echo json_encode(["status" => "error", "message" => pg_last_error($conn)]);
+            exit;
+        }
+
+        echo json_encode(["status" => "success", "message" => "Resident updated successfully"]);
+        exit;
     }
-    exit;
 }
-
-
 
 /* ---------------- INVALID ACTION ---------------- */
 else {
@@ -265,6 +281,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
