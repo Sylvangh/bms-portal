@@ -691,20 +691,24 @@ async function editResident(id) {
     document.getElementById("address").value = resident.address;
     document.getElementById("status").value = resident.status;
 
-    document.getElementById("pwd").value = resident.pwd;
-    document.getElementById("mFourPs").value = resident.fourps;
+    
+document.getElementById("pwd").value = resident.pwd; // Yes/No
+document.getElementById("mFourPs").value = resident.fourps; // Yes/No
 
-    document.getElementById("seniorCitizen").checked = resident.seniorcitizen == 1;
-    document.getElementById("vaccinated").checked = resident.vaccinated == 1;
-    document.getElementById("voter").checked = resident.voter == 1;
 
-    document.querySelectorAll(".school").forEach(cb => {
-      cb.checked = resident.schoollevels?.split(",").includes(cb.value);
-    });
+document.getElementById("seniorCitizen").checked = resident.seniorcitizen === "TRUE";
+document.getElementById("vaccinated").checked = resident.vaccinated === "TRUE";
+document.getElementById("voter").checked = resident.voter === "TRUE";
 
-    document.getElementById("blotter1").checked = resident.blottertheft === "Yes";
-    document.getElementById("blotter2").checked = resident.blotterdisturbance === "Yes";
-    document.getElementById("blotter3").checked = resident.blotterother === "Yes";
+
+document.querySelectorAll(".school").forEach(cb => {
+  cb.checked = resident.schoollevels?.split(",").includes(cb.value);
+});
+
+
+document.getElementById("blotter1").checked = resident.blottertheft === "Yes";
+document.getElementById("blotter2").checked = resident.blotterdisturbance === "Yes";
+document.getElementById("blotter3").checked = resident.blotterother === "Yes";
 
     document.getElementById("previewImg").src = resident.validid || "";
 
@@ -734,69 +738,57 @@ async function editResident(id) {
 
 residentForm.addEventListener("submit", async e => {
   e.preventDefault();
-
   const formData = new FormData();
 
-  // ---------------- TEXT INPUTS ----------------
   const textFields = [
     "username", "password", "fname", "mname", "lname",
     "mPhone", "age", "sex", "birthday", "address",
-    "status", "schoolName", "occupation"
+    "status", "schoolname", "occupation"
   ];
-
   textFields.forEach(id => {
     const el = document.getElementById(id);
-    formData.set(id, el ? el.value : "");
+    formData.set(id, el?.value || "");
   });
 
-  // ---------------- SELECTS (Yes/No) ----------------
+  // Yes/No selects
   formData.set("pwd", document.getElementById("pwd")?.value || "No");
-formData.set("fourps", document.getElementById("mFourPs")?.value || "No");
+  formData.set("fourps", document.getElementById("mFourPs")?.value || "No");
 
-
-  // ---------------- CHECKBOXES (1/0) ----------------
-  formData.set("seniorcitizen", document.getElementById("seniorCitizen")?.checked ? 1 : 0);
+  // Checkboxes
+  formData.set("seniorCitizen", document.getElementById("seniorCitizen")?.checked ? 1 : 0);
   formData.set("vaccinated", document.getElementById("vaccinated")?.checked ? 1 : 0);
   formData.set("voter", document.getElementById("voter")?.checked ? 1 : 0);
 
-  // ---------------- SCHOOL LEVELS ----------------
-  const schoolLevels = Array.from(document.querySelectorAll(".school:checked"))
-    .map(cb => cb.value)
-    .join(",");
-  formData.set("schoollevels", schoolLevels);
+  // School levels array
+  const schoolLevels = Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value);
+  schoolLevels.forEach(level => formData.append("schoollevels[]", level));
 
-  // ---------------- BLOTTER RECORDS ----------------
+  // Blotters
   formData.set("blotter1", document.getElementById("blotter1")?.checked ? "Yes" : "No");
   formData.set("blotter2", document.getElementById("blotter2")?.checked ? "Yes" : "No");
   formData.set("blotter3", document.getElementById("blotter3")?.checked ? "Yes" : "No");
 
-  // ---------------- FILE INPUT ----------------
+  // File upload
   const validIdInput = document.getElementById("validId");
-  if (validIdInput && validIdInput.files[0]) {
-    formData.set("validId", validIdInput.files[0]);
-  }
+  if (validIdInput && validIdInput.files[0]) formData.set("validId", validIdInput.files[0]);
 
-  // ---------------- EDIT ID ----------------
+  // Edit ID
   if (editResidentId) formData.set("id", editResidentId);
 
   try {
-
-
-    const res = await fetch("authController.php?action=adminSaveResident", {
-      method: "POST",
-      body: formData
-    });
+    const res = await fetch("authController.php?action=adminSaveResident", { method: "POST", body: formData });
     const data = await res.json();
-
-    alert(data.message);
-    residentModal.style.display = "none";
-    loadResidents(); // reload table
-
-    editResidentId = null; // reset
-
-  } catch(err) {
+    if (data.status === "success") {
+      alert(data.message);
+      residentModal.style.display = "none";
+      loadResidents();
+      editResidentId = null;
+    } else {
+      throw new Error(data.message || "Failed to save resident");
+    }
+  } catch (err) {
     console.error(err);
-    alert("Failed to save resident");
+    alert("Failed to save resident: " + err.message);
   }
 });
 
@@ -1681,5 +1673,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
