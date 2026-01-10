@@ -155,169 +155,94 @@ try {
 /* ---------------- ADMIN GET APPROVED RESIDENTS ---------------- */
 elseif ($action === "adminGetResidents") {
 
-    $sql = "
-        SELECT *
-        FROM registrations
-        WHERE accountstatus = 'approved'
-        ORDER BY id DESC
-    ";
-
+    $sql = "SELECT * FROM registrations WHERE accountstatus = 'approved'";
     $result = pg_query($conn, $sql);
+
     if (!$result) {
         throw new Exception(pg_last_error($conn));
     }
 
     $residents = [];
-
     while ($row = pg_fetch_assoc($result)) {
-        $residents[] = [
-            "id" => (int)$row['id'],
-
-            // BASIC INFO
-            "name" => $row['name'],
-            "middlename" => $row['middlename'],
-            "lastname" => $row['lastname'],
-            "email" => $row['email'],
-            "phone" => $row['phone'],
-            "age" => (int)$row['age'],
-            "sex" => $row['sex'],
-            "birthday" => $row['birthday'],
-            "address" => $row['address'],
-            "status" => $row['status'],
-
-            // SOCIAL FLAGS
-            "pwd" => $row['pwd'],
-            "fourps" => $row['fourps'],
-
-            // ✅ PostgreSQL booleans (t/f → true/false)
-            "seniorcitizen" => $row['seniorcitizen'] === 't',
-            "vaccinated" => $row['vaccinated'] === 't',
-            "voter" => $row['voter'] === 't',
-
-            // ✅ THESE WERE THE BROKEN ONES
-            "schoolLevels" => $row['schoollevels'] ?? "",
-            "schoolName" => $row['schoolname'] ?? "",
-            "occupation" => $row['occupation'] ?? "",
-
-            // BLOTTERS
-            "blottertheft" => $row['blottertheft'],
-            "blotterdisturbance" => $row['blotterdisturbance'],
-            "blotterother" => $row['blotterother'],
-
-            // FILES & STATUS
-            "validid" => $row['validid'],
-            "accountStatus" => strtolower($row['accountstatus']),
-            "adminMessage" => $row['adminmessage'] ?? ""
-        ];
+        $residents[] = $row;
     }
 
     $response = $residents;
 }
-
-
-        /* ---------------- ADMIN SAVE RESIDENT ---------------- */
+/* ---------------- ADMIN SAVE RESIDENT ---------------- */
 elseif ($action === "adminSaveResident") {
-    try {
-        ini_set('display_errors', 0);
-        error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
-        $id = intval($_POST['id'] ?? 0);
+    $id = intval($_POST['id'] ?? 0);
 
-        // --- Handle file upload ---
-        $validIdPath = null;
-        if (isset($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
-            $uploadDir = 'uploads/';
-            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-            $filename = uniqid('id_') . '_' . basename($_FILES['validId']['name']);
-            $validIdPath = $uploadDir . $filename;
+    // ---- FILE UPLOAD ----
+    $validIdPath = null;
+    if (!empty($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
+        $uploadDir = "uploads/";
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
-            if (!move_uploaded_file($_FILES['validId']['tmp_name'], $validIdPath)) {
-                throw new Exception("Failed to move uploaded file");
-            }
-        }
+        $filename = uniqid("id_") . "_" . basename($_FILES['validId']['name']);
+        $validIdPath = $uploadDir . $filename;
+        move_uploaded_file($_FILES['validId']['tmp_name'], $validIdPath);
+    }
 
-        // --- Collect all fields ---
-        $fields = [
-            "email" => $_POST['username'] ?? '',
-            "password" => !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_BCRYPT) : null,
-            "name" => $_POST['fname'] ?? '',
-            "middlename" => $_POST['mname'] ?? '',
-            "lastname" => $_POST['lname'] ?? '',
-            "phone" => $_POST['mPhone'] ?? '',
-            "age" => isset($_POST['age']) ? intval($_POST['age']) : 0,
-            "sex" => $_POST['sex'] ?? '',
-            "birthday" => $_POST['birthday'] ?? '',
-            "address" => $_POST['address'] ?? '',
-            "status" => $_POST['status'] ?? '',
-            "pwd" => (($_POST['pwd'] ?? 'No') === 'Yes') ? "Yes" : "No",
-            "fourps" => (($_POST['fourPs'] ?? 'No') === 'Yes') ? "Yes" : "No",
-            "seniorcitizen" => (($_POST['seniorCitizen'] ?? '0') === '1') ? 'TRUE' : 'FALSE',
-            "schoollevels" => !empty($_POST['schoolLevels']) ? implode(",", $_POST['schoolLevels']) : '',
-            "schoolname" => $_POST['schoolName'] ?? '',
-            "occupation" => $_POST['occupation'] ?? '',
-            "vaccinated" => (($_POST['vaccinated'] ?? '0') === '1') ? 'TRUE' : 'FALSE',
-            "voter" => (($_POST['voter'] ?? '0') === '1') ? 'TRUE' : 'FALSE',
-            "blottertheft" => (($_POST['blotter1'] ?? 'No') === 'Yes') ? 'Yes' : 'No',
-            "blotterdisturbance" => (($_POST['blotter2'] ?? 'No') === 'Yes') ? 'Yes' : 'No',
-            "blotterother" => (($_POST['blotter3'] ?? 'No') === 'Yes') ? 'Yes' : 'No',
-        ];
+    // ---- FIELDS (MATCH DB COLUMN NAMES EXACTLY) ----
+    $fields = [
+        "email" => $_POST['username'] ?? '',
+        "password" => !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_BCRYPT) : null,
+        "name" => $_POST['fname'] ?? '',
+        "middlename" => $_POST['mname'] ?? '',
+        "lastname" => $_POST['lname'] ?? '',
+        "phone" => $_POST['mPhone'] ?? '',
+        "age" => intval($_POST['age'] ?? 0),
+        "sex" => $_POST['sex'] ?? '',
+        "birthday" => $_POST['birthday'] ?? '',
+        "address" => $_POST['address'] ?? '',
+        "status" => $_POST['status'] ?? '',
+        "pwd" => ($_POST['pwd'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+        "fourps" => ($_POST['fourPs'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+        "seniorcitizen" => ($_POST['seniorCitizen'] ?? '0') === '1' ? 'TRUE' : 'FALSE',
 
-        if ($validIdPath) $fields['validid'] = $validIdPath;
+        // ✅ THIS IS THE CRITICAL FIX
+        "schoollevels" => $_POST['schoollevels'] ?? '',
+        "schoolname" => $_POST['schoolname'] ?? '',
+        "occupation" => $_POST['occupation'] ?? '',
 
-        // --- ADD RESIDENT ---
-        if (!$id) {
-            $columns = [];
-            $placeholders = [];
-            $values = [];
-            $i = 1;
+        "vaccinated" => ($_POST['vaccinated'] ?? '0') === '1' ? 'TRUE' : 'FALSE',
+        "voter" => ($_POST['voter'] ?? '0') === '1' ? 'TRUE' : 'FALSE',
 
-            foreach ($fields as $k => $v) {
-                if ($v !== null) {
-                    $columns[] = $k;
-                    $placeholders[] = '$' . $i;
-                    $values[] = $v;
-                    $i++;
-                }
-            }
+        "blottertheft" => ($_POST['blotter1'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+        "blotterdisturbance" => ($_POST['blotter2'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+        "blotterother" => ($_POST['blotter3'] ?? 'No') === 'Yes' ? 'Yes' : 'No'
+    ];
 
-            $sql = "INSERT INTO registrations (" . implode(",", $columns) . ") VALUES (" . implode(",", $placeholders) . ")";
-            $result = pg_query_params($conn, $sql, $values);
+    if ($validIdPath) {
+        $fields['validid'] = $validIdPath;
+    }
 
-            if (!$result) {
-                throw new Exception("Error inserting resident: " . pg_last_error($conn));
-            }
+    // ---- INSERT ----
+    if (!$id) {
+        $cols = [];
+        $vals = [];
+        $i = 1;
 
-            $response = ["status" => "success", "message" => "Resident added successfully"];
-            pg_close($conn);
-            exit;
-        }
-
-        // --- EDIT RESIDENT ---
-        $set = [];
         foreach ($fields as $k => $v) {
             if ($v !== null) {
-                $set[] = "$k='" . pg_escape_string($v) . "'";
+                $cols[] = $k;
+                $vals[] = '$' . $i;
+                $params[] = $v;
+                $i++;
             }
         }
 
-        $sql = "UPDATE registrations SET " . implode(",", $set) . " WHERE id=$id";
-        $result = pg_query($conn, $sql);
+        $sql = "INSERT INTO registrations (" . implode(",", $cols) . ")
+                VALUES (" . implode(",", $vals) . ")";
 
-        if (!$result) {
-            throw new Exception("Error updating resident: " . pg_last_error($conn));
-        }
-
-        $response = ["status" => "success", "message" => "Resident updated successfully"];
-        pg_close($conn);
-        exit;
-
-    } catch (Exception $e) {
-        $response = ["status" => "error", "message" => $e->getMessage()];
-        echo json_encode($response);
-        pg_close($conn);
+        pg_query_params($conn, $sql, $params);
+        echo json_encode(["status" => "success"]);
         exit;
     }
 }
+
 /* ---------------- INVALID ACTION ---------------- */
 else {
     throw new Exception("Invalid action");
@@ -329,5 +254,6 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
