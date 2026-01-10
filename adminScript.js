@@ -557,7 +557,8 @@ recordItems.forEach(item => {
 
 
 
-  // ---------------- RENDER TABLE ----------------function renderTable(data) {
+  // ---------------- RENDER TABLE ----------------
+  function renderTable(data) {
   const tbody = residentTable.querySelector("tbody");
   tbody.innerHTML = "";
 
