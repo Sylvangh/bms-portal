@@ -684,10 +684,10 @@ async function editResident(id) {
     document.getElementById("pwd").value = resident.pwd || "No";
     document.getElementById("mFourPs").value = resident.fourps || "No";
       
-// ---------------- CHECKBOXES ----------------
-document.getElementById("seniorCitizen").checked = !!resident.seniorcitizen;
-document.getElementById("vaccinated").checked   = !!resident.vaccinated;
-document.getElementById("voter").checked        = !!resident.voter;
+ // ---------------- CHECKBOXES ----------------
+    document.getElementById("seniorCitizen").checked = resident.seniorcitizen == 1;
+    document.getElementById("vaccinated").checked   = resident.vaccinated == 1;
+    document.getElementById("voter").checked        = resident.voter == 1;
 
 
     // ---------------- SCHOOL LEVELS ----------------
@@ -1678,6 +1678,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
