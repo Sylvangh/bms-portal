@@ -200,10 +200,11 @@ elseif ($action === "adminSaveResident") {
         "status" => $_POST['status'] ?? '',
         "pwd" => ($_POST['pwd'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
         "fourps" => ($_POST['fourps'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
-      // ✅ Checkboxes stored as 1/0
-        "seniorcitizen" => (isset($_POST['seniorcitizen']) && $_POST['seniorcitizen'] === '1') ? 1 : 0,
-        "vaccinated" => (isset($_POST['vaccinated']) && $_POST['vaccinated'] === '1') ? 1 : 0,
-        "voter" => (isset($_POST['voter']) && $_POST['voter'] === '1') ? 1 : 0,
+        
+        // CHECKBOXES
+        "seniorcitizen" => isset($_POST['seniorcitizen']) && $_POST['seniorcitizen'] === '1' ? 1 : 0,
+        "vaccinated"   => isset($_POST['vaccinated']) && $_POST['vaccinated'] === '1' ? 1 : 0,
+        "voter"        => isset($_POST['voter']) && $_POST['voter'] === '1' ? 1 : 0,
 
         // ---------------- SCHOOL ----------------
         "schoollevels" => !empty($_POST['schoollevels']) ? (is_array($_POST['schoollevels']) ? implode(',', $_POST['schoollevels']) : $_POST['schoollevels']) : '',
@@ -282,6 +283,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
