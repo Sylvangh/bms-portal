@@ -186,30 +186,30 @@ elseif ($action === "adminGetResidents") {
     }
 
     // Prepare fields
-    $fields = [
-        "email" => $_POST['username'] ?? '',
-        "password" => !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_BCRYPT) : null,
-        "name" => $_POST['fname'] ?? '',
-        "middlename" => $_POST['mname'] ?? '',
-        "lastname" => $_POST['lname'] ?? '',
-        "phone" => $_POST['mPhone'] ?? '',
-        "age" => intval($_POST['age'] ?? 0),
-        "sex" => $_POST['sex'] ?? '',
-        "birthday" => $_POST['birthday'] ?? null,
-        "address" => $_POST['address'] ?? '',
-        "status" => $_POST['status'] ?? '',
-        "pwd" => ($_POST['pwd'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
-        "fourps" => ($_POST['fourps'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
-        "seniorcitizen" => !empty($_POST['seniorCitizen']) ? 'TRUE' : 'FALSE',
-        "schoollevels" => !empty($_POST['schoollevels']) ? (is_array($_POST['schoollevels']) ? implode(',', $_POST['schoollevels']) : $_POST['schoollevels']) : '',
-        "schoolname" => $_POST['schoolname'] ?? '',
-        "occupation" => $_POST['occupation'] ?? '',
-        "vaccinated" => !empty($_POST['vaccinated']) ? 'TRUE' : 'FALSE',
-        "voter" => !empty($_POST['voter']) ? 'TRUE' : 'FALSE',
-        "blottertheft" => ($_POST['blotter1'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
-        "blotterdisturbance" => ($_POST['blotter2'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
-        "blotterother" => ($_POST['blotter3'] ?? 'No') === 'Yes' ? 'Yes' : 'No'
-    ];
+$fields = [
+    "email" => $_POST['username'] ?? '',
+    "password" => !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_BCRYPT) : null,
+    "name" => $_POST['fname'] ?? '',
+    "middlename" => $_POST['mname'] ?? '',
+    "lastname" => $_POST['lname'] ?? '',
+    "phone" => $_POST['mPhone'] ?? '',
+    "age" => intval($_POST['age'] ?? 0),
+    "sex" => $_POST['sex'] ?? '',
+    "birthday" => $_POST['birthday'] ?? null,
+    "address" => $_POST['address'] ?? '',
+    "status" => $_POST['status'] ?? '',
+    "pwd" => ($_POST['pwd'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+    "fourps" => ($_POST['fourps'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+    "seniorcitizen" => !empty($_POST['seniorCitizen']) ? 'TRUE' : 'FALSE',
+    "schoollevels" => !empty($_POST['schoollevels']) ? (is_array($_POST['schoollevels']) ? implode(',', $_POST['schoollevels']) : $_POST['schoollevels']) : '',
+    "schoolname" => $_POST['schoolname'] ?? '',
+    "occupation" => $_POST['occupation'] ?? '',
+    "vaccinated" => !empty($_POST['vaccinated']) ? 'TRUE' : 'FALSE',
+    "voter" => !empty($_POST['voter']) ? 'TRUE' : 'FALSE',
+    "blottertheft" => ($_POST['blotter1'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+    "blotterdisturbance" => ($_POST['blotter2'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+    "blotterother" => ($_POST['blotter3'] ?? 'No') === 'Yes' ? 'Yes' : 'No'
+];
 
     if ($validIdPath) $fields['validid'] = $validIdPath;
 
@@ -262,6 +262,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
