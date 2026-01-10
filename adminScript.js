@@ -565,25 +565,25 @@ recordItems.forEach(item => {
   data.forEach(r => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${r.email}</td>
+      <td>${r.email || ""}</td>
       <td>********</td>
-      <td>${r.name}</td>
-      <td>${r.middlename}</td>
-      <td>${r.lastname}</td>
-      <td>${r.phone}</td>
-      <td>${r.age}</td>
-      <td>${r.sex}</td>
-      <td>${r.birthday}</td>
-      <td>${r.address}</td>
-      <td>${r.status}</td>
-      <td>${r.pwd}</td>
-      <td>${r.fourps}</td>
+      <td>${r.name || ""}</td>
+      <td>${r.middlename || ""}</td>
+      <td>${r.lastname || ""}</td>
+      <td>${r.phone || ""}</td>
+      <td>${r.age || 0}</td>
+      <td>${r.sex || ""}</td>
+      <td>${r.birthday || ""}</td>
+      <td>${r.address || ""}</td>
+      <td>${r.status || ""}</td>
+      <td>${r.pwd || "No"}</td>
+      <td>${r.fourps || "No"}</td>
       <td>${r.seniorcitizen === "Yes" ? "Yes" : "No"}</td>
-      <td>${r.schoollevels}</td>
-      <td>${r.schoolname}</td>
-      <td>${r.occupation}</td>
-<td>${r.vaccinated === "Yes" ? "Yes" : "No"}</td>
-<td>${r.voter === "Yes" ? "Yes" : "No"}</td>
+      <td>${r.schoollevels || ""}</td>
+      <td>${r.schoolname || ""}</td>
+      <td>${r.occupation || ""}</td>
+      <td>${r.vaccinated === "Yes" ? "Yes" : "No"}</td>
+      <td>${r.voter === "Yes" ? "Yes" : "No"}</td>
       <td>${r.validid ? `<img src="${r.validid}" width="50">` : ""}</td>
       <td>
         <button class="editBtn" data-id="${r.id}">Edit</button>
@@ -593,10 +593,11 @@ recordItems.forEach(item => {
     tbody.appendChild(tr);
   });
 
-  // Attach buttons
+  // Attach edit/delete buttons
   tbody.querySelectorAll(".editBtn").forEach(btn => btn.onclick = () => editResident(btn.dataset.id));
   tbody.querySelectorAll(".deleteBtn").forEach(btn => btn.onclick = () => deleteResident(btn.dataset.id));
 }
+
 
   
 
@@ -1676,6 +1677,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
