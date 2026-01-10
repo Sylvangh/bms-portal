@@ -578,12 +578,12 @@ recordItems.forEach(item => {
       <td>${r.status || ""}</td>
       <td>${r.pwd || "No"}</td>
       <td>${r.fourps || "No"}</td>
-      <td>${r.seniorcitizen === "Yes" ? "Yes" : "No"}</td>
+      <td>${r.seniorcitizen == 1 ? "Yes" : "No"}</td>
       <td>${r.schoollevels || ""}</td>
       <td>${r.schoolname || ""}</td>
       <td>${r.occupation || ""}</td>
-      <td>${r.vaccinated === "Yes" ? "Yes" : "No"}</td>
-      <td>${r.voter === "Yes" ? "Yes" : "No"}</td>
+      <td>${r.vaccinated == 1 ? "Yes" : "No"}</td>
+      <td>${r.voter == 1 ? "Yes" : "No"}</td>
       <td>${r.validid ? `<img src="${r.validid}" width="50">` : ""}</td>
       <td>
         <button class="editBtn" data-id="${r.id}">Edit</button>
@@ -685,9 +685,9 @@ async function editResident(id) {
     document.getElementById("mFourPs").value = resident.fourps || "No";
 
     // ---------------- CHECKBOXES ----------------
-document.getElementById("seniorCitizen").checked = resident.seniorcitizen === "Yes";
-document.getElementById("vaccinated").checked   = resident.vaccinated === "Yes";
-document.getElementById("voter").checked        = resident.voter === "Yes";
+    document.getElementById("seniorCitizen").checked = resident.seniorcitizen == 1;
+    document.getElementById("vaccinated").checked   = resident.vaccinated == 1;
+    document.getElementById("voter").checked        = resident.voter == 1;
 
 
     // ---------------- SCHOOL LEVELS ----------------
@@ -752,8 +752,8 @@ residentForm.addEventListener("submit", async e => {
   formData.set("pwd", document.getElementById("pwd")?.value || "No");
   formData.set("fourps", document.getElementById("mFourPs")?.value || "No");
 
-   // ---------------- CHECKBOXES (1/0) ----------------
-  // ✅ FIXED: lowercase keys to match PHP
+
+  // ---------------- CHECKBOXES 1/0 ----------------
   formData.set("seniorcitizen", document.getElementById("seniorCitizen")?.checked ? '1' : '0');
   formData.set("vaccinated",    document.getElementById("vaccinated")?.checked ? '1' : '0');
   formData.set("voter",         document.getElementById("voter")?.checked ? '1' : '0');
@@ -1677,6 +1677,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
