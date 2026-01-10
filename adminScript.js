@@ -735,64 +735,79 @@ document.getElementById("blotter3").checked = resident.blotterother === "Yes";
     }
   }
 
-
 residentForm.addEventListener("submit", async e => {
   e.preventDefault();
+
   const formData = new FormData();
 
- const textFields = [
-  "username", "password", "fname", "mname", "lname",
-  "mPhone", "age", "sex", "birthday", "address",
-  "status", "schoolName", "occupation"
-];
+  // ---------------- TEXT INPUTS ----------------
+  // Make sure the IDs here match your HTML inputs
+  const textFields = [
+    "username", "password", "fname", "mname", "lname",
+    "mPhone", "age", "sex", "birthday", "address",
+    "status", "schoolName", "occupation"
+  ];
 
   textFields.forEach(id => {
     const el = document.getElementById(id);
-    formData.set(id, el?.value || "");
+    if (id === "schoolName") {
+      // Map to lowercase key for backend
+      formData.set("schoolname", el?.value || "");
+    } else {
+      formData.set(id, el?.value || "");
+    }
   });
 
-  // Yes/No selects
+  // ---------------- SELECTS (Yes/No) ----------------
   formData.set("pwd", document.getElementById("pwd")?.value || "No");
   formData.set("fourps", document.getElementById("mFourPs")?.value || "No");
 
-  // Checkboxes
+  // ---------------- CHECKBOXES (TRUE/FALSE) ----------------
   formData.set("seniorCitizen", document.getElementById("seniorCitizen")?.checked ? 1 : 0);
   formData.set("vaccinated", document.getElementById("vaccinated")?.checked ? 1 : 0);
   formData.set("voter", document.getElementById("voter")?.checked ? 1 : 0);
 
-  // School levels array
+  // ---------------- SCHOOL LEVELS ----------------
   const schoolLevels = Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value);
   schoolLevels.forEach(level => formData.append("schoollevels[]", level));
 
-  // Blotters
+  // ---------------- BLOTTER RECORDS ----------------
   formData.set("blotter1", document.getElementById("blotter1")?.checked ? "Yes" : "No");
   formData.set("blotter2", document.getElementById("blotter2")?.checked ? "Yes" : "No");
   formData.set("blotter3", document.getElementById("blotter3")?.checked ? "Yes" : "No");
 
-  // File upload
+  // ---------------- FILE INPUT ----------------
   const validIdInput = document.getElementById("validId");
-  if (validIdInput && validIdInput.files[0]) formData.set("validId", validIdInput.files[0]);
+  if (validIdInput && validIdInput.files[0]) {
+    formData.set("validId", validIdInput.files[0]);
+  }
 
-  // Edit ID
+  // ---------------- EDIT ID ----------------
   if (editResidentId) formData.set("id", editResidentId);
 
+  // ---------------- SEND TO SERVER ----------------
   try {
-    const res = await fetch("authController.php?action=adminSaveResident", { method: "POST", body: formData });
+    const res = await fetch("authController.php?action=adminSaveResident", {
+      method: "POST",
+      body: formData
+    });
+
     const data = await res.json();
+
     if (data.status === "success") {
       alert(data.message);
       residentModal.style.display = "none";
-      loadResidents();
+      loadResidents(); // reload table
       editResidentId = null;
     } else {
       throw new Error(data.message || "Failed to save resident");
     }
+
   } catch (err) {
     console.error(err);
     alert("Failed to save resident: " + err.message);
   }
 });
-
 
 
   // ---------------- FILE PREVIEW ----------------
@@ -1674,6 +1689,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
