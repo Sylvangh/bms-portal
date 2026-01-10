@@ -76,31 +76,93 @@ try {
             $response = ["status" => "success", "message" => "Registration request submitted"];
         }
 
-    } elseif ($action === 'adminLogin') {
-        // --- Admin login ---
-        $ADMIN_USERNAME = "admin";
-        $ADMIN_PASSWORD = "#KapTata2026";
+    } 
+/* ---------------- ADMIN LOGIN ---------------- */
+if ($action === 'adminLogin') {
 
-        $input = json_decode(file_get_contents("php://input"), true);
-        $username = trim($input['username'] ?? '');
-        $password = trim($input['password'] ?? '');
+    $ADMIN_USERNAME = "admin";
+    $ADMIN_PASSWORD = "#KapTata2026";
 
-        if (!$username || !$password) throw new Exception("Username and password required");
+    $input = json_decode(file_get_contents("php://input"), true);
+    $username = trim($input['username'] ?? '');
+    $password = trim($input['password'] ?? '');
 
-        if ($username === $ADMIN_USERNAME && $password === $ADMIN_PASSWORD) {
-            $_SESSION['admin_logged_in'] = true;
-            $response = ["status" => "success", "message" => "Login successful"];
-        } else {
-            $response = ["status" => "error", "message" => "Invalid username or password"];
-        }
-
-    } else {
-        throw new Exception("Invalid action");
+    if (!$username || !$password) {
+        echo json_encode(["status" => "error", "message" => "Username and password required"]);
+        exit;
     }
 
-} catch (Exception $e) {
-    $response = ["status" => "error", "message" => $e->getMessage()];
+    if ($username === $ADMIN_USERNAME && $password === $ADMIN_PASSWORD) {
+        $_SESSION['admin_logged_in'] = true;
+        echo json_encode(["status" => "success", "message" => "Login successful"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Invalid username or password"]);
+    }
+    exit;
 }
 
-echo json_encode($response);
-exit();
+/* ---------------- GET ALL RESIDENTS ---------------- */
+elseif ($action === "getAllResidents") {
+
+    $result = pg_query($conn, "SELECT * FROM registrations ORDER BY id DESC");
+    if (!$result) {
+        echo json_encode(["status" => "error", "message" => pg_last_error($conn)]);
+        exit;
+    }
+
+    $residents = [];
+    while ($row = pg_fetch_assoc($result)) {
+        if (isset($row['accountstatus'])) {
+            $row['accountstatus'] = strtolower($row['accountstatus']);
+        }
+        $residents[] = $row;
+    }
+
+    echo json_encode($residents);
+    exit;
+}
+
+/* ---------------- UPDATE STATUS ---------------- */
+elseif ($action === "updateStatus") {
+
+    $id = (int)($_GET['id'] ?? 0);
+    $status = $_GET['status'] ?? '';
+
+    if (!$id || !$status) {
+        echo json_encode(["status" => "error", "message" => "Missing id or status"]);
+        exit;
+    }
+
+    $status = pg_escape_string($status);
+    $sql = "UPDATE registrations SET accountstatus='$status' WHERE id=$id";
+
+    if (pg_query($conn, $sql)) {
+        echo json_encode(["status" => "success", "message" => "Status updated"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => pg_last_error($conn)]);
+    }
+    exit;
+}
+
+/* ---------------- DELETE RESIDENT ---------------- */
+elseif ($action === "deleteResident") {
+
+    $id = (int)($_GET['id'] ?? 0);
+    if (!$id) {
+        echo json_encode(["status" => "error", "message" => "Missing id"]);
+        exit;
+    }
+
+    if (pg_query($conn, "DELETE FROM registrations WHERE id=$id")) {
+        echo json_encode(["status" => "success", "message" => "Resident deleted"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => pg_last_error($conn)]);
+    }
+    exit;
+}
+
+/* ---------------- INVALID ACTION ---------------- */
+else {
+    echo json_encode(["status" => "error", "message" => "Invalid action"]);
+    exit;
+}
