@@ -665,20 +665,14 @@ async function editResident(id) {
   try {
     const res = await fetch("authController.php?action=adminGetResidents");
     const text = await res.text();
-    let data;
-
-    try {
-      data = JSON.parse(text);
-    } catch {
-      throw new Error("Invalid JSON from server:\n" + text);
-    }
+    let data = JSON.parse(text);
 
     const resident = data.find(r => r.id == id);
     if (!resident) throw new Error("Resident not found");
 
-    // ---------------- TEXT INPUTS ----------------
+    // Text inputs
     document.getElementById("username").value = resident.email || "";
-    document.getElementById("password").value = ""; // leave empty
+    document.getElementById("password").value = "";
     document.getElementById("fname").value = resident.name || "";
     document.getElementById("mname").value = resident.middlename || "";
     document.getElementById("lname").value = resident.lastname || "";
@@ -688,35 +682,32 @@ async function editResident(id) {
     document.getElementById("birthday").value = resident.birthday || "";
     document.getElementById("address").value = resident.address || "";
     document.getElementById("status").value = resident.status || "";
-
-    // ---------------- SCHOOL NAME & OCCUPATION ----------------
     document.getElementById("schoolName").value = resident.schoolname || "";
     document.getElementById("occupation").value = resident.occupation || "";
 
-    // ---------------- SELECTS (Yes/No) ----------------
+    // Yes/No selects
     document.getElementById("pwd").value = resident.pwd || "No";
     document.getElementById("mFourPs").value = resident.fourps || "No";
 
-    // ---------------- CHECKBOXES ----------------
+    // Checkboxes
     document.getElementById("seniorCitizen").checked = resident.seniorcitizen === "TRUE";
     document.getElementById("vaccinated").checked = resident.vaccinated === "TRUE";
     document.getElementById("voter").checked = resident.voter === "TRUE";
 
-    // ---------------- SCHOOL LEVELS ----------------
+    // School levels
     const levels = resident.schoollevels ? resident.schoollevels.split(",") : [];
     document.querySelectorAll(".school").forEach(cb => {
       cb.checked = levels.includes(cb.value);
     });
 
-    // ---------------- BLOTTER RECORDS ----------------
+    // Blotters
     document.getElementById("blotter1").checked = resident.blottertheft === "Yes";
     document.getElementById("blotter2").checked = resident.blotterdisturbance === "Yes";
     document.getElementById("blotter3").checked = resident.blotterother === "Yes";
 
-    // ---------------- FILE PREVIEW ----------------
+    // File preview
     document.getElementById("previewImg").src = resident.validid || "";
 
-    // Show modal
     residentModal.style.display = "block";
 
   } catch(err) {
@@ -743,7 +734,7 @@ residentForm.addEventListener("submit", async e => {
   e.preventDefault();
   const formData = new FormData();
 
-  // Text fields
+  // ---------------- TEXT INPUTS ----------------
   formData.set("username", document.getElementById("username")?.value || "");
   if(document.getElementById("password")?.value) {
     formData.set("password", document.getElementById("password").value);
@@ -762,41 +753,44 @@ residentForm.addEventListener("submit", async e => {
   formData.set("schoolname", document.getElementById("schoolName")?.value || "");
   formData.set("occupation", document.getElementById("occupation")?.value || "");
 
-  // Yes/No selects
+  // ---------------- SELECTS (Yes/No) ----------------
   formData.set("pwd", document.getElementById("pwd")?.value || "No");
   formData.set("fourps", document.getElementById("mFourPs")?.value || "No");
 
-  // Checkboxes
+  // ---------------- CHECKBOXES (1/0) ----------------
   formData.set("seniorCitizen", document.getElementById("seniorCitizen")?.checked ? 1 : 0);
   formData.set("vaccinated", document.getElementById("vaccinated")?.checked ? 1 : 0);
   formData.set("voter", document.getElementById("voter")?.checked ? 1 : 0);
 
-  // School Levels
+  // ---------------- SCHOOL LEVELS ----------------
   const schoolLevels = Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value);
   schoolLevels.forEach(level => formData.append("schoollevels[]", level));
 
-  // Blotters
+  // ---------------- BLOTTER RECORDS ----------------
   formData.set("blotter1", document.getElementById("blotter1")?.checked ? "Yes" : "No");
   formData.set("blotter2", document.getElementById("blotter2")?.checked ? "Yes" : "No");
   formData.set("blotter3", document.getElementById("blotter3")?.checked ? "Yes" : "No");
 
-  // File
+  // ---------------- FILE INPUT ----------------
   const validIdInput = document.getElementById("validId");
   if(validIdInput?.files[0]) formData.set("validId", validIdInput.files[0]);
 
-  // Edit ID
+  // ---------------- EDIT ID ----------------
   if(editResidentId) formData.set("id", editResidentId);
 
+  // ---------------- SEND TO SERVER ----------------
   try {
     const res = await fetch("authController.php?action=adminSaveResident", {
       method: "POST",
       body: formData
     });
+
     const data = await res.json();
+
     if(data.status === "success") {
       alert(data.message);
       residentModal.style.display = "none";
-      loadResidents();
+      loadResidents(); // refresh table
       editResidentId = null;
     } else {
       throw new Error(data.message || "Failed to save resident");
@@ -1687,6 +1681,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
