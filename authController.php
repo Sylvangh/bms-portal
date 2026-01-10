@@ -173,19 +173,17 @@ elseif ($action === "adminGetResidents") {
 elseif ($action === "adminSaveResident") {
 
     $id = intval($_POST['id'] ?? 0);
+    $params = [];
 
-    // ---- FILE UPLOAD ----
     $validIdPath = null;
     if (!empty($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
         $uploadDir = "uploads/";
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-
         $filename = uniqid("id_") . "_" . basename($_FILES['validId']['name']);
         $validIdPath = $uploadDir . $filename;
         move_uploaded_file($_FILES['validId']['tmp_name'], $validIdPath);
     }
 
-    // ---- FIELDS (MATCH DB COLUMN NAMES EXACTLY) ----
     $fields = [
         "email" => $_POST['username'] ?? '',
         "password" => !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_BCRYPT) : null,
@@ -201,25 +199,18 @@ elseif ($action === "adminSaveResident") {
         "pwd" => ($_POST['pwd'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
         "fourps" => ($_POST['fourPs'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
         "seniorcitizen" => ($_POST['seniorCitizen'] ?? '0') === '1' ? 'TRUE' : 'FALSE',
-
-        // ✅ THIS IS THE CRITICAL FIX
-        "schoollevels" => $_POST['schoollevels'] ?? '',
+        "schoollevels" => !empty($_POST['schoollevels']) ? implode(',', $_POST['schoollevels']) : '',
         "schoolname" => $_POST['schoolname'] ?? '',
         "occupation" => $_POST['occupation'] ?? '',
-
         "vaccinated" => ($_POST['vaccinated'] ?? '0') === '1' ? 'TRUE' : 'FALSE',
         "voter" => ($_POST['voter'] ?? '0') === '1' ? 'TRUE' : 'FALSE',
-
         "blottertheft" => ($_POST['blotter1'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
         "blotterdisturbance" => ($_POST['blotter2'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
         "blotterother" => ($_POST['blotter3'] ?? 'No') === 'Yes' ? 'Yes' : 'No'
     ];
 
-    if ($validIdPath) {
-        $fields['validid'] = $validIdPath;
-    }
+    if ($validIdPath) $fields['validid'] = $validIdPath;
 
-    // ---- INSERT ----
     if (!$id) {
         $cols = [];
         $vals = [];
@@ -243,6 +234,7 @@ elseif ($action === "adminSaveResident") {
     }
 }
 
+
 /* ---------------- INVALID ACTION ---------------- */
 else {
     throw new Exception("Invalid action");
@@ -254,6 +246,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
