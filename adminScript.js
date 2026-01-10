@@ -754,9 +754,10 @@ residentForm.addEventListener("submit", async e => {
 
 
   // ---------------- CHECKBOXES 1/0 ----------------
-  formData.set("seniorcitizen", document.getElementById("seniorCitizen")?.checked ? '1' : '0');
-  formData.set("vaccinated",    document.getElementById("vaccinated")?.checked ? '1' : '0');
-  formData.set("voter",         document.getElementById("voter")?.checked ? '1' : '0');
+  // ✅ CHECKBOXES 1/0
+  formData.set("seniorcitizen", document.getElementById("seniorCitizen").checked ? '1' : '0');
+  formData.set("vaccinated", document.getElementById("vaccinated").checked ? '1' : '0');
+  formData.set("voter", document.getElementById("voter").checked ? '1' : '0');
 
   // ---------------- SCHOOL LEVELS ----------------
   const schoolLevels = Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value);
@@ -1677,6 +1678,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
