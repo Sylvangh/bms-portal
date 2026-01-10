@@ -156,11 +156,40 @@ try {
 /* ---------------- ADMIN GET APPROVED RESIDENTS ---------------- */
 elseif ($action === "adminGetResidents") {
 
-    $sql = "SELECT * FROM registrations WHERE accountstatus = 'approved'";
+    $sql = "
+        SELECT 
+            id,
+            email,
+            name,
+            middlename,
+            lastname,
+            phone,
+            age,
+            sex,
+            birthday,
+            address,
+            status,
+            pwd,
+            fourps,
+            seniorcitizen::int,
+            vaccinated::int,
+            voter::int,
+            schoollevels,
+            schoolname,
+            occupation,
+            validid,
+            blottertheft,
+            blotterdisturbance,
+            blotterother
+        FROM registrations
+        WHERE accountstatus = 'approved'
+    ";
+
     $result = pg_query($conn, $sql);
 
     if (!$result) {
-        throw new Exception(pg_last_error($conn));
+        echo json_encode(["status" => "error", "message" => pg_last_error($conn)]);
+        exit;
     }
 
     $residents = [];
@@ -168,8 +197,10 @@ elseif ($action === "adminGetResidents") {
         $residents[] = $row;
     }
 
-    $response = $residents;
+    echo json_encode($residents);
+    exit;
 }
+
 
     elseif ($action === "adminSaveResident") {
 
@@ -291,6 +322,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
