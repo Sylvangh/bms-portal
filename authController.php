@@ -155,13 +155,14 @@ try {
 /* ---------------- ADMIN GET APPROVED RESIDENTS ---------------- */
 elseif ($action === "adminGetResidents") {
 
-    $result = pg_query($conn, "
+    $sql = "
         SELECT *
         FROM registrations
         WHERE accountstatus = 'approved'
         ORDER BY id DESC
-    ");
+    ";
 
+    $result = pg_query($conn, $sql);
     if (!$result) {
         throw new Exception(pg_last_error($conn));
     }
@@ -173,10 +174,10 @@ elseif ($action === "adminGetResidents") {
             "id" => (int)$row['id'],
 
             // BASIC INFO
-            "email" => $row['email'],
             "name" => $row['name'],
             "middlename" => $row['middlename'],
             "lastname" => $row['lastname'],
+            "email" => $row['email'],
             "phone" => $row['phone'],
             "age" => (int)$row['age'],
             "sex" => $row['sex'],
@@ -184,14 +185,16 @@ elseif ($action === "adminGetResidents") {
             "address" => $row['address'],
             "status" => $row['status'],
 
-            // FLAGS
+            // SOCIAL FLAGS
             "pwd" => $row['pwd'],
             "fourps" => $row['fourps'],
+
+            // ✅ PostgreSQL booleans (t/f → true/false)
             "seniorcitizen" => $row['seniorcitizen'] === 't',
             "vaccinated" => $row['vaccinated'] === 't',
             "voter" => $row['voter'] === 't',
 
-            // 🔥 IMPORTANT FIXES
+            // ✅ THESE WERE THE BROKEN ONES
             "schoolLevels" => $row['schoollevels'] ?? "",
             "schoolName" => $row['schoolname'] ?? "",
             "occupation" => $row['occupation'] ?? "",
@@ -210,6 +213,7 @@ elseif ($action === "adminGetResidents") {
 
     $response = $residents;
 }
+
 
         /* ---------------- ADMIN SAVE RESIDENT ---------------- */
 elseif ($action === "adminSaveResident") {
@@ -325,4 +329,5 @@ else {
 
 echo json_encode($response);
 exit();
+
 
