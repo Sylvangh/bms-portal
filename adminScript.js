@@ -737,73 +737,67 @@ document.getElementById("blotter3").checked = resident.blotterother === "Yes";
 
 residentForm.addEventListener("submit", async e => {
   e.preventDefault();
-
   const formData = new FormData();
 
-  // ---------------- TEXT INPUTS ----------------
-  // Make sure the IDs here match your HTML inputs
-  const textFields = [
-    "username", "password", "fname", "mname", "lname",
-    "mPhone", "age", "sex", "birthday", "address",
-    "status", "schoolName", "occupation"
-  ];
+  // Text fields
+  formData.set("username", document.getElementById("username")?.value || "");
+  if(document.getElementById("password")?.value) {
+    formData.set("password", document.getElementById("password").value);
+  }
+  formData.set("fname", document.getElementById("fname")?.value || "");
+  formData.set("mname", document.getElementById("mname")?.value || "");
+  formData.set("lname", document.getElementById("lname")?.value || "");
+  formData.set("mPhone", document.getElementById("mPhone")?.value || "");
+  formData.set("age", document.getElementById("age")?.value || 0);
+  formData.set("sex", document.getElementById("sex")?.value || "");
+  formData.set("birthday", document.getElementById("birthday")?.value || "");
+  formData.set("address", document.getElementById("address")?.value || "");
+  formData.set("status", document.getElementById("status")?.value || "");
 
-  textFields.forEach(id => {
-    const el = document.getElementById(id);
-    if (id === "schoolName") {
-      // Map to lowercase key for backend
-      formData.set("schoolname", el?.value || "");
-    } else {
-      formData.set(id, el?.value || "");
-    }
-  });
+  // School Name & Occupation
+  formData.set("schoolname", document.getElementById("schoolName")?.value || "");
+  formData.set("occupation", document.getElementById("occupation")?.value || "");
 
-  // ---------------- SELECTS (Yes/No) ----------------
+  // Yes/No selects
   formData.set("pwd", document.getElementById("pwd")?.value || "No");
   formData.set("fourps", document.getElementById("mFourPs")?.value || "No");
 
-  // ---------------- CHECKBOXES (TRUE/FALSE) ----------------
+  // Checkboxes
   formData.set("seniorCitizen", document.getElementById("seniorCitizen")?.checked ? 1 : 0);
   formData.set("vaccinated", document.getElementById("vaccinated")?.checked ? 1 : 0);
   formData.set("voter", document.getElementById("voter")?.checked ? 1 : 0);
 
-  // ---------------- SCHOOL LEVELS ----------------
+  // School Levels
   const schoolLevels = Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value);
   schoolLevels.forEach(level => formData.append("schoollevels[]", level));
 
-  // ---------------- BLOTTER RECORDS ----------------
+  // Blotters
   formData.set("blotter1", document.getElementById("blotter1")?.checked ? "Yes" : "No");
   formData.set("blotter2", document.getElementById("blotter2")?.checked ? "Yes" : "No");
   formData.set("blotter3", document.getElementById("blotter3")?.checked ? "Yes" : "No");
 
-  // ---------------- FILE INPUT ----------------
+  // File
   const validIdInput = document.getElementById("validId");
-  if (validIdInput && validIdInput.files[0]) {
-    formData.set("validId", validIdInput.files[0]);
-  }
+  if(validIdInput?.files[0]) formData.set("validId", validIdInput.files[0]);
 
-  // ---------------- EDIT ID ----------------
-  if (editResidentId) formData.set("id", editResidentId);
+  // Edit ID
+  if(editResidentId) formData.set("id", editResidentId);
 
-  // ---------------- SEND TO SERVER ----------------
   try {
     const res = await fetch("authController.php?action=adminSaveResident", {
       method: "POST",
       body: formData
     });
-
     const data = await res.json();
-
-    if (data.status === "success") {
+    if(data.status === "success") {
       alert(data.message);
       residentModal.style.display = "none";
-      loadResidents(); // reload table
+      loadResidents();
       editResidentId = null;
     } else {
       throw new Error(data.message || "Failed to save resident");
     }
-
-  } catch (err) {
+  } catch(err) {
     console.error(err);
     alert("Failed to save resident: " + err.message);
   }
@@ -1689,6 +1683,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
