@@ -152,47 +152,66 @@ try {
             "message" => "Resident deleted successfully"
         ];
     }
-        /* ---------------- ADMIN GET APPROVED RESIDENTS ---------------- */
+/* ---------------- ADMIN GET APPROVED RESIDENTS ---------------- */
 elseif ($action === "adminGetResidents") {
-    $result = pg_query($conn, "SELECT * FROM registrations WHERE accountstatus='approved' ORDER BY id DESC");
+
+    $result = pg_query($conn, "
+        SELECT *
+        FROM registrations
+        WHERE accountstatus = 'approved'
+        ORDER BY id DESC
+    ");
+
     if (!$result) {
-        throw new Exception("Failed to fetch residents: " . pg_last_error($conn));
+        throw new Exception(pg_last_error($conn));
     }
 
     $residents = [];
+
     while ($row = pg_fetch_assoc($result)) {
-        // Normalize for JS
         $residents[] = [
-            "id" => $row['id'],
+            "id" => (int)$row['id'],
+
+            // BASIC INFO
+            "email" => $row['email'],
             "name" => $row['name'],
             "middlename" => $row['middlename'],
             "lastname" => $row['lastname'],
-            "email" => $row['email'],
             "phone" => $row['phone'],
             "age" => (int)$row['age'],
             "sex" => $row['sex'],
             "birthday" => $row['birthday'],
             "address" => $row['address'],
             "status" => $row['status'],
+
+            // FLAGS
             "pwd" => $row['pwd'],
             "fourps" => $row['fourps'],
-            "seniorcitizen" => (bool)$row['seniorcitizen'],
-            "schoollevels" => $row['schoollevels'],
-            "schoolname" => $row['schoolname'],
-            "occupation" => $row['occupation'],
-            "vaccinated" => (bool)$row['vaccinated'],
-            "voter" => (bool)$row['voter'],
+            "seniorcitizen" => $row['seniorcitizen'] === 't',
+            "vaccinated" => $row['vaccinated'] === 't',
+            "voter" => $row['voter'] === 't',
+
+            // 🔥 IMPORTANT FIXES
+            "schoolLevels" => $row['schoollevels'] ?? "",
+            "schoolName" => $row['schoolname'] ?? "",
+            "occupation" => $row['occupation'] ?? "",
+
+            // BLOTTERS
             "blottertheft" => $row['blottertheft'],
             "blotterdisturbance" => $row['blotterdisturbance'],
             "blotterother" => $row['blotterother'],
+
+            // FILES & STATUS
             "validid" => $row['validid'],
-            "accountStatus" => $row['accountstatus'], // important for JS filter
-            "adminMessage" => $row['adminmessage'] ?? ''
+            "accountStatus" => strtolower($row['accountstatus']),
+            "adminMessage" => $row['adminmessage'] ?? ""
         ];
     }
 
     $response = $residents;
-}/* ---------------- ADMIN SAVE RESIDENT ---------------- */
+}
+
+        /* ---------------- ADMIN SAVE RESIDENT ---------------- */
 elseif ($action === "adminSaveResident") {
     try {
         ini_set('display_errors', 0);
@@ -306,3 +325,4 @@ else {
 
 echo json_encode($response);
 exit();
+
