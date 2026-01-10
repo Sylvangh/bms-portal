@@ -200,16 +200,18 @@ $fields = [
     "status" => $_POST['status'] ?? '',
     "pwd" => ($_POST['pwd'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
     "fourps" => ($_POST['fourps'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
-    "seniorcitizen" => !empty($_POST['seniorCitizen']) ? 'TRUE' : 'FALSE',
+    "seniorcitizen" => !empty($_POST['seniorCitizen']) && $_POST['seniorCitizen'] == 1 ? 'TRUE' : 'FALSE',
     "schoollevels" => !empty($_POST['schoollevels']) ? (is_array($_POST['schoollevels']) ? implode(',', $_POST['schoollevels']) : $_POST['schoollevels']) : '',
     "schoolname" => $_POST['schoolname'] ?? '',
     "occupation" => $_POST['occupation'] ?? '',
-    "vaccinated" => !empty($_POST['vaccinated']) ? 'TRUE' : 'FALSE',
-    "voter" => !empty($_POST['voter']) ? 'TRUE' : 'FALSE',
+    "vaccinated" => !empty($_POST['vaccinated']) && $_POST['vaccinated'] == 1 ? 'TRUE' : 'FALSE',
+    "voter" => !empty($_POST['voter']) && $_POST['voter'] == 1 ? 'TRUE' : 'FALSE',
     "blottertheft" => ($_POST['blotter1'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
     "blotterdisturbance" => ($_POST['blotter2'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
-    "blotterother" => ($_POST['blotter3'] ?? 'No') === 'Yes' ? 'Yes' : 'No'
+    "blotterother" => ($_POST['blotter3'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+    "validid" => $validIdPath ?? null
 ];
+
 
     if ($validIdPath) $fields['validid'] = $validIdPath;
 
@@ -262,6 +264,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
