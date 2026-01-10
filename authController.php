@@ -167,14 +167,101 @@ try {
 
         $response = $residents;
     }
-    else {
-        throw new Exception("Invalid action");
+/* ---------------- ADMIN SAVE RESIDENT ---------------- */
+elseif ($action === "adminSaveResident") {
+    ini_set('display_errors', 0);
+    error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+
+    $id = intval($_POST['id'] ?? 0); // if ID exists = edit, else add
+
+    // --- Handle file upload ---
+    $validIdPath = null;
+    if (isset($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
+        $uploadDir = 'uploads/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+        $filename = uniqid('id_') . '_' . basename($_FILES['validId']['name']);
+        $validIdPath = $uploadDir . $filename;
+
+        if (!move_uploaded_file($_FILES['validId']['tmp_name'], $validIdPath)) {
+            echo json_encode(["status" => "error", "message" => "Failed to move uploaded file"]);
+            exit;
+        }
     }
 
-} catch (Exception $e) {
-    $response = ["status" => "error", "message" => $e->getMessage()];
+    // --- Collect all fields ---
+    $fields = [
+        "email" => $_POST['username'] ?? '',
+        "password" => !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_BCRYPT) : null,
+        "name" => $_POST['fname'] ?? '',
+        "middlename" => $_POST['mname'] ?? '',
+        "lastname" => $_POST['lname'] ?? '',
+        "phone" => $_POST['mPhone'] ?? '',
+        "age" => isset($_POST['age']) ? intval($_POST['age']) : 0,
+        "sex" => $_POST['sex'] ?? '',
+        "birthday" => $_POST['birthday'] ?? '',
+        "address" => $_POST['address'] ?? '',
+        "status" => $_POST['status'] ?? '',
+        "pwd" => (($_POST['pwd'] ?? 'No') === 'Yes') ? "Yes" : "No",
+        "fourps" => (($_POST['fourPs'] ?? 'No') === 'Yes') ? "Yes" : "No",
+        "seniorcitizen" => (($_POST['seniorCitizen'] ?? '0') === '1') ? 'TRUE' : 'FALSE',
+        "schoollevels" => !empty($_POST['schoolLevels']) ? implode(",", $_POST['schoolLevels']) : '',
+        "schoolname" => $_POST['schoolName'] ?? '',
+        "occupation" => $_POST['occupation'] ?? '',
+        "vaccinated" => (($_POST['vaccinated'] ?? '0') === '1') ? 'TRUE' : 'FALSE',
+        "voter" => (($_POST['voter'] ?? '0') === '1') ? 'TRUE' : 'FALSE',
+        "blottertheft" => (($_POST['blotter1'] ?? 'No') === 'Yes') ? 'Yes' : 'No',
+        "blotterdisturbance" => (($_POST['blotter2'] ?? 'No') === 'Yes') ? 'Yes' : 'No',
+        "blotterother" => (($_POST['blotter3'] ?? 'No') === 'Yes') ? 'Yes' : 'No',
+    ];
+
+    if ($validIdPath) $fields['validid'] = $validIdPath;
+
+    // --- ADD RESIDENT ---
+    if (!$id) {
+        $columns = [];
+        $placeholders = [];
+        $values = [];
+        $i = 1;
+
+        foreach ($fields as $k => $v) {
+            if ($v !== null) {
+                $columns[] = $k;
+                $placeholders[] = '$' . $i;
+                $values[] = $v;
+                $i++;
+            }
+        }
+
+        $sql = "INSERT INTO registrations (" . implode(",", $columns) . ") VALUES (" . implode(",", $placeholders) . ")";
+        $result = pg_query_params($conn, $sql, $values);
+
+        if ($result) {
+            $response = ["status" => "success", "message" => "Resident added successfully"];
+        } else {
+            $response = ["status" => "error", "message" => "Error: " . pg_last_error($conn)];
+        }
+
+        pg_close($conn);
+        exit;
+    }
+
+    // --- EDIT RESIDENT ---
+    $set = [];
+    foreach ($fields as $k => $v) {
+        if ($v !== null) {
+            $set[] = "$k='" . pg_escape_string($v) . "'";
+        }
+    }
+
+    $sql = "UPDATE registrations SET " . implode(",", $set) . " WHERE id=$id";
+    $result = pg_query($conn, $sql);
+
+    if ($result) {
+        $response = ["status" => "success", "message" => "Resident updated successfully"];
+    } else {
+        $response = ["status" => "error", "message" => "Error: " . pg_last_error($conn)];
+    }
+
+    pg_close($conn);
+    exit;
 }
-
-echo json_encode($response);
-exit();
-
