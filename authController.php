@@ -152,6 +152,7 @@ try {
             "message" => "Resident deleted successfully"
         ];
     }
+        
 /* ---------------- ADMIN GET APPROVED RESIDENTS ---------------- */
 elseif ($action === "adminGetResidents") {
 
@@ -169,7 +170,7 @@ elseif ($action === "adminGetResidents") {
 
     $response = $residents;
 }
-elseif ($action === "adminSaveResident") {
+  elseif ($action === "adminSaveResident") {
 
     $id = intval($_POST['id'] ?? 0);
     $params = [];
@@ -198,47 +199,54 @@ elseif ($action === "adminSaveResident") {
         "address" => $_POST['address'] ?? '',
         "status" => $_POST['status'] ?? '',
         "pwd" => ($_POST['pwd'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
-        "fourps" => ($_POST['fourPs'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+        "fourps" => ($_POST['fourps'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
         "seniorcitizen" => !empty($_POST['seniorCitizen']) ? 'TRUE' : 'FALSE',
-        "schoollevels" => !empty($_POST['schoollevels']) ? implode(',', $_POST['schoollevels']) : '',
+        "schoollevels" => !empty($_POST['schoollevels']) ? (is_array($_POST['schoollevels']) ? implode(',', $_POST['schoollevels']) : $_POST['schoollevels']) : '',
         "schoolname" => $_POST['schoolname'] ?? '',
         "occupation" => $_POST['occupation'] ?? '',
         "vaccinated" => !empty($_POST['vaccinated']) ? 'TRUE' : 'FALSE',
         "voter" => !empty($_POST['voter']) ? 'TRUE' : 'FALSE',
-        "blottertheft" => !empty($_POST['blotter1']) ? 'Yes' : 'No',
-        "blotterdisturbance" => !empty($_POST['blotter2']) ? 'Yes' : 'No',
-        "blotterother" => !empty($_POST['blotter3']) ? 'Yes' : 'No'
+        "blottertheft" => ($_POST['blotter1'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+        "blotterdisturbance" => ($_POST['blotter2'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
+        "blotterother" => ($_POST['blotter3'] ?? 'No') === 'Yes' ? 'Yes' : 'No'
     ];
 
     if ($validIdPath) $fields['validid'] = $validIdPath;
 
-    // INSERT new resident
-    if (!$id) {
-        $cols = [];
-        $vals = [];
-        $i = 1;
+    $cols = [];
+    $vals = [];
+    $i = 1;
 
-        foreach ($fields as $k => $v) {
-            if ($v !== null) {  // skip nulls
-                $cols[] = $k;
-                $vals[] = '$' . $i;
-                $params[] = $v;
-                $i++;
-            }
+    foreach ($fields as $k => $v) {
+        if ($v !== null) {
+            $cols[] = $k;
+            $vals[] = '$' . $i;
+            $params[] = $v;
+            $i++;
         }
+    }
 
+    if (!$id) {
+        // INSERT
         $sql = "INSERT INTO registrations (" . implode(",", $cols) . ")
                 VALUES (" . implode(",", $vals) . ")";
-
-        $res = pg_query_params($conn, $sql, $params);
-
-        if ($res) {
-            echo json_encode(["status" => "success", "message" => "Resident saved successfully."]);
-        } else {
-            echo json_encode(["status" => "error", "message" => pg_last_error($conn)]);
+    } else {
+        // UPDATE
+        $updatePairs = [];
+        foreach ($cols as $index => $col) {
+            $updatePairs[] = "$col = $" . ($index + 1);
         }
-        exit;
+        $sql = "UPDATE registrations SET " . implode(",", $updatePairs) . " WHERE id = $id";
     }
+
+    $res = pg_query_params($conn, $sql, $params);
+
+    if ($res) {
+        echo json_encode(["status" => "success", "message" => "Resident saved successfully."]);
+    } else {
+        echo json_encode(["status" => "error", "message" => pg_last_error($conn)]);
+    }
+    exit;
 }
 
 
@@ -254,6 +262,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
