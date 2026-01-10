@@ -153,27 +153,57 @@ try {
         ];
     }
         /* ---------------- ADMIN GET APPROVED RESIDENTS ---------------- */
-      elseif ($action === "adminGetResidents") {
+  /* ---------------- ADMIN GET APPROVED RESIDENTS ---------------- */
+elseif ($action === "adminGetResidents") {
 
-        $result = pg_query($conn, "SELECT * FROM registrations WHERE accountstatus='approved'");
-        if (!$result) {
-            throw new Exception(pg_last_error($conn));
-        }
-
-        $residents = [];
-        while ($row = pg_fetch_assoc($result)) {
-            $residents[] = $row;
-        }
-
-        $response = $residents;
+    $result = pg_query($conn, "SELECT * FROM registrations WHERE accountstatus='approved' ORDER BY id DESC");
+    if (!$result) {
+        throw new Exception("Failed to fetch residents: " . pg_last_error($conn));
     }
+
+    $residents = [];
+    while ($row = pg_fetch_assoc($result)) {
+        // Normalize keys and types for JS
+        $residents[] = [
+            "id" => $row['id'],
+            "name" => $row['name'],
+            "middlename" => $row['middlename'],
+            "lastname" => $row['lastname'],
+            "email" => $row['email'],
+            "phone" => $row['phone'],
+            "age" => (int)$row['age'],
+            "sex" => $row['sex'],
+            "birthday" => $row['birthday'],
+            "address" => $row['address'],
+            "status" => $row['status'],
+            "pwd" => $row['pwd'],
+            "fourps" => $row['fourps'],
+            "seniorcitizen" => (bool)$row['seniorcitizen'],
+            "schoolLevels" => $row['schoollevels'],
+            "schoolname" => $row['schoolname'],
+            "occupation" => $row['occupation'],
+            "vaccinated" => (bool)$row['vaccinated'],
+            "voter" => (bool)$row['voter'],
+            "blottertheft" => $row['blottertheft'],
+            "blotterdisturbance" => $row['blotterdisturbance'],
+            "blotterother" => $row['blotterother'],
+            "validid" => $row['validid'],
+            "accountStatus" => $row['accountstatus'], // important for JS filter
+            "adminMessage" => $row['adminmessage'] ?? ''
+        ];
+    }
+
+    $response = $residents;
+}
+}
+
 /* ---------------- ADMIN SAVE RESIDENT ---------------- */
 elseif ($action === "adminSaveResident") {
     try {
         ini_set('display_errors', 0);
         error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
-        $id = intval($_POST['id'] ?? 0); // if ID exists = edit, else add
+        $id = intval($_POST['id'] ?? 0);
 
         // --- Handle file upload ---
         $validIdPath = null;
@@ -188,7 +218,7 @@ elseif ($action === "adminSaveResident") {
             }
         }
 
-        // --- Collect all fields (match DB columns exactly) ---
+        // --- Collect all fields ---
         $fields = [
             "email" => $_POST['username'] ?? '',
             "password" => !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_BCRYPT) : null,
@@ -201,14 +231,14 @@ elseif ($action === "adminSaveResident") {
             "birthday" => $_POST['birthday'] ?? '',
             "address" => $_POST['address'] ?? '',
             "status" => $_POST['status'] ?? '',
-            "pwd" => (($_POST['pwd'] ?? 'No') === 'Yes') ? TRUE : FALSE,
-            "fourps" => (($_POST['fourPs'] ?? 'No') === 'Yes') ? TRUE : FALSE,
-            "seniorcitizen" => (($_POST['seniorCitizen'] ?? '0') === '1') ? TRUE : FALSE,
+            "pwd" => (($_POST['pwd'] ?? 'No') === 'Yes') ? "Yes" : "No",
+            "fourps" => (($_POST['fourPs'] ?? 'No') === 'Yes') ? "Yes" : "No",
+            "seniorcitizen" => (($_POST['seniorCitizen'] ?? '0') === '1') ? 'TRUE' : 'FALSE',
             "schoollevels" => !empty($_POST['schoolLevels']) ? implode(",", $_POST['schoolLevels']) : '',
             "schoolname" => $_POST['schoolName'] ?? '',
             "occupation" => $_POST['occupation'] ?? '',
-            "vaccinated" => (($_POST['vaccinated'] ?? '0') === '1') ? TRUE : FALSE,
-            "voter" => (($_POST['voter'] ?? '0') === '1') ? TRUE : FALSE,
+            "vaccinated" => (($_POST['vaccinated'] ?? '0') === '1') ? 'TRUE' : 'FALSE',
+            "voter" => (($_POST['voter'] ?? '0') === '1') ? 'TRUE' : 'FALSE',
             "blottertheft" => (($_POST['blotter1'] ?? 'No') === 'Yes') ? 'Yes' : 'No',
             "blotterdisturbance" => (($_POST['blotter2'] ?? 'No') === 'Yes') ? 'Yes' : 'No',
             "blotterother" => (($_POST['blotter3'] ?? 'No') === 'Yes') ? 'Yes' : 'No',
@@ -236,7 +266,7 @@ elseif ($action === "adminSaveResident") {
             $result = pg_query_params($conn, $sql, $values);
 
             if (!$result) {
-                throw new Exception("Failed to add resident: " . pg_last_error($conn));
+                throw new Exception("Error inserting resident: " . pg_last_error($conn));
             }
 
             $response = ["status" => "success", "message" => "Resident added successfully"];
@@ -248,12 +278,7 @@ elseif ($action === "adminSaveResident") {
         $set = [];
         foreach ($fields as $k => $v) {
             if ($v !== null) {
-                // boolean TRUE/FALSE should not be quoted
-                if (in_array($k, ['pwd','fourps','seniorcitizen','vaccinated','voter'])) {
-                    $set[] = "$k=" . ($v ? 'TRUE' : 'FALSE');
-                } else {
-                    $set[] = "$k='" . pg_escape_string($v) . "'";
-                }
+                $set[] = "$k='" . pg_escape_string($v) . "'";
             }
         }
 
@@ -261,7 +286,7 @@ elseif ($action === "adminSaveResident") {
         $result = pg_query($conn, $sql);
 
         if (!$result) {
-            throw new Exception("Failed to update resident: " . pg_last_error($conn));
+            throw new Exception("Error updating resident: " . pg_last_error($conn));
         }
 
         $response = ["status" => "success", "message" => "Resident updated successfully"];
@@ -287,4 +312,5 @@ else {
 
 echo json_encode($response);
 exit();
+
 
