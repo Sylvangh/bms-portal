@@ -794,19 +794,21 @@ button.info {
         </fieldset>
         <fieldset style="margin-bottom:15px;">
           <legend>School Level</legend>
-          <label><input type="checkbox" class="school" value="Elementary"> Elementary</label>
-          <label><input type="checkbox" class="school" value="Junior High"> Junior High</label>
-          <label><input type="checkbox" class="school" value="Senior High"> Senior High</label>
-          <label><input type="checkbox" class="school" value="College"> College</label>
+   <label><input type="checkbox" class="school" name="schoollevels[]" value="Elementary"> Elementary</label>
+<label><input type="checkbox" class="school" name="schoollevels[]" value="Junior High"> Junior High</label>
+<label><input type="checkbox" class="school" name="schoollevels[]" value="Senior High"> Senior High</label>
+<label><input type="checkbox" class="school" name="schoollevels[]" value="College"> College</label>
+
         </fieldset>
-        <div class="form-group">
-          <input type="text" id="schoolName" placeholder=" ">
-          <label>Name of School</label>
-        </div>
-        <div class="form-group">
-          <input type="text" id="occupation" placeholder=" ">
-          <label>Occupation</label>
-        </div>
+   <div class="form-group">
+  <input type="text" id="schoolName" name="schoolname" placeholder=" ">
+  <label>Name of School</label>
+</div>
+
+<div class="form-group">
+  <input type="text" id="occupation" name="occupation" placeholder=" ">
+  <label>Occupation</label>
+</div>
         <fieldset>
           <label><input type="checkbox" id="vaccinated"> Vaccinated</label>
         </fieldset>
