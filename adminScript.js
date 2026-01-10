@@ -652,7 +652,7 @@ recordItems.forEach(item => {
     currentSort ? sortResidents(currentSort) : renderTable(filteredData);
     document.getElementById("filterModal").style.display = "none";
   };
-// ----------------- EDIT MODAL -----------------
+
 async function editResident(id) {
   editResidentId = id;
   modalTitle.textContent = "Edit Resident";
@@ -660,12 +660,12 @@ async function editResident(id) {
   try {
     const res = await fetch("authController.php?action=adminGetResidents");
     const text = await res.text();
-    const data = JSON.parse(text);
+    let data = JSON.parse(text);
 
     const resident = data.find(r => r.id == id);
     if (!resident) throw new Error("Resident not found");
 
-    // ----- TEXT FIELDS -----
+    // ---------------- TEXT ----------------
     document.getElementById("username").value = resident.email || "";
     document.getElementById("password").value = "";
     document.getElementById("fname").value = resident.name || "";
@@ -680,25 +680,26 @@ async function editResident(id) {
     document.getElementById("schoolName").value = resident.schoolname || "";
     document.getElementById("occupation").value = resident.occupation || "";
 
-    // ----- SELECTS -----
+    // ---------------- SELECTS ----------------
     document.getElementById("pwd").value = resident.pwd || "No";
     document.getElementById("mFourPs").value = resident.fourps || "No";
 
-    // ----- CHECKBOXES (Yes/No in DB) -----
-    document.getElementById("seniorCitizen").checked = resident.seniorcitizen === "Yes";
-    document.getElementById("vaccinated").checked   = resident.vaccinated === "Yes";
-    document.getElementById("voter").checked        = resident.voter === "Yes";
+    // ---------------- CHECKBOXES ----------------
+document.getElementById("seniorCitizen").checked = resident.seniorcitizen === "Yes";
+document.getElementById("vaccinated").checked   = resident.vaccinated === "Yes";
+document.getElementById("voter").checked        = resident.voter === "Yes";
 
-    // ----- SCHOOL LEVELS -----
+
+    // ---------------- SCHOOL LEVELS ----------------
     const levels = resident.schoollevels ? resident.schoollevels.split(",") : [];
     document.querySelectorAll(".school").forEach(cb => cb.checked = levels.includes(cb.value));
 
-    // ----- BLOTTERS -----
+    // ---------------- BLOTTERS ----------------
     document.getElementById("blotter1").checked = resident.blottertheft === "Yes";
     document.getElementById("blotter2").checked = resident.blotterdisturbance === "Yes";
     document.getElementById("blotter3").checked = resident.blotterother === "Yes";
 
-    // ----- VALID ID PREVIEW -----
+    // ---------------- FILE PREVIEW ----------------
     document.getElementById("previewImg").src = resident.validid || "";
 
     residentModal.style.display = "block";
@@ -708,63 +709,6 @@ async function editResident(id) {
     alert(err.message);
   }
 }
-// ----------------- EDIT MODAL -----------------
-async function editResident(id) {
-  editResidentId = id;
-  modalTitle.textContent = "Edit Resident";
-
-  try {
-    const res = await fetch("authController.php?action=adminGetResidents");
-    const text = await res.text();
-    const data = JSON.parse(text);
-
-    const resident = data.find(r => r.id == id);
-    if (!resident) throw new Error("Resident not found");
-
-    // ----- TEXT FIELDS -----
-    document.getElementById("username").value = resident.email || "";
-    document.getElementById("password").value = "";
-    document.getElementById("fname").value = resident.name || "";
-    document.getElementById("mname").value = resident.middlename || "";
-    document.getElementById("lname").value = resident.lastname || "";
-    document.getElementById("mPhone").value = resident.phone || "";
-    document.getElementById("age").value = resident.age || 0;
-    document.getElementById("sex").value = resident.sex || "";
-    document.getElementById("birthday").value = resident.birthday || "";
-    document.getElementById("address").value = resident.address || "";
-    document.getElementById("status").value = resident.status || "";
-    document.getElementById("schoolName").value = resident.schoolname || "";
-    document.getElementById("occupation").value = resident.occupation || "";
-
-    // ----- SELECTS -----
-    document.getElementById("pwd").value = resident.pwd || "No";
-    document.getElementById("mFourPs").value = resident.fourps || "No";
-
-    // ----- CHECKBOXES (Yes/No in DB) -----
-    document.getElementById("seniorCitizen").checked = resident.seniorcitizen === "Yes";
-    document.getElementById("vaccinated").checked   = resident.vaccinated === "Yes";
-    document.getElementById("voter").checked        = resident.voter === "Yes";
-
-    // ----- SCHOOL LEVELS -----
-    const levels = resident.schoollevels ? resident.schoollevels.split(",") : [];
-    document.querySelectorAll(".school").forEach(cb => cb.checked = levels.includes(cb.value));
-
-    // ----- BLOTTERS -----
-    document.getElementById("blotter1").checked = resident.blottertheft === "Yes";
-    document.getElementById("blotter2").checked = resident.blotterdisturbance === "Yes";
-    document.getElementById("blotter3").checked = resident.blotterother === "Yes";
-
-    // ----- VALID ID PREVIEW -----
-    document.getElementById("previewImg").src = resident.validid || "";
-
-    residentModal.style.display = "block";
-
-  } catch(err) {
-    console.error(err);
-    alert(err.message);
-  }
-}
-
 
 
 
@@ -781,54 +725,78 @@ async function editResident(id) {
     }
   }
 
-
-// ----------------- FORM SUBMIT -----------------
 residentForm.addEventListener("submit", async e => {
   e.preventDefault();
   const formData = new FormData();
 
-  // Text fields
-  ["username","password","fname","mname","lname","mPhone","age","sex","birthday","address","status","schoolName","occupation"].forEach(id => {
-    formData.set(id, document.getElementById(id)?.value || "");
-  });
+  // ---------------- TEXT INPUTS ----------------
+  formData.set("username", document.getElementById("username")?.value || "");
+  if(document.getElementById("password")?.value) {
+    formData.set("password", document.getElementById("password").value);
+  }
+  formData.set("fname", document.getElementById("fname")?.value || "");
+  formData.set("mname", document.getElementById("mname")?.value || "");
+  formData.set("lname", document.getElementById("lname")?.value || "");
+  formData.set("mPhone", document.getElementById("mPhone")?.value || "");
+  formData.set("age", document.getElementById("age")?.value || 0);
+  formData.set("sex", document.getElementById("sex")?.value || "");
+  formData.set("birthday", document.getElementById("birthday")?.value || "");
+  formData.set("address", document.getElementById("address")?.value || "");
+  formData.set("status", document.getElementById("status")?.value || "");
 
-  // Selects
+  // School Name & Occupation
+  formData.set("schoolname", document.getElementById("schoolName")?.value || "");
+  formData.set("occupation", document.getElementById("occupation")?.value || "");
+
+  // ---------------- SELECTS (Yes/No) ----------------
   formData.set("pwd", document.getElementById("pwd")?.value || "No");
   formData.set("fourps", document.getElementById("mFourPs")?.value || "No");
 
-  // Checkboxes → '1'/'0'
-  formData.set("seniorCitizen", document.getElementById("seniorCitizen")?.checked ? '1' : '0');
-  formData.set("vaccinated", document.getElementById("vaccinated")?.checked ? '1' : '0');
-  formData.set("voter", document.getElementById("voter")?.checked ? '1' : '0');
+  // ---------------- CHECKBOXES (1/0) ----------------
+formData.set("seniorCitizen", document.getElementById("seniorCitizen")?.checked ? '1' : '0');
+formData.set("vaccinated",   document.getElementById("vaccinated")?.checked ? '1' : '0');
+formData.set("voter",        document.getElementById("voter")?.checked ? '1' : '0');
 
-  // School Levels
-  const levels = Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value);
-  formData.set("schoollevels", levels.join(","));
 
-  // Blotters
-  ["blotter1","blotter2","blotter3"].forEach(id => {
-    formData.set(id, document.getElementById(id)?.checked ? "Yes" : "No");
-  });
+  // ---------------- SCHOOL LEVELS ----------------
+  const schoolLevels = Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value);
+  schoolLevels.forEach(level => formData.append("schoollevels[]", level));
 
-  // Valid ID
+  // ---------------- BLOTTER RECORDS ----------------
+  formData.set("blotter1", document.getElementById("blotter1")?.checked ? "Yes" : "No");
+  formData.set("blotter2", document.getElementById("blotter2")?.checked ? "Yes" : "No");
+  formData.set("blotter3", document.getElementById("blotter3")?.checked ? "Yes" : "No");
+
+  // ---------------- FILE INPUT ----------------
   const validIdInput = document.getElementById("validId");
   if(validIdInput?.files[0]) formData.set("validId", validIdInput.files[0]);
 
-  // Edit ID
+  // ---------------- EDIT ID ----------------
   if(editResidentId) formData.set("id", editResidentId);
 
+  // ---------------- SEND TO SERVER ----------------
   try {
-    const res = await fetch("authController.php?action=adminSaveResident", {method:"POST", body:formData});
+    const res = await fetch("authController.php?action=adminSaveResident", {
+      method: "POST",
+      body: formData
+    });
+
     const data = await res.json();
-    alert(data.message);
-    residentModal.style.display = "none";
-    loadResidents();
-    editResidentId = null;
+
+    if(data.status === "success") {
+      alert(data.message);
+      residentModal.style.display = "none";
+      loadResidents(); // refresh table
+      editResidentId = null;
+    } else {
+      throw new Error(data.message || "Failed to save resident");
+    }
   } catch(err) {
     console.error(err);
-    alert("Failed to save resident");
+    alert("Failed to save resident: " + err.message);
   }
 });
+
 
   // ---------------- FILE PREVIEW ----------------
   const validIdInput = document.getElementById("validId");
@@ -1709,8 +1677,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
-
-
 
 
 
