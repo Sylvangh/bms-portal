@@ -153,9 +153,7 @@ try {
         ];
     }
         /* ---------------- ADMIN GET APPROVED RESIDENTS ---------------- */
-  /* ---------------- ADMIN GET APPROVED RESIDENTS ---------------- */
 elseif ($action === "adminGetResidents") {
-
     $result = pg_query($conn, "SELECT * FROM registrations WHERE accountstatus='approved' ORDER BY id DESC");
     if (!$result) {
         throw new Exception("Failed to fetch residents: " . pg_last_error($conn));
@@ -163,7 +161,7 @@ elseif ($action === "adminGetResidents") {
 
     $residents = [];
     while ($row = pg_fetch_assoc($result)) {
-        // Normalize keys and types for JS
+        // Normalize for JS
         $residents[] = [
             "id" => $row['id'],
             "name" => $row['name'],
@@ -179,7 +177,7 @@ elseif ($action === "adminGetResidents") {
             "pwd" => $row['pwd'],
             "fourps" => $row['fourps'],
             "seniorcitizen" => (bool)$row['seniorcitizen'],
-            "schoolLevels" => $row['schoollevels'],
+            "schoollevels" => $row['schoollevels'],
             "schoolname" => $row['schoolname'],
             "occupation" => $row['occupation'],
             "vaccinated" => (bool)$row['vaccinated'],
@@ -194,10 +192,7 @@ elseif ($action === "adminGetResidents") {
     }
 
     $response = $residents;
-}
-}
-
-/* ---------------- ADMIN SAVE RESIDENT ---------------- */
+}/* ---------------- ADMIN SAVE RESIDENT ---------------- */
 elseif ($action === "adminSaveResident") {
     try {
         ini_set('display_errors', 0);
@@ -300,7 +295,6 @@ elseif ($action === "adminSaveResident") {
         exit;
     }
 }
-
 /* ---------------- INVALID ACTION ---------------- */
 else {
     throw new Exception("Invalid action");
@@ -312,5 +306,3 @@ else {
 
 echo json_encode($response);
 exit();
-
-
