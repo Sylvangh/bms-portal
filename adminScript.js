@@ -658,17 +658,15 @@ function renderTable(data) {
   };
 
 
-
 async function editResident(id) {
   editResidentId = id;
   modalTitle.textContent = "Edit Resident";
 
   try {
     const res = await fetch("authController.php?action=adminGetResidents");
-    
-    // Handle non-JSON responses
     const text = await res.text();
     let data;
+
     try {
       data = JSON.parse(text);
     } catch {
@@ -678,40 +676,47 @@ async function editResident(id) {
     const resident = data.find(r => r.id == id);
     if (!resident) throw new Error("Resident not found");
 
-    // ----- Fill form fields -----
-    document.getElementById("username").value = resident.email;
-    document.getElementById("password").value = ""; 
-    document.getElementById("fname").value = resident.name;
-    document.getElementById("mname").value = resident.middlename;
-    document.getElementById("lname").value = resident.lastname;
-    document.getElementById("mPhone").value = resident.phone;
-    document.getElementById("age").value = resident.age;
-    document.getElementById("sex").value = resident.sex;
-    document.getElementById("birthday").value = resident.birthday;
-    document.getElementById("address").value = resident.address;
-    document.getElementById("status").value = resident.status;
+    // ---------------- TEXT INPUTS ----------------
+    document.getElementById("username").value = resident.email || "";
+    document.getElementById("password").value = ""; // leave empty
+    document.getElementById("fname").value = resident.name || "";
+    document.getElementById("mname").value = resident.middlename || "";
+    document.getElementById("lname").value = resident.lastname || "";
+    document.getElementById("mPhone").value = resident.phone || "";
+    document.getElementById("age").value = resident.age || 0;
+    document.getElementById("sex").value = resident.sex || "";
+    document.getElementById("birthday").value = resident.birthday || "";
+    document.getElementById("address").value = resident.address || "";
+    document.getElementById("status").value = resident.status || "";
 
-    
-document.getElementById("pwd").value = resident.pwd; // Yes/No
-document.getElementById("mFourPs").value = resident.fourps; // Yes/No
+    // ---------------- SCHOOL NAME & OCCUPATION ----------------
+    document.getElementById("schoolName").value = resident.schoolname || "";
+    document.getElementById("occupation").value = resident.occupation || "";
 
+    // ---------------- SELECTS (Yes/No) ----------------
+    document.getElementById("pwd").value = resident.pwd || "No";
+    document.getElementById("mFourPs").value = resident.fourps || "No";
 
-document.getElementById("seniorCitizen").checked = resident.seniorcitizen === "TRUE";
-document.getElementById("vaccinated").checked = resident.vaccinated === "TRUE";
-document.getElementById("voter").checked = resident.voter === "TRUE";
+    // ---------------- CHECKBOXES ----------------
+    document.getElementById("seniorCitizen").checked = resident.seniorcitizen === "TRUE";
+    document.getElementById("vaccinated").checked = resident.vaccinated === "TRUE";
+    document.getElementById("voter").checked = resident.voter === "TRUE";
 
+    // ---------------- SCHOOL LEVELS ----------------
+    const levels = resident.schoollevels ? resident.schoollevels.split(",") : [];
+    document.querySelectorAll(".school").forEach(cb => {
+      cb.checked = levels.includes(cb.value);
+    });
 
-document.querySelectorAll(".school").forEach(cb => {
-  cb.checked = resident.schoollevels?.split(",").includes(cb.value);
-});
+    // ---------------- BLOTTER RECORDS ----------------
+    document.getElementById("blotter1").checked = resident.blottertheft === "Yes";
+    document.getElementById("blotter2").checked = resident.blotterdisturbance === "Yes";
+    document.getElementById("blotter3").checked = resident.blotterother === "Yes";
 
-
-document.getElementById("blotter1").checked = resident.blottertheft === "Yes";
-document.getElementById("blotter2").checked = resident.blotterdisturbance === "Yes";
-document.getElementById("blotter3").checked = resident.blotterother === "Yes";
-
+    // ---------------- FILE PREVIEW ----------------
     document.getElementById("previewImg").src = resident.validid || "";
 
+    // Show modal
     residentModal.style.display = "block";
 
   } catch(err) {
@@ -719,7 +724,6 @@ document.getElementById("blotter3").checked = resident.blotterother === "Yes";
     alert(err.message);
   }
 }
-
 
 
   async function deleteResident(id) {
@@ -1683,6 +1687,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
