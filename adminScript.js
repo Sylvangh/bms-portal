@@ -589,7 +589,12 @@ function renderTable(data) {
       <td>${r.occupation ?? ""}</td>
       <td>${vaccinated}</td>
       <td>${voter}</td>
-      <td>${r.validid ? `<img src="/${r.validid}" width="50" />` : ""}</td>
+    <td>
+  ${r.validid 
+    ? `<img src="${r.validid.startsWith('/') ? r.validid : '/' + r.validid}" width="50" />` 
+    : ""}
+</td>
+
       <td>
         <button class="editBtn" data-id="${r.id}">Edit</button>
         <button class="deleteBtn" data-id="${r.id}">Delete</button>
@@ -715,19 +720,18 @@ async function editResident(id) {
     document.getElementById("blotter2").checked = resident.blotterdisturbance === "Yes";
     document.getElementById("blotter3").checked = resident.blotterother === "Yes";
 
-    // ---------------- FILE PREVIEW ----------------
-    const preview = document.getElementById("previewImg");
+// ---------------- FILE PREVIEW ----------------
+    // Add leading slash if missing, for browser path
+    const previewImg = document.getElementById("previewImg");
     if (resident.validid) {
-      preview.src = resident.validid;
-      preview.style.display = "block";
+      previewImg.src = resident.validid.startsWith("/") ? resident.validid : "/" + resident.validid;
     } else {
-      preview.src = "";
-      preview.style.display = "none";
+      previewImg.src = ""; // no image
     }
 
     residentModal.style.display = "block";
 
-  } catch (err) {
+  } catch(err) {
     console.error(err);
     alert(err.message);
   }
@@ -1707,6 +1711,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
