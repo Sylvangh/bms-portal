@@ -560,11 +560,14 @@ elseif ($action === "getResident") {
     echo json_encode($announcements);
     exit;
 }
-
+        
 elseif ($action === 'updateCertificateFees') {
+    // Read JSON input instead of $_POST
+    $input = json_decode(file_get_contents('php://input'), true);
 
-    // Check that all required fields exist
-    if (!isset($_POST['clearance'], $_POST['residency'], $_POST['indigency'], $_POST['business'])) {
+    $fees = $input['fees'] ?? null;
+
+    if (!$fees) {
         echo json_encode([
             "status" => "error",
             "message" => "No fees data received"
@@ -573,25 +576,19 @@ elseif ($action === 'updateCertificateFees') {
     }
 
     // Sanitize values
-    $clearance = intval($_POST['clearance']);
-    $residency = intval($_POST['residency']);
-    $indigency = intval($_POST['indigency']);
-    $business  = intval($_POST['business']);
+    $clearance = intval($fees['clearance'] ?? 0);
+    $residency = intval($fees['residency'] ?? 0);
+    $indigency = intval($fees['indigency'] ?? 0);
+    $business  = intval($fees['business'] ?? 0);
 
     // Update single-row table
-    $sql = "
-        UPDATE certificate_fees
-        SET clearance = $1,
-            residency = $2,
-            indigency = $3,
-            business = $4
-    ";
+    $sql = "UPDATE certificate_fees
+            SET clearance = $1,
+                residency = $2,
+                indigency = $3,
+                business = $4";
 
-    $result = pg_query_params(
-        $conn,
-        $sql,
-        [$clearance, $residency, $indigency, $business]
-    );
+    $result = pg_query_params($conn, $sql, [$clearance, $residency, $indigency, $business]);
 
     if ($result) {
         echo json_encode([
@@ -604,7 +601,6 @@ elseif ($action === 'updateCertificateFees') {
             "message" => pg_last_error($conn)
         ]);
     }
-
     exit;
 }
 
@@ -620,6 +616,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
