@@ -560,11 +560,10 @@ elseif ($action === "getResident") {
     echo json_encode($announcements);
     exit;
 }
+
         
 elseif ($action === 'updateCertificateFees') {
-    // Read JSON input instead of $_POST
     $input = json_decode(file_get_contents('php://input'), true);
-
     $fees = $input['fees'] ?? null;
 
     if (!$fees) {
@@ -575,18 +574,26 @@ elseif ($action === 'updateCertificateFees') {
         exit;
     }
 
-    // Sanitize values
     $clearance = intval($fees['clearance'] ?? 0);
     $residency = intval($fees['residency'] ?? 0);
     $indigency = intval($fees['indigency'] ?? 0);
     $business  = intval($fees['business'] ?? 0);
 
-    // Update single-row table
-    $sql = "UPDATE certificate_fees
-            SET clearance = $1,
-                residency = $2,
-                indigency = $3,
-                business = $4";
+    // Ensure the row exists
+    $rowCheck = pg_query($conn, "SELECT id FROM certificate_fees LIMIT 1");
+    if (pg_num_rows($rowCheck) > 0) {
+        // UPDATE existing row
+        $sql = "UPDATE certificate_fees SET
+                    clearance = $1,
+                    residency = $2,
+                    indigency = $3,
+                    business = $4
+                WHERE id = (SELECT id FROM certificate_fees LIMIT 1)";
+    } else {
+        // INSERT a new row if table empty
+        $sql = "INSERT INTO certificate_fees (clearance, residency, indigency, business)
+                VALUES ($1, $2, $3, $4)";
+    }
 
     $result = pg_query_params($conn, $sql, [$clearance, $residency, $indigency, $business]);
 
@@ -616,6 +623,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
