@@ -1,0 +1,243 @@
+<style>
+/* ====== TABLE MANAGER CONTAINER ====== */
+.table-manager {
+  background: rgba(37, 99, 235, 0.1); /* semi-transparent sharp blue */
+  backdrop-filter: blur(12px); 
+  border-radius: 16px;
+  padding: 25px 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15); 
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.table-manager:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(37, 99, 235, 0.25);
+}
+
+.table-manager h2 {
+  margin-bottom: 15px;
+  font-size: 1.6rem;
+  color: #1f2937;
+}
+
+/* Fieldset & Checkbox styling */
+.table-manager fieldset {
+  border: 1px solid rgba(37,99,235,0.4);
+  border-radius: 12px;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  color: #1f2937;
+}
+
+.table-manager label {
+  display: inline-block;
+  margin-right: 15px;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+/* Inputs & filter box */
+.table-manager input[type="text"] {
+  width: 100%;
+  max-width: 300px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(37,99,235,0.4);
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.table-manager input[type="text"]:focus {
+  border-color: #2563eb;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37,99,235,0.3);
+}
+
+/* Buttons */
+.table-manager button {
+  padding: 8px 18px;
+  margin-right: 10px;
+  border: none;
+  border-radius: 8px;
+  background-color: #2563eb;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.table-manager button:hover {
+  background-color: #1d4ed8;
+}
+
+/* Table styling */
+#dynamicTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+#dynamicTable th, #dynamicTable td {
+  padding: 10px 12px;
+  border: 1px solid rgba(37,99,235,0.4);
+  text-align: left;
+}
+
+#dynamicTable th {
+  background-color: rgba(37,99,235,0.2);
+  font-weight: 600;
+}
+
+/* ===== Hover & transform for Resident List Buttons ===== */
+.action-buttons .btn {
+  transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.action-buttons .btn:hover {
+  background-color: #1d4ed8;  /* darker blue on hover */
+  transform: translateY(-3px); /* slight lift */
+  box-shadow: 0 6px 12px rgba(37,99,235,0.25); /* subtle shadow */
+}
+
+/* Optional: add small spacing for icons inside buttons */
+.action-buttons .btn i {
+  margin-right: 6px;
+}
+
+/* ===== Hover & transform for Table Manager Buttons ===== */
+.table-manager button {
+  position: relative;
+  overflow: hidden;
+  padding: 8px 18px;
+  margin-right: 10px;
+  border: none;
+  border-radius: 8px;
+  background-color: #2563eb;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Ripple effect */
+.table-manager button:after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.table-manager button:active:after {
+  width: 200px;
+  height: 200px;
+  transition: 0s;
+}
+
+/* Hover color + lift */
+.table-manager button:hover {
+  background-color: #1d4ed8;   /* darker blue on hover */
+  transform: translateY(-3px);  /* slight lift */
+  box-shadow: 0 6px 12px rgba(37,99,235,0.25); /* subtle shadow */
+}
+
+/* Optional: spacing for icons inside buttons */
+.table-manager button i {
+  margin-right: 6px;
+}
+
+/* Specific colors for delete/edit buttons */
+.table-manager button.btn-delete:hover {
+  background-color: #b91c1c;
+}
+
+.table-manager button.btn-edit:hover {
+  background-color: #d97706;
+}
+
+
+</style>
+
+<div class="table-manager">
+  <h2>Table Manager</h2>
+
+  <fieldset>
+    <legend>Select Columns</legend>
+    <label><input type="checkbox" class="column-option" value="name" checked> Name</label>
+    <label><input type="checkbox" class="column-option" value="middlename" checked> Middle name</label>
+    <label><input type="checkbox" class="column-option" value="lastname" checked> Surname</label>
+    <label><input type="checkbox" class="column-option" value="schoolName" checked> School Name</label>
+    <label><input type="checkbox" class="column-option" value="occupation" checked> Occupation</label>
+    <label><input type="checkbox" class="column-option" value="schoolLevels"> School Level</label>
+    <label><input type="checkbox" class="column-option" value="age"> Age</label>
+    <label><input type="checkbox" class="column-option" value="sex"> Sex</label>
+    <label><input type="checkbox" class="column-option" value="status"> Civil Status</label>
+    <label><input type="checkbox" class="column-option" value="pwd"> PWD</label>
+    <label><input type="checkbox" class="column-option" value="fourPs"> 4Ps</label>
+    <label><input type="checkbox" class="column-option" value="voter"> Voter</label>
+    <label><input type="checkbox" class="column-option" value="seniorCitizen"> Senior Citizen</label>
+<label>
+  <input type="checkbox" id="filter30Plus"> 30yrs old+
+</label>
+
+    <!-- School Level Columns -->
+     <br>
+     <br>
+    <p>
+        <i class="fas fa-info-circle "></i>  Filter: You cannot run this at the same time just pick one: </li>
+      </p>
+<label><input type="radio" name="schoolFilter" value="college"> College</label>
+<label><input type="radio" name="schoolFilter" value="seniorHigh"> Senior High</label>
+<label><input type="radio" name="schoolFilter" value="juniorHigh"> Junior High</label>
+<label><input type="radio" name="schoolFilter" value="elementary"> Elementary</label>
+
+
+  </fieldset>
+
+  <input type="text" id="filterInput" placeholder="Filter by Name / School...">
+
+<button id="btnGenerateTable" class="btn btn-add">
+  <i class="fa-solid fa-table"></i> Generate Table
+</button>
+<button id="btnAddRow" class="btn btn-add">
+  <i class="fa-solid fa-plus"></i> Add New Row
+</button>
+<button id="btnAddColumn" class="btn btn-add">
+  <i class="fa-solid fa-columns"></i> Add Custom Column
+</button>
+<button id="btnToggleDelete" class="btn btn-delete">
+  <i class="fa-solid fa-trash"></i> Delete Mode
+</button>
+<button id="btnSetTitle" class="btn btn-edit">
+  <i class="fa-solid fa-heading"></i> Set Table Title
+</button>
+<button id="btnPrintTable" class="btn btn-add">
+  <i class="fa-solid fa-print"></i> Print Table
+</button>
+<br>
+
+<button id="btnUndo" class="btn btn-add">
+  <i class="fas fa-undo"></i> Undo
+</button>
+
+<button id="btnRedo" class="btn btn-add">
+  <i class="fas fa-redo"></i> Redo
+</button>
+
+<p id="yesCount" style="margin-top:10px; font-weight:bold;">
+  Showing: 0 result(s)
+</p>
+
+  <table id="dynamicTable">
+    <thead></thead>
+    <tbody></tbody>
+  </table>
+</div>
+

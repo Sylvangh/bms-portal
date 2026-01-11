@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Manage Residents</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* ====== GENERAL CONTENT BOX ====== */
+
+
+    .content-box {
+      background: rgb(255, 255, 255);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 25px 20px;
+      margin-bottom: 25px;
+      box-shadow: 0 10px 25px rgb(251, 249, 249);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    }
+    .content-box:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgb(255, 255, 255);
+    }
+
+    h1,h3 {
+      margin-bottom: 20px;
+    }
+
+    /* Buttons */
+
+
+    /* Inputs */
+    input, select, input[type="file"] {
+      display: block;
+      width: 100%;
+      max-width: 420px;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(37,99,235,0.4);
+      border-radius: 8px;
+      font-size: 1rem;
+      background: rgba(255,255,255,0.7);
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37,99,235,0.3);
+      outline: none;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid rgba(37,99,235,0.3);
+      transition: background 0.25s;
+    }
+    th { background: rgba(37,99,235,0.15); font-weight: bold; }
+    tr:hover { background: rgba(37, 99, 235, 0.08); cursor: pointer; }
+
+
+
+/* ======================= */
+/* FORM & MODAL IMPROVEMENTS */
+/* ======================= */
+
+/* General input, select, checkbox styling */
+input, select, input[type="file"], textarea {
+  font-size: 1.1rem; /* bigger font */
+  padding: 14px 16px; /* more padding for comfort */
+  border: 1px solid rgba(37,99,235,0.3);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.85); /* softer background */
+  color: #1e293b; /* readable dark font */
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.25);
+  outline: none;
+}
+
+/* Form labels */
+label {
+  font-size: 1rem;
+  color: #1e293b;
+}
+
+/* Floating labels */
+.form-group label {
+  background: rgba(255,255,255,0.9); /* lighter background for readability */
+  color: #334155; /* soft dark gray */
+  font-size: 1rem;
+  padding: 0 6px;
+}
+
+/* Checkboxes and radio buttons */
+input[type="checkbox"], input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #2563eb; /* nice friendly blue */
+  margin-right: 10px;
+}
+
+fieldset label {
+  font-size: 1.05rem; /* bigger label for adults */
+  color: #1f2937; /* soft dark color */
+  margin-right: 20px;
+  cursor: pointer;
+}
+
+/* School level checkboxes */
+.school {
+  width: 22px;
+  height: 22px;
+  accent-color: #2563eb;
+}
+
+/* Fieldset styling */
+fieldset {
+  border: 1px solid rgba(37,99,235,0.2);
+  border-radius: 12px;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  background: rgba(255,255,255,0.9);
+}
+
+/* Save button bigger and friendlier */
+#residentForm button[type="submit"] {
+  font-size: 1.1rem;
+  padding: 12px 20px;
+  border-radius: 12px;
+  background-color: #3b82f6; /* friendlier blue */
+}
+
+#residentForm button[type="submit"]:hover {
+  background-color: #2563eb;
+}
+
+    /* Modals */
+/* Modals */
+.modal {
+  display: none;
+  position: fixed; /* stay fixed on screen */
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(184, 183, 183, 0.342);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal.show { /* class to show modal */
+  display: flex;
+}
+/* ============================= */
+/* FRIENDLY, READABLE FORM LABELS */
+/* ============================= */
+
+/* Form group labels (questions) */
+.form-group label {
+  font-size: 1.2rem;         /* bigger font */
+  font-weight: 600;          /* more emphasis */
+  color: #1e3a8a;            /* friendly blue for contrast */
+  display: block;
+  margin-bottom: 6px;        /* space between label and input */
+  text-shadow: 0.5px 0.5px 0 rgba(0,0,0,0.05); /* subtle depth */
+}
+
+/* For floating labels */
+.form-group input:focus + label,
+.form-group input:not(:placeholder-shown) + label,
+.form-group select:focus + label,
+.form-group select:not([value=""]) + label {
+  top: -10px;
+  left: 10px;
+  font-size: 0.9rem;
+  color: #1e3a8a;
+  font-weight: 600;
+}
+
+/* Fieldset legends (School Level, etc) */
+fieldset legend {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1e3a8a;
+  padding: 0 6px;
+}
+
+/* Checkbox labels (Senior Citizen, Voter, etc) */
+fieldset label {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #1f2937;  /* soft dark color, readable */
+  cursor: pointer;
+}
+
+/* Input placeholders (optional) */
+input::placeholder {
+  color: rgba(30,41,59,0.5);
+  font-size: 1rem;
+}
+
+.modal-content {
+  background: rgba(52, 106, 223, 0.315);
+  backdrop-filter: blur(12px);
+  padding: 25px 20px;
+  border-radius: 16px;
+  width: 450px;
+  max-height: 90%;
+  overflow-y: auto;
+  text-align: left;
+
+  /* Center on screen */
+  position: fixed; /* changed from absolute */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  /* Animation */
+  animation: popIn 0.3s ease forwards;
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15);
+}
+
+/* Smooth pop-in animation */
+@keyframes popIn {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+
+   /* ======================= */
+/* FILTER BUTTONS IMPROVED */
+/* ======================= */
+.filter-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.filter-buttons label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(37, 99, 235, 0.08);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+  color: #1f2937;
+  transition: all 0.2s ease;
+}
+
+.filter-buttons label:hover {
+  background: rgba(37, 99, 235, 0.15);
+}
+
+.filter-buttons input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #2563eb;
+  margin-right: 8px;
+}
+
+.filter-count {
+  background: #2563eb;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 8px;
+  min-width: 24px;
+  text-align: center;
+}
+
+
+
+
+
+
+
+    /* Image preview */
+    #previewImg {
+      width: 120px;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(37,99,235,0.15);
+      margin-top: 10px;
+    }
+
+    /* Floating labels inside form */
+    .form-group { position: relative; margin-bottom: 20px; }
+    .form-group input, .form-group select {
+      padding: 12px 12px 12px 0;
+    }
+    .form-group label {
+      position: absolute;
+      top: 12px; left: 12px;
+      font-size: 0.9rem;
+      color: rgba(30,41,59,0.7);
+      pointer-events: none;
+      transition: 0.2s;
+      background: rgba(37, 99, 235, 0.1);
+      padding: 0 4px;
+      border-radius: 4px;
+    }
+    .form-group input:focus + label,
+    .form-group input:not(:placeholder-shown) + label,
+    .form-group select:focus + label,
+    .form-group select:not([value=""]) + label {
+      top: -8px;
+      left: 8px;
+      font-size: 0.75rem;
+      color: #2563eb;
+    }
+/* ===============================
+   BASE BUTTON STYLE
+================================ */
+button,
+.editBtn,
+.deleteBtn,
+button.primary,
+button.danger,
+.actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;             /* consistent height */
+  padding: 8px 14px;            /* consistent padding */
+  font-size: 14px;               /* consistent font size */
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+
+/* Edit / Primary button */
+.editBtn,
+button.primary {
+  background-color: #1d4ed8;    /* blue */
+  color: #fff;
+}
+
+.editBtn:hover,
+button.primary:hover {
+  background-color: #2563eb;
+  transform: translateY(-1px);   /* subtle lift on hover */
+}
+
+/* Delete / Danger button */
+.deleteBtn,
+button.danger {
+  background-color: #ef4444;    /* red */
+  color: #fff;
+}
+
+.deleteBtn:hover,
+button.danger:hover {
+  background-color: #b91c1c;
+  transform: translateY(-1px);
+}
+
+/* Icon inside button */
+button i,
+.editBtn i,
+.deleteBtn i,
+.actions button i {
+  font-size: 14px;
+  margin-right: 6px;
+}
+
+
+/* ===============================
+   PRIMARY BUTTON
+================================ */
+button.primary {
+  background-color: #1d4ed8;
+  color: white;
+}
+
+button.primary:hover {
+  background-color: #2563eb;
+}
+
+/* ===============================
+   INFO / FILTER BUTTON
+================================ */
+button.info {
+  background-color: #22c55e;
+  color: white;
+}
+
+button.info:hover {
+  background-color: #16a34a;
+}
+
+/* ===============================
+   SMALL BUTTON (cards / actions)
+================================ */
+button.small {
+  min-height: 32px;
+  padding: 5px 10px;
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+.filter-box button,
+.top-actions button,
+button.primary,
+button.info {
+  height: 53px;              /* SAME as search bar */
+  padding: 0 14px;           /* horizontal only */
+  font-size: 14px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.tab-header {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.tabBtn.active {
+  background-color: #2563eb;
+}
+
+    
+/* ============================= */
+/* RECORDS TAB CHECKBOX UI FIX */
+/* ============================= */
+
+#tabRecords fieldset {
+  border: 1px solid #d0d0d0;
+  border-radius: 10px;
+  padding: 15px 18px;
+}
+
+#tabRecords legend {
+  font-weight: 600;
+  padding: 0 8px;
+}
+
+/* align checkbox + text */
+#tabRecords label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* fix checkbox alignment */
+#tabRecords input[type="checkbox"] {
+  margin: 0;
+  transform: scale(1.1);
+  cursor: pointer;
+}
+
+/* hover effect */
+#tabRecords label:hover {
+  background: rgba(0, 123, 255, 0.06);
+  border-radius: 6px;
+  padding: 4px 6px;
+}
+/* Overlay */
+.records-modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: flex-end; /* panel slides in from right */
+  align-items: stretch;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+}
+
+/* Show modal */
+.records-modal.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Panel */
+.records-panel {
+  background: #fff;
+
+  transform: translateX(100%); /* start off-screen right */
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+  padding: 20px;
+}
+
+/* Slide in when modal is active */
+.records-modal.active .records-panel {
+  transform: translateX(0);
+}
+
+/* Header */
+.records-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.records-header h3 {
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.records-header button {
+  font-size: 1.2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Search input */
+.records-search {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #d0d0d0;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+
+
+.record-item {
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.record-item:hover {
+  background: rgba(37, 99, 235, 0.05);
+}
+
+
+
+/* Header */
+.records-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* Search Bar */
+.records-search {
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* Record Buttons */
+.records-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.record-item {
+  padding: 5px 12px;
+  font-size: 14px;
+  background: #1d4ed8;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px; /* compact height */
+  transition: 0.2s;
+}
+
+.record-item:hover {
+  background: #0056b3;
+}
+
+.record-item.active {
+  background: #1d4ed8;
+}
+
+/* Names Container */
+#recordNamesContainer {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px;
+  background: #f9f9f9;
+  max-height: 200px;  /* scrollable if many names */
+  overflow-y: auto;
+}
+
+#recordNames ul {
+  list-style: disc inside;
+  margin: 0;
+  padding-left: 0;
+}
+
+#recordNames i {
+  color: #666;
+}
+
+
+  </style>
+</head>
+<body>
+
+  <div class="wrapper content-box">
+    <h1><i class="fa-solid fa-users"></i> Resident Management</h1>
+
+    <div style="margin-bottom:20px; display:flex; flex-wrap:wrap; gap:10px;">
+  <input type="text" id="searchInput" placeholder="Search by name...">
+  <button class="primary" onclick="openAddResident()">
+    <i class="fa-solid fa-plus"></i> Add Resident
+  </button>
+  <button class="primary" id="sortOld">
+    <i class="fa-solid fa-arrow-down "></i> Oldest First
+  </button>
+  <button class="primary" id="sortNew">
+    <i class="fa-solid fa-arrow-up"></i> Newest First
+  </button>
+  <button class="primary" id="openFilter">
+    <i class="fa-solid fa-filter"></i> Filter
+  </button>
+
+  <button class="primary" id="openRecords">
+  <i class="fa-solid fa-folder-open"></i> Records Manager
+</button>
+
+</div>
+
+
+
+    <table id="residentTable">
+      <thead>
+        <tr>
+          <th>Email</th><th>Password</th><th>First Name</th><th>Middle Name</th><th>Last Name</th>
+          <th>Phone</th><th>Age</th><th>Sex</th><th>Birthday</th><th>Address</th><th>Status</th>
+          <th>PWD</th><th>4Ps</th><th>Senior</th><th>School Levels</th>
+          <th>School Name</th><th>Occupation</th><th>Vaccinated</th><th>Voter</th><th>Valid ID</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Filter Modal -->
+  <div id="filterModal" class="modal">
+    <div class="modal-content content-box">
+
+      <h3><i class="fa-solid fa-filter"></i> Filters</h3>
+
+      <div class="filter-buttons">
+        <label><input type="checkbox" class="filterCheckbox" value="pwd"> PWD <span class="filter-count">0</span></label>
+        <label><input type="checkbox" class="filterCheckbox" value="seniorCitizen"> Senior <span class="filter-count">0</span></label>
+        <label><input type="checkbox" class="filterCheckbox" value="college"> College <span class="filter-count">0</span></label>
+        <label><input type="checkbox" class="filterCheckbox" value="voter"> Voter <span class="filter-count">0</span></label>
+        <label><input type="checkbox" class="filterCheckbox" value="fourPs"> 4Ps <span class="filter-count">0</span></label>
+        <label><input type="checkbox" class="filterCheckbox" value="occupation"> Occupation <span class="filter-count">0</span></label>
+      </div>
+      <div style="margin-top:20px; display:flex; justify-content:space-between;">
+        <button id="applyFilter"><i class="fa-solid fa-check"></i> Apply</button>
+        <button id="closeFilter"><i class="fa-solid fa-xmark"></i> Close</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Add/Edit Resident Modal -->
+<div id="residentModal" class="modal">
+  <div class="modal-content content-box">
+
+    <span style="float:right;cursor:pointer" onclick="closeModal()">&times;</span>
+    <h2 id="modalTitle"><i class="fa-solid fa-user-plus"></i> Add Resident</h2>
+
+    <!-- TAB BUTTONS -->
+    <div class="tab-header">
+      <button type="button" class="primary tabBtn active" data-tab="formTab">Resident Info</button>
+      <button type="button" class="primary tabBtn" data-tab="tabRecords">Records</button>
+    </div>
+
+
+
+          <div class="tab-content" id="formTab">
+      <form id="residentForm">
+
+        <div class="form-group">
+          <input type="text" id="username" required placeholder=" ">
+          <label>Username</label>
+        </div>
+        <div class="form-group">
+          <input type="password" id="password" placeholder=" ">
+          <label>Password</label>
+        </div>
+        <div class="form-group">
+          <input type="text" id="fname" required placeholder=" ">
+          <label>First Name</label>
+        </div>
+        <div class="form-group">
+          <input type="text" id="mname" required placeholder=" ">
+          <label>Middle Name</label>
+        </div>
+        <div class="form-group">
+          <input type="text" id="lname" required placeholder=" ">
+          <label>Last Name</label>
+        </div>
+        <div class="form-group">
+          <input type="text" id="mPhone" required placeholder=" ">
+          <label>CP Number</label>
+        </div>
+        <div class="form-group">
+          <input type="number" id="age" min="1" required placeholder=" ">
+          <label>Age</label>
+        </div>
+        <div class="form-group">
+          <select id="sex" required>
+            <option value="" disabled selected hidden></option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+          <label>Sex</label>
+        </div>
+        <div class="form-group">
+          <input type="date" id="birthday" required placeholder=" ">
+          <label>Birthday</label>
+        </div>
+        <div class="form-group">
+          <input type="text" id="address" required placeholder=" ">
+          <label>Street, Barangay, City/Municipality, Province/State</label>
+        </div>
+        <div class="form-group">
+          <select id="status" required>
+            <option value="" disabled selected hidden></option>
+            <option value="Single">Single</option>
+            <option value="Married">Married</option>
+            <option value="Widowed">Widowed</option>
+            <option value="Separated">Separated</option>
+          </select>
+          <label>Civil Status</label>
+        </div>
+        <div class="form-group">
+          <select id="pwd" required>
+            <option value="" disabled selected hidden></option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+          <label>PWD</label>
+        </div>
+        <div class="form-group">
+          <select id="mFourPs" required>
+            <option value="" disabled selected hidden></option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+          <label>4Ps</label>
+        </div>
+        <fieldset style="margin-bottom:15px;">
+          <label><input type="checkbox" id="seniorCitizen"> Senior Citizen</label>
+        </fieldset>
+        <fieldset style="margin-bottom:15px;">
+          <legend>School Level</legend>
+   <label><input type="checkbox" class="school" name="schoollevels[]" value="Elementary"> Elementary</label>
+<label><input type="checkbox" class="school" name="schoollevels[]" value="Junior High"> Junior High</label>
+<label><input type="checkbox" class="school" name="schoollevels[]" value="Senior High"> Senior High</label>
+<label><input type="checkbox" class="school" name="schoollevels[]" value="College"> College</label>
+
+        </fieldset>
+   <div class="form-group">
+  <input type="text" id="schoolName" name="schoolname" placeholder=" ">
+  <label>Name of School</label>
+</div>
+
+<div class="form-group">
+  <input type="text" id="occupation" name="occupation" placeholder=" ">
+  <label>Occupation</label>
+</div>
+        <fieldset>
+          <label><input type="checkbox" id="vaccinated"> Vaccinated</label>
+        </fieldset>
+        <fieldset>
+          <label><input type="checkbox" id="voter"> Voter</label>
+        </fieldset>%
+        <div class="form-group">
+          <input type="file" id="validId" accept="image/*">
+          <label>Upload Valid ID</label>
+          <img id="previewImg" alt="ID Preview">
+        </div>
+        <button type="submit"><i class="fa-solid fa-floppy-disk"></i> Save Resident</button>
+      </form>
+    </div>
+
+
+    <!-- RECORDS TAB -->
+    <div class="tab-content" id="tabRecords" style="display:none;">
+      <fieldset>
+        <legend>Blotter Records</legend>
+         <label><input type="checkbox" id="blotter1"> Theft</label>
+  <label><input type="checkbox" id="blotter2"> Disturbance</label>
+  <label><input type="checkbox" id="blotter3"> Other</label>
+      </fieldset>
+    </div>
+
+  </div>
+</div>
+
+<!-- Barangay Records Slide Modal -->
+<div id="recordsModal" class="records-modal">
+  <div class="records-panel">
+
+    <!-- Modal Header -->
+    <div class="records-header">
+      <h3><i class="fa-solid fa-folder-open"></i> Barangay Records</h3>
+      <button id="closeRecords">&times;</button>
+    </div>
+
+    <!-- Search Bar -->
+    <input 
+      type="text" 
+      id="recordsSearch" 
+      placeholder="Search records..."
+      class="records-search"
+    >
+
+    <!-- Record Buttons -->
+    <div class="records-list">
+      <div class="record-item" data-record="blotterTheft">Theft</div>
+      <div class="record-item" data-record="blotterDisturbance">Disturbance</div>
+      <div class="record-item" data-record="blotterOther">Other</div>
+    </div>
+
+    <!-- Names Container (below buttons) -->
+    <div id="recordNamesContainer">
+      <div id="recordNames">Select a record to see residents</div>
+    </div>
+
+  </div>
+</div>
+
+
+
+
+</body>
+</html>

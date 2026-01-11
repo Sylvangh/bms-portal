@@ -1,0 +1,268 @@
+<style>
+
+/* ============================= */
+/* LOADING SKELETON              */
+/* ============================= */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #e5e7eb 25%,
+    #f3f4f6 37%,
+    #e5e7eb 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.4s ease infinite;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+.card.skeleton-card {
+  height: 210px;
+  border-radius: 18px;
+}
+
+ /* ============================= */
+/* CERTIFICATION CARDS UI        */
+/* ============================= */
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.card {
+  background: linear-gradient(145deg, #ffffff, #eef4ff);
+  border-radius: 18px;
+  width: 240px;
+  padding: 28px 24px;
+  text-align: center;
+
+  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+  cursor: pointer;
+
+  transition:
+    transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.35s ease;
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hover – float + spring */
+.card:hover {
+  transform: translateY(-12px) scale(1.04);
+  box-shadow: 0 18px 40px rgba(37, 99, 235, 0.25);
+}
+
+/* Click feedback */
+.card:active {
+  transform: scale(0.97);
+}
+
+/* ----------------------------- */
+/* ICON ANIMATION (STAGGERED)    */
+/* ----------------------------- */
+
+.card i {
+  font-size: 2.6rem;
+  color: #2563eb;
+  margin-bottom: 14px;
+
+  transform: translateY(6px) scale(0.95);
+  opacity: 0.85;
+
+  transition:
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.3s ease;
+}
+
+.card:hover i {
+  transform: translateY(0) scale(1.08);
+  opacity: 1;
+}
+
+/* ----------------------------- */
+/* TITLE                         */
+/* ----------------------------- */
+
+.card h3 {
+  margin-bottom: 22px;
+  font-size: 1.25rem;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+/* ----------------------------- */
+/* BUTTON – MATCH DASHBOARD CTA  */
+/* ----------------------------- */
+
+.card button {
+  background: linear-gradient(145deg, #2563eb, #1d4ed8);
+  color: #fff;
+
+  border: none;
+  padding: 10px 18px;
+  border-radius: 22px;
+
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+/* Hover */
+.card button:hover {
+  background: linear-gradient(145deg, #1d4ed8, #1e40af);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+}
+
+/* Click */
+.card button:active {
+  transform: scale(0.95);
+}
+/* ============================= */
+/* CERTIFICATE FEES SECTION      */
+/* ============================= */
+
+.certificate-fees {
+  margin-top: 50px;
+  background: linear-gradient(145deg, #ffffff, #eef4ff);
+  padding: 28px;
+  border-radius: 18px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+}
+
+.certificate-fees h3 {
+  text-align: center;
+  margin-bottom: 22px;
+  color: #1f2937;
+}
+
+.fee-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.fee-grid label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.fee-grid input {
+  margin-top: 6px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+}
+
+.fee-grid input:disabled {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.fee-actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+}
+
+.fee-actions button {
+  background: linear-gradient(145deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 22px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.fee-actions button:hover {
+  background: linear-gradient(145deg, #1d4ed8, #1e40af);
+}
+
+
+</style>
+
+<h2>Certification</h2>
+
+
+  <div class="cards">
+
+    <div class="card">
+      <i class="fas fa-id-card"></i>
+      <h3>Barangay Clearance</h3>
+      <button data-cert="clearance">Print</button>
+    </div>
+
+    <div class="card">
+      <i class="fas fa-home"></i>
+      <h3>Certificate of Residency</h3>
+      <button data-cert="residency">Print</button>
+    </div>
+
+    <div class="card">
+      <i class="fas fa-hand-holding-heart"></i>
+      <h3>Certificate of Indigency</h3>
+      <button data-cert="indigency">Print</button>
+    </div>
+
+    <div class="card">
+      <i class="fas fa-briefcase"></i>
+      <h3>Business Clearance</h3>
+      <button data-cert="business">Print</button>
+    </div>
+
+  </div>
+
+<div class="certificate-fees">
+  <h3>Certificate Fees</h3>
+
+  <div class="fee-grid">
+    <label>
+      Clearance Fee (₱)
+      <input type="number" id="feeClearance" disabled>
+    </label>
+
+    <label>
+      Residency Fee (₱)
+      <input type="number" id="feeResidency" disabled>
+    </label>
+
+    <label>
+      Indigency Fee (₱)
+      <input type="number" id="feeIndigency" disabled>
+    </label>
+
+    <label>
+      Business Permit Fee (₱)
+      <input type="number" id="feeBusiness" disabled>
+    </label>
+  </div>
+
+  <div class="fee-actions">
+    <button id="editFeesBtn">Edit Fees</button>
+    <button id="saveFeesBtn" hidden>Save Fees</button>
+  </div>
+</div>
+

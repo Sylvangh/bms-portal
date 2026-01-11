@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Request Certificate of Indigency</title>
+
+<style>
+/* =============================
+   GLOBAL
+============================= */
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(135deg, #1e6dff85, #0c35db);
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+  color: #0f1b3d;
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+  animation: fadeSlide 0.8s ease;
+}
+
+/* =============================
+   HEADINGS
+============================= */
+h1 {
+  text-align: center;
+  font-size: clamp(24px, 6vw, 32px);
+  color: #ffffff;
+  margin-bottom: 22px;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+h2 {
+  font-size: clamp(20px, 5vw, 24px);
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+/* =============================
+   CARDS (GLASS)
+============================= */
+.card {
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 26px;
+  border-radius: 18px;
+  margin-bottom: 22px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.18);
+  border: 1px solid rgba(255,255,255,0.25);
+  animation: floatIn 0.6s ease;
+}
+
+/* =============================
+   LABELS
+============================= */
+label {
+  font-weight: 600;
+  font-size: clamp(15px, 4vw, 17px);
+  display: block;
+  margin: 16px 0 6px;
+  color: #ffffff;
+}
+
+/* =============================
+   TEXTAREA  ✅ FIXED
+============================= */
+textarea {
+  width: 100%;
+  min-height: 50px;
+  padding: 18px 16px;
+  font-size: clamp(15px, 4vw, 17px);
+  line-height: 1.4;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  background: rgba(255,255,255,0.85);
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.12);
+  resize: vertical;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+}
+
+textarea:focus {
+  transform: scale(1.02);
+  box-shadow: 0 0 0 3px rgba(30,109,255,0.30);
+}
+
+/* =============================
+   BUTTONS
+============================= */
+button {
+  width: 100%;
+  padding: 16px;
+  font-size: clamp(16px, 4vw, 18px);
+  font-weight: bold;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  margin-top: 16px;
+  color: white;
+  background: linear-gradient(135deg, #1e6dff, #0c35db);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.25);
+  transition: all 0.25s ease;
+}
+
+button:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 18px 35px rgba(0,0,0,0.35);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* =============================
+   SPECIAL BUTTONS
+============================= */
+.btn-submit {
+  background: linear-gradient(135deg, #1e6dff, #0c35db);
+}
+
+#btnBack {
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #ff5c5c, #e74c3c);
+}
+
+/* =============================
+   REQUEST LIST
+============================= */
+.request-item {
+  border-bottom: 1px solid rgba(255,255,255,0.35);
+  padding: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeIn 0.4s ease;
+}
+
+.request-info {
+  font-size: clamp(14px, 3.5vw, 16px);
+  color: #ffffff;
+  line-height: 1.5;
+}
+
+.request-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.request-actions button {
+  width: auto;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+/* =============================
+   ANIMATIONS
+============================= */
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes floatIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>Request Certificate of Indigency</h1>
+
+  <div class="card">
+    <form id="requestForm">
+      <label>purok</label>
+      <textarea id="purok" placeholder="Enter purok" required></textarea>
+      <label>Amount</label>
+      <textarea id="price" placeholder="Enter amount" required></textarea>
+
+      <button type="submit" class="btn-submit">Submit Request</button>
+    </form>
+
+    <button id="btnBack">Back to Dashboard</button>
+  </div>
+
+  <div class="card">
+    <h2>Your Requests</h2>
+    <div id="requestList"></div>
+  </div>
+</div>
+
+
+</body>
+</html>
+
+
+<script>const currentEmail = localStorage.getItem("currentEmail");
+const requestForm = document.getElementById("requestForm");
+const requestList = document.getElementById("requestList");
+let editingRequestId = null;
+
+// --- Load User Requests ---
+// --- Load User Requests safely ---
+async function loadRequests() {
+  try {
+    const res = await fetch("authController.php?action=getRequests2", {
+      method: "POST",
+      body: new URLSearchParams({ email: currentEmail })
+    });
+
+    // Check if response is ok first
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+
+    // Parse JSON safely
+    const data = await res.json();
+
+    // Make sure data is an array
+    if (!Array.isArray(data)) throw new Error("Invalid data format");
+
+    requestList.innerHTML = "";
+
+    data.forEach(req => {
+      // Convert null/undefined to empty strings
+      const safePurok = (req.purok ?? '').toString().replace(/'/g, "\\'");
+      const safePrice = (req.price ?? '').toString().replace(/'/g, "\\'");
+      const safeDate = req.date ?? '';
+
+      const div = document.createElement("div");
+      div.classList.add("request-item");
+      div.innerHTML = `
+        <div class="request-info">
+          <strong>Purok:</strong> ${safePurok} <br>
+          <strong>Price:</strong> ${safePrice} <br>
+          <small>Date: ${safeDate}</small>
+        </div>
+        <div class="request-actions">
+          <button onclick="editRequest(${req.id}, '${safePurok}', '${safePrice}')">Edit</button>
+          <button class="btn-delete" onclick="deleteRequest(${req.id})">Delete</button>
+        </div>
+      `;
+      requestList.appendChild(div);
+    });
+
+  } catch (err) {
+    console.error("Failed to load requests:", err);
+    alert("Failed to load requests. Check console for details.");
+  }
+}
+
+
+// --- Add / Update Request ---
+requestForm.addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const purok = document.getElementById("purok").value.trim();
+  const price = document.getElementById("price").value.trim();
+
+  if (!purok || !price) return alert("Please fill in all fields");
+
+  const formData = new FormData();
+  if (editingRequestId) formData.append("id", editingRequestId);
+  formData.append("email", currentEmail);
+  formData.append("purok", purok);
+  formData.append("price", price);
+
+  try {
+    const res = await fetch("authController.php?action=saveRequest2", {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to save request");
+
+    alert(data.message);
+    requestForm.reset();
+    editingRequestId = null;
+    loadRequests();
+  } catch (err) {
+    console.error(err);
+    alert("Error saving request: " + err.message);
+  }
+});
+
+// --- Edit Request ---
+function editRequest(id, purok, price) {
+  editingRequestId = id;
+  document.getElementById("purok").value = purok;
+  document.getElementById("price").value = price;
+}
+
+// --- Delete Request ---
+async function deleteRequest(id) {
+  if (!confirm("Are you sure you want to delete this request?")) return;
+
+  const formData = new FormData();
+  formData.append("id", id);
+
+  try {
+    const res = await fetch("authController.php?action=deleteRequest2", {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to delete request");
+
+    alert(data.message);
+    loadRequests();
+  } catch (err) {
+    console.error(err);
+    alert("Error deleting request: " + err.message);
+  }
+}
+
+// --- Back Button ---
+document.getElementById("btnBack").addEventListener("click", () => {
+  window.location.href = "userDashboard.php";
+});
+
+// --- Load requests on page load ---
+document.addEventListener("DOMContentLoaded", loadRequests);
+
+</script>
