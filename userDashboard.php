@@ -756,18 +756,18 @@ async function openManageAccount() {
   document.getElementById("manageModal").style.display = "flex"; // open modal first
 
   const token = localStorage.getItem("token");
-  const email = localStorage.getItem("currentemail");
-  if (!email) return alert("No email found in local storage");
+  const userId = localStorage.getItem("userId"); // ✅ use ID instead of email
+  if (!userId) return alert("No userId found in local storage");
 
   try {
-    const res = await fetch(`authController.php?action=getResident&email=${encodeURIComponent(email)}`, {
+    const res = await fetch(`authController.php?action=getResident&id=${encodeURIComponent(userId)}`, {
       headers: { "Authorization": "Bearer " + token }
     });
 
     const user = await res.json();
     if (!res.ok) throw new Error(user.message || "Failed to load account info");
 
-    // --- BASIC INFO ---
+    // Populate fields (same as before)
     const fields = {
       username: user.email,
       fname: user.name,
@@ -779,19 +779,18 @@ async function openManageAccount() {
       birthday: user.birthday,
       address: user.address,
       status: user.status,
-      pwd: user.pwd,           // PWD dropdown
+      pwd: user.pwd,
       mFourPs: user.fourps,
       schoolName: user.schoolname,
       occupation: user.occupation
     };
 
-    // Fill form fields safely
     Object.entries(fields).forEach(([id, value]) => {
       const el = document.getElementById(id);
       if (el) el.value = value || '';
     });
 
-    // Password input (leave blank)
+    // Password input blank
     const passwordInput = document.getElementById("password");
     if (passwordInput) passwordInput.value = '';
 
@@ -820,6 +819,7 @@ async function openManageAccount() {
     alert(err.message);
   }
 }
+
 
 
 
@@ -1151,6 +1151,7 @@ function askAI() {
 
 </body>
 </html>
+
 
 
 
