@@ -561,42 +561,40 @@ elseif ($action === "getResident") {
     exit;
 }
 
-   elseif ($action === "updateCertificateFees") {
+   
+// ---------------- UPDATE FEES ----------------
+if ($action === 'updateCertificateFees') {
+    $fees = $input['fees'] ?? null;
 
-    if (!isset($_POST['clearance'])) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "No fees data received"
-        ]);
-        exit;
+    if ($fees) {
+        $clearance = intval($fees['clearance']);
+        $residency = intval($fees['residency']);
+        $indigency = intval($fees['indigency']);
+        $business  = intval($fees['business']);
+
+        // PostgreSQL does NOT support LIMIT in UPDATE, so we just update all rows
+        $sql = "UPDATE certificate_fees SET 
+                    clearance = $1,
+                    residency = $2,
+                    indigency = $3,
+                    business = $4";
+
+        $result = pg_query_params(
+            $conn,
+            $sql,
+            [$clearance, $residency, $indigency, $business]
+        );
+
+        if ($result) {
+            echo json_encode(['status' => 'success', 'message' => 'Fees updated successfully']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Failed to update fees']);
+        }
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'No fees data received']);
     }
-
-    $clearance = intval($_POST['clearance']);
-    $residency = intval($_POST['residency']);
-    $indigency = intval($_POST['indigency']);
-    $business  = intval($_POST['business']);
-
-    $sql = "
-        UPDATE certificate_fees
-        SET clearance = $1,
-            residency = $2,
-            indigency = $3,
-            business = $4
-    ";
-
-    $result = pg_query_params(
-        $conn,
-        $sql,
-        [$clearance, $residency, $indigency, $business]
-    );
-
-    echo json_encode([
-        "status" => $result ? "success" : "error",
-        "message" => $result ? "Fees updated successfully" : pg_last_error($conn)
-    ]);
     exit;
 }
-
 
 
 
@@ -611,6 +609,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
