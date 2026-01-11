@@ -286,6 +286,9 @@ elseif ($action === "adminGetResidents") {
 
 
  } else {
+
+        
+    $params = []; // ✅ REQUIRED — resets parameter order
         // UPDATE
         $set = [];
         $i = 1;
@@ -323,6 +326,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
