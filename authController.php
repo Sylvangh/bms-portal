@@ -561,7 +561,6 @@ elseif ($action === "getResident") {
     exit;
 }
 
-        
 elseif ($action === 'updateCertificateFees') {
     $input = json_decode(file_get_contents('php://input'), true);
     $fees = $input['fees'] ?? null;
@@ -590,9 +589,9 @@ elseif ($action === 'updateCertificateFees') {
                     business = $4
                 WHERE id = (SELECT id FROM certificate_fees LIMIT 1)";
     } else {
-        // INSERT a new row if table empty
-        $sql = "INSERT INTO certificate_fees (clearance, residency, indigency, business)
-                VALUES ($1, $2, $3, $4)";
+        // INSERT a new row if table empty (provide fee = 0)
+        $sql = "INSERT INTO certificate_fees (fee, clearance, residency, indigency, business)
+                VALUES (0, $1, $2, $3, $4)";
     }
 
     $result = pg_query_params($conn, $sql, [$clearance, $residency, $indigency, $business]);
@@ -611,7 +610,6 @@ elseif ($action === 'updateCertificateFees') {
     exit;
 }
 
-
 /* ---------------- INVALID ACTION ---------------- */
 else {
     throw new Exception("Invalid action");
@@ -623,6 +621,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
