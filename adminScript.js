@@ -449,9 +449,12 @@ function closeModal() {
   residentModal.style.display = "none";
 }
  
-  
-function initResidents() {
+// ===============================
+// RESIDENTS INLINE INIT
+// ===============================
+let editResidentId = null; // global for modal use
 
+function initResidents() {
   
   // ---------------- DOM ELEMENTS ----------------
   const residentTable = document.getElementById("residentTable");
@@ -495,13 +498,11 @@ function initResidents() {
 
 
   
-  if (!residentTable || !residentForm || !residentModal) return; // safety
+  if (!residentTable || !residentForm || !residentModal) return;
 
-  let editResidentId = null;
   let residentsData = [];
   let filteredData = [];
   let currentSort = null;
-
   
 
   // ---------------- LOAD RESIDENTS ----------------
@@ -555,9 +556,6 @@ recordItems.forEach(item => {
 
 }
 
-
-
-  // ---------------- RENDER TABLE ----------------
  // ---------------- RENDER TABLE ----------------
 function renderTable(data) {
   const tbody = residentTable.querySelector("tbody");
@@ -592,7 +590,7 @@ function renderTable(data) {
       <td>${r.occupation ?? ""}</td>
       <td>${vaccinated}</td>
       <td>${voter}</td>
-      <td>${r.validid ? `<img src="/${r.validid.replace(/^\/+/, '')}" width="50" />` : ""}</td>
+      <td>${validIdPath ? `<img src="${validIdPath}" width="50" />` : ""}</td>
       <td>
         <button class="editBtn" data-id="${r.id}">Edit</button>
         <button class="deleteBtn" data-id="${r.id}">Delete</button>
@@ -666,74 +664,61 @@ function renderTable(data) {
     document.getElementById("filterModal").style.display = "none";
   };
 
-async function editResident(id) {
-  editResidentId = id;
-  modalTitle.textContent = "Edit Resident";
+    
+  // ---------------- EDIT RESIDENT ----------------
+  async function editResident(id) {
+    editResidentId = id;
+    modalTitle.textContent = "Edit Resident";
 
-  try {
-    const res = await fetch("authController.php?action=adminGetResidents");
-    const data = await res.json(); // ⬅️ parse JSON directly
+    try {
+      const res = await fetch("authController.php?action=adminGetResidents");
+      const data = await res.json();
+      const resident = data.find(r => String(r.id) === String(id));
+      if (!resident) throw new Error("Resident not found");
 
-    const resident = data.find(r => String(r.id) === String(id));
-    if (!resident) throw new Error("Resident not found");
+      // TEXT INPUTS
+      document.getElementById("username").value = resident.email ?? "";
+      document.getElementById("password").value = "";
+      document.getElementById("fname").value = resident.name ?? "";
+      document.getElementById("mname").value = resident.middlename ?? "";
+      document.getElementById("lname").value = resident.lastname ?? "";
+      document.getElementById("mPhone").value = resident.phone ?? "";
+      document.getElementById("age").value = resident.age ?? 0;
+      document.getElementById("sex").value = resident.sex ?? "";
+      document.getElementById("birthday").value = resident.birthday ?? "";
+      document.getElementById("address").value = resident.address ?? "";
+      document.getElementById("status").value = resident.status ?? "";
+      document.getElementById("schoolName").value = resident.schoolname ?? "";
+      document.getElementById("occupation").value = resident.occupation ?? "";
 
-    // ---------------- TEXT ----------------
-    document.getElementById("username").value = resident.email ?? "";
-    document.getElementById("password").value = "";
-    document.getElementById("fname").value = resident.name ?? "";
-    document.getElementById("mname").value = resident.middlename ?? "";
-    document.getElementById("lname").value = resident.lastname ?? "";
-    document.getElementById("mPhone").value = resident.phone ?? "";
-    document.getElementById("age").value = resident.age ?? 0;
-    document.getElementById("sex").value = resident.sex ?? "";
-    document.getElementById("birthday").value = resident.birthday ?? "";
-    document.getElementById("address").value = resident.address ?? "";
-    document.getElementById("status").value = resident.status ?? "";
-      
-    // ---------------- TEXT INPUTS ----------------
-    document.getElementById("schoolName").value = resident.schoolname ?? "";
-    document.getElementById("occupation").value = resident.occupation ?? "";
+      // SELECTS
+      document.getElementById("pwd").value = resident.pwd ?? "No";
+      document.getElementById("mFourPs").value = resident.fourps ?? "No";
 
-    // ---------------- SELECTS ----------------
-    document.getElementById("pwd").value = resident.pwd ?? "No";
-    document.getElementById("mFourPs").value = resident.fourps ?? "No";
+      // CHECKBOXES
+      document.getElementById("seniorCitizen").checked = Number(resident.seniorcitizen) === 1;
+      document.getElementById("vaccinated").checked = Number(resident.vaccinated) === 1;
+      document.getElementById("voter").checked = Number(resident.voter) === 1;
 
-    // ---------------- CHECKBOXES (FIXED) ----------------
-    document.getElementById("seniorCitizen").checked = Number(resident.seniorcitizen) === 1;
-    document.getElementById("vaccinated").checked   = Number(resident.vaccinated) === 1;
-    document.getElementById("voter").checked        = Number(resident.voter) === 1;
+      // SCHOOL LEVELS
+      const levels = (resident.schoollevels ?? "").split(",").map(v => v.trim());
+      document.querySelectorAll(".school").forEach(cb => cb.checked = levels.includes(cb.value));
 
-    // ---------------- SCHOOL LEVELS ----------------
-    const levels = (resident.schoollevels ?? "")
-      .split(",")
-      .map(v => v.trim())
-      .filter(Boolean);
+      // BLOTTERS
+      document.getElementById("blotter1").checked = resident.blottertheft === "Yes";
+      document.getElementById("blotter2").checked = resident.blotterdisturbance === "Yes";
+      document.getElementById("blotter3").checked = resident.blotterother === "Yes";
 
-    document.querySelectorAll(".school").forEach(cb => {
-      cb.checked = levels.includes(cb.value);
-    });
+      // FILE PREVIEW
+      previewImg.src = resident.validid ? "/" + resident.validid.replace(/^\/+/, "") : "";
 
-    // ---------------- BLOTTERS ----------------
-    document.getElementById("blotter1").checked = resident.blottertheft === "Yes";
-    document.getElementById("blotter2").checked = resident.blotterdisturbance === "Yes";
-    document.getElementById("blotter3").checked = resident.blotterother === "Yes";
+      residentModal.style.display = "block";
 
-    // ---------------- FILE PREVIEW ----------------
-    const previewImg = document.getElementById("previewImg");
-    if (resident.validid) {
-      previewImg.src = resident.validid; // ✅ show image in modal
-    } else {
-      previewImg.src = ""; // no image
+    } catch(err) {
+      console.error(err);
+      alert(err.message);
     }
-
-    residentModal.style.display = "block";
-
-  } catch(err) {
-    console.error(err);
-    alert(err.message);
   }
-}
-
 
 
   async function deleteResident(id) {
@@ -795,14 +780,14 @@ residentForm.addEventListener("submit", async e => {
   formData.set("blotter2", document.getElementById("blotter2").checked ? "Yes" : "No");
   formData.set("blotter3", document.getElementById("blotter3").checked ? "Yes" : "No");
 
-  // ---------------- FILE UPLOAD ----------------
+    // ---------------- FILE UPLOAD ----------------
   const validIdInput = document.getElementById("validId");
-  if (validIdInput.files.length > 0) {
-    formData.set("validId", validIdInput.files[0]); // ✅ file included only if selected
+  if (validIdInput && validIdInput.files.length > 0) {
+    formData.set("validId", validIdInput.files[0]);
   }
 
   // ---------------- EDIT ID ----------------
-  if (editResidentId) {
+  if (typeof editResidentId !== "undefined" && editResidentId) {
     formData.set("id", editResidentId);
   }
 
@@ -832,15 +817,16 @@ residentForm.addEventListener("submit", async e => {
 
 
   // ---------------- FILE PREVIEW ----------------
-  const validIdInput = document.getElementById("validId");
-  if (validIdInput) validIdInput.addEventListener("change", function() {
-    const file = this.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => document.getElementById("previewImg").src = e.target.result;
-    reader.readAsDataURL(file);
-  });
+  if (validIdInput) {
+    validIdInput.addEventListener("change", function() {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => previewImg.src = e.target.result;
+      reader.readAsDataURL(file);
+    });
 
+      
   function updateFilterCounts() {
   const checkboxes = document.querySelectorAll(".filterCheckbox");
   checkboxes.forEach(cb => {
@@ -1710,6 +1696,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
