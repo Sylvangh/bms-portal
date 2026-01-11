@@ -820,9 +820,6 @@ async function openManageAccount() {
   }
 }
 
-
-
-
 // --- UPDATE ACCOUNT ---
 document.getElementById("manageForm").addEventListener("submit", async function(e) {
   e.preventDefault();
@@ -889,7 +886,6 @@ document.getElementById("validId").addEventListener("change", function() {
 function closeForm() {
   document.getElementById("manageModal").style.display = "none";
 }
-
 
 
 ////////////
@@ -1151,6 +1147,7 @@ function askAI() {
 
 </body>
 </html>
+
 
 
 
