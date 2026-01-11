@@ -215,19 +215,25 @@ elseif ($action === "adminSaveResident") {
         move_uploaded_file($_FILES['validId']['tmp_name'], $validIdPath);
     }*/
     // ---------------- FILE UPLOAD ----------------
-   $validIdPath = null;
-    if (!empty($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
-        $uploadDir = "uploads/"; // folder in your root
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+$validIdPath = null;
 
-        $filename = uniqid("id_") . "_" . basename($_FILES['validId']['name']);
-        $validIdPath = $uploadDir . $filename;
+if (!empty($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
+    $uploadDir = __DIR__ . "/uploads/"; // absolute path to ensure move_uploaded_file works
+    if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
-        // Move the file
-        if (!move_uploaded_file($_FILES['validId']['tmp_name'], $validIdPath)) {
-            $validIdPath = null; // fail silently
-        }
+    // Generate unique filename
+    $filename = uniqid("id_") . "_" . basename($_FILES['validId']['name']);
+    $filePath = $uploadDir . $filename;
+
+    // Move the uploaded file
+    if (move_uploaded_file($_FILES['validId']['tmp_name'], $filePath)) {
+        // Store relative path for DB so browser can access it
+        $validIdPath = "uploads/" . $filename; 
+    } else {
+        $validIdPath = null; // fail silently if move fails
     }
+}
+
 
 
     // ---------------- PREPARE FIELDS ----------------
@@ -335,6 +341,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
