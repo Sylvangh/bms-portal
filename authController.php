@@ -203,26 +203,24 @@ elseif ($action === "adminGetResidents") {
         
 
 elseif ($action === "adminSaveResident") {
-  $id = intval($_POST['id'] ?? 0);
+    $id = intval($_POST['id'] ?? 0);
 
- // ---------------- FILE UPLOAD ----------------
-$validIdPath = null;
-if (!empty($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
-    $uploadDir = __DIR__ . "/uploads/";
-    if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+    // ---------------- FILE UPLOAD ----------------
+    $validIdPath = null;
 
-    $filename = uniqid("id_") . "_" . basename($_FILES['validId']['name']);
-    $filePath = $uploadDir . $filename;
+    if (!empty($_FILES['validid']) && $_FILES['validid']['error'] === 0) {
+        $uploadDir = __DIR__ . "/uploads/";
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
 
-    if (move_uploaded_file($_FILES['validId']['tmp_name'], $filePath)) {
-        $validIdPath = "uploads/" . $filename; // relative to web root
+        $filename = uniqid("id_") . "_" . basename($_FILES['validid']['name']);
+        $filePath = $uploadDir . $filename;
+
+        if (move_uploaded_file($_FILES['validid']['tmp_name'], $filePath)) {
+            $validIdPath = "uploads/" . $filename;
+        }
     }
-}
-
-// Only add validid if uploaded
-if ($validIdPath !== null) {
-    $fields['validid'] = $validIdPath;
-}
 
     // ---------------- PREPARE FIELDS ----------------
     $fields = [
@@ -258,10 +256,11 @@ if ($validIdPath !== null) {
         "blotterother" => ($_POST['blotter3'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
     ];
 
-    // ✅ Add validid lowercase only if file uploaded
-if ($validIdPath !== null) {
-    $fields['validid'] = $validIdPath; // <-- matches DB column
-}
+    // ✅ Add validid ONLY if file uploaded
+    if ($validIdPath !== null) {
+        $fields['validid'] = $validIdPath;
+    }
+
 
     // ---------------- INSERT OR UPDATE ----------------
     if (!$id) {
@@ -328,6 +327,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
