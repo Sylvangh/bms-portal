@@ -715,12 +715,30 @@ async function editResident(id) {
     document.getElementById("blotter3").checked = resident.blotterother === "Yes";
 
     // ---------------- FILE PREVIEW ----------------
-    const previewImg = document.getElementById("previewImg");
+    /*const previewImg = document.getElementById("previewImg");
     if (resident.validid) {
-      previewImg.src = resident.validid; // ✅ show image in modal
+      previewImg.src = resident.validid; 
     } else {
-      previewImg.src = ""; // no image
+      previewImg.src = "";
+    }*/
+      const previewImg = document.getElementById("previewImg");
+
+// Show existing ID when opening modal
+if (resident.validid) {
+  previewImg.src = resident.validid; // existing image
+} else {
+  previewImg.src = ""; // no image
+}
+
+// Preview selected file immediately
+document.getElementById("validId").addEventListener("change", e => {
+    if (e.target.files && e.target.files[0]) {
+        previewImg.src = URL.createObjectURL(e.target.files[0]);
+    } else {
+        previewImg.src = "";
     }
+});
+
 
     residentModal.style.display = "block";
 
@@ -1707,6 +1725,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
