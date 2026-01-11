@@ -568,11 +568,8 @@ function renderTable(data) {
     const vaccinated = Number(r.vaccinated) === 1 ? "Yes" : "No";
     const voter = Number(r.voter) === 1 ? "Yes" : "No";
 
-    // Ensure validid path works
-    let validIdPath = "";
-    if (r.validid) {
-      validIdPath = r.validid.startsWith("/") ? r.validid : "/" + r.validid;
-    }
+    // Use the validid path directly (already starts with /)
+    const validIdPath = r.validid ?? "";
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -721,11 +718,10 @@ async function editResident(id) {
     document.getElementById("blotter2").checked = resident.blotterdisturbance === "Yes";
     document.getElementById("blotter3").checked = resident.blotterother === "Yes";
 
-// ---------------- FILE PREVIEW ----------------
-    // Add leading slash if missing, for browser path
+    // ---------------- FILE PREVIEW ----------------
     const previewImg = document.getElementById("previewImg");
     if (resident.validid) {
-      previewImg.src = resident.validid.startsWith("/") ? resident.validid : "/" + resident.validid;
+      previewImg.src = resident.validid; // ✅ show image in modal
     } else {
       previewImg.src = ""; // no image
     }
@@ -1712,6 +1708,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
