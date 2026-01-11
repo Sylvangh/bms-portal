@@ -286,11 +286,9 @@ elseif ($action === "adminGetResidents") {
 
 
  } else {
-       
-$set = [];
-    $params = []; // ✅ THIS FIXES IT
-    $i = 1
-
+        // UPDATE
+        $set = [];
+        $i = 1;
 
         foreach ($fields as $k => $v) {
             if ($v !== null) {
@@ -314,7 +312,6 @@ $set = [];
     }
 }
 
-
 /* ---------------- INVALID ACTION ---------------- */
 else {
     throw new Exception("Invalid action");
@@ -326,6 +323,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
