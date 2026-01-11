@@ -520,6 +520,47 @@ elseif ($action === "getResident") {
     ]);
     exit;
 }
+        elseif ($action === "getAnnouncements") {
+
+    // OPTIONAL: filter by recipient (for user side)
+    $recipient = $_GET['recipient'] ?? null;
+
+    if ($recipient) {
+        // USER: only their announcements
+        $sql = "
+            SELECT id, sender, recipient, message, date_sent
+            FROM announcements
+            WHERE recipient = $1 OR recipient = 'ALL'
+            ORDER BY date_sent DESC
+        ";
+        $result = pg_query_params($conn, $sql, [$recipient]);
+    } else {
+        // ADMIN: see all announcements
+        $sql = "
+            SELECT id, sender, recipient, message, date_sent
+            FROM announcements
+            ORDER BY date_sent DESC
+        ";
+        $result = pg_query($conn, $sql);
+    }
+
+    if (!$result) {
+        echo json_encode([
+            "status" => "error",
+            "message" => pg_last_error($conn)
+        ]);
+        exit;
+    }
+
+    $announcements = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $announcements[] = $row;
+    }
+
+    echo json_encode($announcements);
+    exit;
+}
+
 
 
 /* ---------------- INVALID ACTION ---------------- */
@@ -533,6 +574,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
