@@ -206,14 +206,31 @@ elseif ($action === "adminSaveResident") {
     $id = intval($_POST['id'] ?? 0);
 
     // ---------------- FILE UPLOAD ----------------
-    $validIdPath = null;
+    /*$validIdPath = null;
     if (!empty($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
         $uploadDir = "uploads/";
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
         $filename = uniqid("id_") . "_" . basename($_FILES['validId']['name']);
         $validIdPath = $uploadDir . $filename;
         move_uploaded_file($_FILES['validId']['tmp_name'], $validIdPath);
+    }*/
+    // ---------------- FILE UPLOAD ----------------
+$validIdPath = null;
+if (!empty($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
+    $uploadDir = "uploads/"; // folder in your root
+    if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+    $filename = uniqid("id_") . "_" . basename($_FILES['validId']['name']);
+    $validIdPath = $uploadDir . $filename;
+
+    if (move_uploaded_file($_FILES['validId']['tmp_name'], $validIdPath)) {
+        // prepend a slash so browser can find it from root
+        $validIdPath = "/" . $validIdPath; // becomes "/uploads/id_1234_file.png"
+    } else {
+        $validIdPath = null; // fail silently
     }
+}
+
 
     // ---------------- PREPARE FIELDS ----------------
     $fields = [
@@ -320,6 +337,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
