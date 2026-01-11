@@ -200,24 +200,24 @@ elseif ($action === "adminGetResidents") {
     echo json_encode($residents);
     exit;
 }
+        
 
 elseif ($action === "adminSaveResident") {
   $id = intval($_POST['id'] ?? 0);
 
-    // ---------------- FILE UPLOAD ----------------
-    $validIdPath = null;
-    if (!empty($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
-        $uploadDir = __DIR__ . "/uploads/";
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+ // ---------------- FILE UPLOAD ----------------
+$validIdPath = null;
+if (!empty($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
+    $uploadDir = __DIR__ . "/uploads/";
+    if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
-        $filename = uniqid("id_") . "_" . basename($_FILES['validId']['name']);
-        $filePath = $uploadDir . $filename;
+    $filename = uniqid("id_") . "_" . basename($_FILES['validId']['name']);
+    $filePath = $uploadDir . $filename;
 
-        if (move_uploaded_file($_FILES['validId']['tmp_name'], $filePath)) {
-            $validIdPath = "uploads/" . $filename; // relative to web root
-        }
+    if (move_uploaded_file($_FILES['validId']['tmp_name'], $filePath)) {
+        $validIdPath = "uploads/" . $filename; // relative to web root
     }
-
+}
 
 // Only add validid if uploaded
 if ($validIdPath !== null) {
@@ -258,10 +258,10 @@ if ($validIdPath !== null) {
         "blotterother" => ($_POST['blotter3'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
     ];
 
-    // ✅ Only add validid if uploaded
-    if ($validIdPath !== null) {
-        $fields['validid'] = $validIdPath;
-    }
+    // ✅ Add validid lowercase only if file uploaded
+if ($validIdPath !== null) {
+    $fields['validid'] = $validIdPath; // <-- matches DB column
+}
 
     // ---------------- INSERT OR UPDATE ----------------
     if (!$id) {
@@ -317,7 +317,6 @@ if ($validIdPath !== null) {
 }
 }
 
-
 /* ---------------- INVALID ACTION ---------------- */
 else {
     throw new Exception("Invalid action");
@@ -329,6 +328,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
