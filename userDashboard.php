@@ -819,40 +819,49 @@ async function openManageAccount() {
     alert(err.message);
   }
 }
-
 // --- UPDATE ACCOUNT ---
 document.getElementById("manageForm").addEventListener("submit", async function(e) {
   e.preventDefault();
 
   const formData = new FormData();
   formData.append("id", userId);
-  formData.append("email", document.getElementById("username").value); // email
+
+  // Email can stay as is
+  formData.append("email", document.getElementById("username").value.trim());
+
   // ✅ Only append password if user typed something
   const password = document.getElementById("password").value.trim();
   if (password !== "") {
     formData.append("password", password);
   }
 
-  formData.append("name", document.getElementById("fname").value);
-  formData.append("middlename", document.getElementById("mname").value);
-  formData.append("lastname", document.getElementById("lname").value);
-  formData.append("phone", document.getElementById("mPhone").value);
+  // Convert names to lowercase
+  formData.append("name", document.getElementById("fname").value.trim().toLowerCase());
+  formData.append("middlename", document.getElementById("mname").value.trim().toLowerCase());
+  formData.append("lastname", document.getElementById("lname").value.trim().toLowerCase());
+
+  // Other fields
+  formData.append("phone", document.getElementById("mPhone").value.trim());
   formData.append("age", document.getElementById("age").value);
   formData.append("sex", document.getElementById("sex").value);
   formData.append("birthday", document.getElementById("birthday").value);
-  formData.append("address", document.getElementById("address").value);
+  formData.append("address", document.getElementById("address").value.trim());
   formData.append("status", document.getElementById("status").value);
   formData.append("pwd", document.getElementById("pwd").value);
-  formData.append("fourps", document.getElementById("mFourPs").value); // lowercase
+  formData.append("fourps", document.getElementById("mFourPs").value);
+
   formData.append("seniorcitizen", document.getElementById("seniorCitizen").checked ? 1 : 0);
-  formData.append("schoollevels", Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value).join(",")); // lowercase
-  formData.append("schoolname", document.getElementById("schoolName").value); // lowercase
-  formData.append("occupation", document.getElementById("occupation").value); // lowercase
+  formData.append("schoollevels", Array.from(document.querySelectorAll(".school:checked"))
+                                         .map(cb => cb.value)
+                                         .join(","));
+  formData.append("schoolname", document.getElementById("schoolName").value.trim().toLowerCase());
+  formData.append("occupation", document.getElementById("occupation").value.trim().toLowerCase());
   formData.append("vaccinated", document.getElementById("vaccinated").checked ? 1 : 0);
   formData.append("voter", document.getElementById("voter").checked ? 1 : 0);
 
+  // File upload
   const file = document.getElementById("validId").files[0];
-  if (file) formData.append("validid", file); // lowercase
+  if (file) formData.append("validid", file);
 
   try {
     const res = await fetch("authController.php?action=updateResident", {
@@ -1147,6 +1156,7 @@ function askAI() {
 
 </body>
 </html>
+
 
 
 
