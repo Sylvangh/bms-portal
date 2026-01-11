@@ -752,12 +752,15 @@ body::before {
 <script>
 const token = localStorage.getItem("token");
 const userId = localStorage.getItem("userId"); // 🔑 kailangan para sa update
-
 async function openManageAccount() {
   document.getElementById("manageModal").style.display = "flex"; // open modal first
 
+  const token = localStorage.getItem("token");
+  const email = localStorage.getItem("currentemail");
+  if (!email) return alert("No email found in local storage");
+
   try {
-    const res = await fetch(`authController.php?action=getResident&email=${encodeURIComponent(localStorage.getItem("currentemail"))}`, {
+    const res = await fetch(`authController.php?action=getResident&email=${encodeURIComponent(email)}`, {
       headers: { "Authorization": "Bearer " + token }
     });
 
@@ -765,39 +768,59 @@ async function openManageAccount() {
     if (!res.ok) throw new Error(user.message || "Failed to load account info");
 
     // --- BASIC INFO ---
-document.getElementById("username").value = user.email;
-document.getElementById("fname").value = user.name;
-document.getElementById("mname").value = user.middlename;
-document.getElementById("lname").value = user.lastname;
-document.getElementById("mPhone").value = user.phone;
-document.getElementById("age").value = user.age;
-document.getElementById("sex").value = user.sex;
-document.getElementById("birthday").value = user.birthday;
-document.getElementById("address").value = user.address;
-document.getElementById("status").value = user.status;
-document.getElementById("pwd").value = user.pwd;
-document.getElementById("mFourPs").value = user.fourps;       // lowercase
-document.getElementById("schoolName").value = user.schoolname; // lowercase
-document.getElementById("occupation").value = user.occupation; // lowercase
+    const fields = {
+      username: user.email,
+      fname: user.name,
+      mname: user.middlename,
+      lname: user.lastname,
+      mPhone: user.phone,
+      age: user.age,
+      sex: user.sex,
+      birthday: user.birthday,
+      address: user.address,
+      status: user.status,
+      pwd: user.pwd,           // PWD dropdown
+      mFourPs: user.fourps,
+      schoolName: user.schoolname,
+      occupation: user.occupation
+    };
 
-document.getElementById("seniorCitizen").checked = user.seniorcitizen == 1;
-document.getElementById("vaccinated").checked = user.vaccinated == 1;
-document.getElementById("voter").checked = user.voter == 1;
+    // Fill form fields safely
+    Object.entries(fields).forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (el) el.value = value || '';
+    });
 
-// School levels
-const levels = (user.schoollevels || '').split(",");
-document.querySelectorAll(".school").forEach(cb => cb.checked = levels.includes(cb.value));
+    // Password input (leave blank)
+    const passwordInput = document.getElementById("password");
+    if (passwordInput) passwordInput.value = '';
 
-// Image preview
-if (user.validid) {
-    document.getElementById("previewImg").src = user.validid.startsWith("uploads/") ? user.validid : "uploads/" + user.validid;
-}
+    // Checkboxes
+    const checks = {
+      seniorCitizen: user.seniorcitizen == 1,
+      vaccinated: user.vaccinated == 1,
+      voter: user.voter == 1
+    };
+    Object.entries(checks).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el) el.checked = val;
+    });
 
+    // School levels
+    const levels = (user.schoollevels || '').split(",");
+    document.querySelectorAll(".school").forEach(cb => cb.checked = levels.includes(cb.value));
+
+    // Image preview
+    const img = document.getElementById("previewImg");
+    if (img && user.validid) {
+      img.src = user.validid.startsWith("uploads/") ? user.validid : "uploads/" + user.validid;
+    }
 
   } catch (err) {
     alert(err.message);
   }
 }
+
 
 
 // --- UPDATE ACCOUNT ---
@@ -1128,5 +1151,6 @@ function askAI() {
 
 </body>
 </html>
+
 
 
