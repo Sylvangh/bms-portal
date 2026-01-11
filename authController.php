@@ -202,38 +202,25 @@ elseif ($action === "adminGetResidents") {
 }
 
 elseif ($action === "adminSaveResident") {
-
-    $id = intval($_POST['id'] ?? 0);
+  $id = intval($_POST['id'] ?? 0);
 
     // ---------------- FILE UPLOAD ----------------
-    /*$validIdPath = null;
+    $validIdPath = null;
+
     if (!empty($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
-        $uploadDir = "uploads/";
+        $uploadDir = __DIR__ . "/uploads/"; // absolute path for PHP
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
         $filename = uniqid("id_") . "_" . basename($_FILES['validId']['name']);
-        $validIdPath = $uploadDir . $filename;
-        move_uploaded_file($_FILES['validId']['tmp_name'], $validIdPath);
-    }*/
-    // ---------------- FILE UPLOAD ----------------
-$validIdPath = null;
+        $filePath = $uploadDir . $filename;
 
-if (!empty($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
-    // Absolute path for PHP to save the file correctly
-    $uploadDir = __DIR__ . "/uploads/"; 
-    if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-
-    // Generate unique filename to prevent conflicts
-    $filename = uniqid("id_") . "_" . basename($_FILES['validId']['name']);
-    $filePath = $uploadDir . $filename;
-
-    // Move uploaded file
-    if (move_uploaded_file($_FILES['validId']['tmp_name'], $filePath)) {
-        // ✅ Store relative path for DB and for browser to access
-        $validIdPath = "uploads/" . $filename; 
-    } else {
-        $validIdPath = null; // fail silently if move fails
+        if (move_uploaded_file($_FILES['validId']['tmp_name'], $filePath)) {
+            // Store relative path for browser
+            $validIdPath = "uploads/" . $filename;
+        } else {
+            $validIdPath = null;
+        }
     }
-}
 
     // ---------------- PREPARE FIELDS ----------------
     $fields = [
@@ -340,6 +327,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
