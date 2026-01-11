@@ -350,16 +350,16 @@ if ($validIdPath !== null) $fields['validid'] = $validIdPath;
     ]);
 
     exit;
-}
+}/*
 elseif ($action === "getResident") {
-    // ---------------- GET RESIDENT ----------------
+
     $email = trim($_GET['email'] ?? '');
     if (!$email) {
         echo json_encode(["message" => "Missing email"]);
         exit;
     }
 
-    // PostgreSQL query
+
     $sql = "SELECT * FROM registrations WHERE email = $1 AND accountstatus = 'approved' LIMIT 1";
     $res = pg_query_params($conn, $sql, [$email]);
 
@@ -371,7 +371,33 @@ elseif ($action === "getResident") {
     $resident = pg_fetch_assoc($res);
     echo json_encode($resident);
     exit;
+}*/
+        elseif ($action === "getResident") {
+    // ---------------- GET RESIDENT ----------------
+    $email = trim($_GET['email'] ?? '');
+    if (!$email) {
+        echo json_encode(["status" => "error", "message" => "Missing email"]);
+        exit;
+    }
+
+    // PostgreSQL query
+    $sql = "SELECT * FROM registrations WHERE email = $1 AND accountstatus = 'approved' LIMIT 1";
+    $res = pg_query_params($conn, $sql, [$email]);
+
+    if (!$res || pg_num_rows($res) === 0) {
+        echo json_encode(["status" => "error", "message" => "Resident not found or not approved"]);
+        exit;
+    }
+
+    $resident = pg_fetch_assoc($res);
+
+    // ✅ FIX: normalize keys to lowercase
+    $resident = array_change_key_case($resident, CASE_LOWER);
+
+    echo json_encode($resident);
+    exit;
 }
+
 
 /* ---------------- INVALID ACTION ---------------- */
 else {
@@ -384,6 +410,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
