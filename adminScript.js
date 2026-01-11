@@ -961,7 +961,7 @@ function loadAnnouncementsPage() {
 
       // LOAD RESIDENTS
       async function loadResidents() {
-        const res = await fetch("authController.php?action=getResident");
+        const res = await fetch("authController.php?action=getResidents");
         residents = await res.json();
         renderResidents();
       }
@@ -1740,6 +1740,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
