@@ -748,6 +748,8 @@ async function editResident(id) {
       alert("Failed to delete resident");
     }
   }
+
+    
 residentForm.addEventListener("submit", async e => {
   e.preventDefault();
 
@@ -793,10 +795,10 @@ residentForm.addEventListener("submit", async e => {
   formData.set("blotter2", document.getElementById("blotter2").checked ? "Yes" : "No");
   formData.set("blotter3", document.getElementById("blotter3").checked ? "Yes" : "No");
 
-  // ---------------- FILE ----------------
+  // ---------------- FILE UPLOAD ----------------
   const validIdInput = document.getElementById("validId");
   if (validIdInput.files.length > 0) {
-    formData.set("validId", validIdInput.files[0]);
+    formData.set("validId", validIdInput.files[0]); // ✅ file included only if selected
   }
 
   // ---------------- EDIT ID ----------------
@@ -1708,6 +1710,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
