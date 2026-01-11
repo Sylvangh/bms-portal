@@ -685,10 +685,10 @@ residentForm.addEventListener("submit", async e => {
   formData.set("blotter3", document.getElementById("blotter3").checked ? "Yes" : "No");
 
   // ---------------- FILE UPLOAD ----------------
-const validIdInput = document.getElementById("validId");
-if (validIdInput.files.length > 0) {
-    formData.append("validid", validIdInput.files[0]); // 🔥 match DB column
-}
+  const validIdInput = document.getElementById("validId");
+  if (validIdInput.files.length > 0) {
+    formData.set("validId", validIdInput.files[0]); // ✅ file included only if selected
+  }
 
   // ---------------- EDIT ID ----------------
   if (editResidentId) {
@@ -721,7 +721,7 @@ if (validIdInput.files.length > 0) {
 
 
   // ---------------- FILE PREVIEW ----------------
-
+  const validIdInput = document.getElementById("validId");
   if (validIdInput) validIdInput.addEventListener("change", function() {
     const file = this.files[0];
     if (!file) return;
@@ -780,8 +780,6 @@ tabButtons.forEach(btn => {
     btn.classList.add("active");
   });
 });
-
-
 
   // ---------------- INIT ----------------
   loadResidents();
@@ -1599,6 +1597,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
