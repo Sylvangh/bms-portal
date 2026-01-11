@@ -380,7 +380,7 @@ setTimeout(() => {
   document.querySelector('.wrapper').style.display = 'flex';
 }, 2500);
 
-// 🔑 DEFINE ELEMENTS
+// 🔑 ELEMENTS
 const loginBtn = document.getElementById("btn-login");
 const emailInput = document.getElementById("login-username");
 const passwordInput = document.getElementById("login-password");
@@ -405,24 +405,28 @@ loginBtn.addEventListener("click", async () => {
     const data = await res.json();
 
     if (!res.ok) {
+      // ❌ LOGIN FAILED
       alert(data.message || "Login failed");
       return;
     }
 
-    // ✅ SAVE SESSION
+    // ✅ LOGIN SUCCESS — SAVE INFO TO LOCALSTORAGE
     localStorage.setItem("token", data.token);
     localStorage.setItem("currentEmail", email);
-    localStorage.setItem("role", "resident");
-    localStorage.setItem("userId", data.user.id); // 👈 SAVE userId
+    localStorage.setItem("role", data.role || "resident");
+    localStorage.setItem("userId", data.user.id);
 
     // Redirect to dashboard
     window.location.href = "userDashboard.php";
 
   } catch (err) {
-    alert("Error connecting to server");
+    console.error(err);
+    alert("Error connecting to server. Please try again.");
   }
 });
 </script>
 
+
 </body>
 </html>
+
