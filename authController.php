@@ -284,32 +284,41 @@ elseif ($action === "adminGetResidents") {
         echo json_encode(["status" => "success", "message" => "Resident added successfully"]);
         exit;
 
-    } else {
-        // UPDATE
-        $set = [];
-        $i = 1;
+} else {
+    // UPDATE (FIXED)
+    $set = [];
+    $params = [];
+    $i = 1;
 
-        foreach ($fields as $k => $v) {
-            if ($v !== null) {
-                $set[] = "$k = $" . $i;
-                $params[] = $v;
-                $i++;
-            }
-        }
+    foreach ($fields as $k => $v) {
+        $set[] = "$k = $" . $i;
+        $params[] = $v;
+        $i++;
+    }
 
-        $params[] = $id;
-        $sql = "UPDATE registrations SET " . implode(",", $set) . " WHERE id = $" . $i;
-        $res = pg_query_params($conn, $sql, $params);
+    $params[] = $id;
 
-        if (!$res) {
-            echo json_encode(["status" => "error", "message" => pg_last_error($conn)]);
-            exit;
-        }
+    $sql = "UPDATE registrations 
+            SET " . implode(", ", $set) . " 
+            WHERE id = $" . $i;
 
-        echo json_encode(["status" => "success", "message" => "Resident updated successfully"]);
+    $res = pg_query_params($conn, $sql, $params);
+
+    if (!$res) {
+        echo json_encode([
+            "status" => "error",
+            "message" => pg_last_error($conn)
+        ]);
         exit;
     }
+
+    echo json_encode([
+        "status" => "success",
+        "message" => "Resident updated successfully"
+    ]);
+    exit;
 }
+
 
 /* ---------------- INVALID ACTION ---------------- */
 else {
@@ -322,6 +331,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
