@@ -757,7 +757,7 @@ async function openManageAccount() {
   document.getElementById("manageModal").style.display = "flex"; // open modal first
 
   try {
-    const res = await fetch(`authController.php?action=getResident&email=${encodeURIComponent(localStorage.getItem("currentEmail"))}`, {
+    const res = await fetch(`authController.php?action=getResident&email=${encodeURIComponent(localStorage.getItem("currentemail"))}`, {
       headers: { "Authorization": "Bearer " + token }
     });
 
@@ -776,22 +776,22 @@ async function openManageAccount() {
     document.getElementById("address").value = user.address;
     document.getElementById("status").value = user.status;
     document.getElementById("pwd").value = user.pwd;
-    document.getElementById("mFourPs").value = user.fourPs;
-    document.getElementById("schoolName").value = user.schoolName;
+    document.getElementById("mFourPs").value = user.fourps;
+    document.getElementById("schoolName").value = user.schoolname;
     document.getElementById("occupation").value = user.occupation;
 
     // --- CHECKBOXES ---
-    document.getElementById("seniorCitizen").checked = user.seniorCitizen == 1;
+    document.getElementById("seniorCitizen").checked = user.seniorcitizen == 1;
     document.getElementById("vaccinated").checked = user.vaccinated == 1;
     document.getElementById("voter").checked = user.voter == 1;
 
     // --- SCHOOL LEVELS ---
-    const levels = user.schoolLevels?.split(",") || [];
+    const levels = (user.schoollevels || '').split(",");
     document.querySelectorAll(".school").forEach(cb => cb.checked = levels.includes(cb.value));
 
     // --- IMAGE ---
-    if (user.validId) {
-      document.getElementById("previewImg").src = user.validId.startsWith("uploads/") ? user.validId : "uploads/" + user.validId;
+    if (user.validid) {
+      document.getElementById("previewImg").src = user.validid.startsWith("uploads/") ? user.validid : "uploads/" + user.validid;
     }
 
   } catch (err) {
@@ -799,18 +799,20 @@ async function openManageAccount() {
   }
 }
 
+
 // --- UPDATE ACCOUNT ---
 document.getElementById("manageForm").addEventListener("submit", async function(e) {
   e.preventDefault();
 
   const formData = new FormData();
   formData.append("id", userId);
-  formData.append("email", document.getElementById("username").value); // dito email na
-   // ✅ Only append password if user typed something
+  formData.append("email", document.getElementById("username").value); // email
+  // ✅ Only append password if user typed something
   const password = document.getElementById("password").value.trim();
   if (password !== "") {
     formData.append("password", password);
   }
+
   formData.append("name", document.getElementById("fname").value);
   formData.append("middlename", document.getElementById("mname").value);
   formData.append("lastname", document.getElementById("lname").value);
@@ -821,16 +823,16 @@ document.getElementById("manageForm").addEventListener("submit", async function(
   formData.append("address", document.getElementById("address").value);
   formData.append("status", document.getElementById("status").value);
   formData.append("pwd", document.getElementById("pwd").value);
-  formData.append("fourPs", document.getElementById("mFourPs").value);
-  formData.append("seniorCitizen", document.getElementById("seniorCitizen").checked ? 1 : 0);
-  formData.append("schoolLevels", Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value).join(","));
-  formData.append("schoolName", document.getElementById("schoolName").value);
-  formData.append("occupation", document.getElementById("occupation").value);
+  formData.append("fourps", document.getElementById("mFourPs").value); // lowercase
+  formData.append("seniorcitizen", document.getElementById("seniorCitizen").checked ? 1 : 0);
+  formData.append("schoollevels", Array.from(document.querySelectorAll(".school:checked")).map(cb => cb.value).join(",")); // lowercase
+  formData.append("schoolname", document.getElementById("schoolName").value); // lowercase
+  formData.append("occupation", document.getElementById("occupation").value); // lowercase
   formData.append("vaccinated", document.getElementById("vaccinated").checked ? 1 : 0);
   formData.append("voter", document.getElementById("voter").checked ? 1 : 0);
 
   const file = document.getElementById("validId").files[0];
-  if (file) formData.append("validId", file);
+  if (file) formData.append("validid", file); // lowercase
 
   try {
     const res = await fetch("authController.php?action=updateResident", {
@@ -848,6 +850,7 @@ document.getElementById("manageForm").addEventListener("submit", async function(
     alert("Error updating account: " + err.message);
   }
 });
+
 
 // --- FILE PREVIEW ---
 document.getElementById("validId").addEventListener("change", function() {
@@ -1125,3 +1128,4 @@ function askAI() {
 
 </body>
 </html>
+
