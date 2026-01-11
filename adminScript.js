@@ -643,24 +643,39 @@ function renderTable(data) {
   if (openFilter) openFilter.onclick = () => document.getElementById("filterModal").style.display = "block";
   if (closeFilter) closeFilter.onclick = () => document.getElementById("filterModal").style.display = "none";
 
-  if (applyFilter) applyFilter.onclick = () => {
-    const checkboxes = document.querySelectorAll(".filterCheckbox:checked");
-    if (checkboxes.length === 0) filteredData = [...residentsData];
-    else filteredData = residentsData.filter(r =>
+if (applyFilter) applyFilter.onclick = () => {
+  const checkboxes = document.querySelectorAll(".filterCheckbox:checked");
+
+  if (checkboxes.length === 0) {
+    filteredData = [...residentsData];
+  } else {
+    filteredData = residentsData.filter(r =>
       Array.from(checkboxes).every(cb => {
-        switch(cb.value) {
-          case "pwd": return r.pwd === "Yes";
-          case "seniorcitizen": return r.seniorcitizen == 1;
-          case "college": return r.schoollevels?.includes("College");
-          case "voter": return r.voter == 1;
-          case "fourps": return r.fourps === "Yes";
-          case "occupation": return r.occupation && r.occupation.trim() !== "";
+        switch(cb.value.toLowerCase()) {
+          case "pwd": 
+            return r.pwd === "Yes";
+          case "seniorcitizen": 
+            return r.seniorcitizen == 1; // lowercase to match PostgreSQL
+          case "college": 
+            return r.schoollevels?.includes("College"); // lowercase column
+          case "voter": 
+            return r.voter == 1;
+          case "fourps": 
+            return r.fourps === "Yes"; // lowercase column
+          case "occupation": 
+            return r.occupation && r.occupation.trim() !== "";
+          default:
+            return true; // unknown filters won't block
         }
       })
     );
-    currentSort ? sortResidents(currentSort) : renderTable(filteredData);
-    document.getElementById("filterModal").style.display = "none";
-  };
+  }
+
+  if (currentSort) sortResidents(currentSort);
+  else renderTable(filteredData);
+
+  document.getElementById("filterModal").style.display = "none";
+};
 
 async function editResident(id) {
   editResidentId = id;
@@ -1725,6 +1740,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
