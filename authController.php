@@ -310,7 +310,48 @@ if ($validIdPath !== null) $fields['validid'] = $validIdPath;
     echo json_encode(["status" => "success", "message" => "Resident updated successfully"]);
     exit;
 }
+}elseif ($action === "residentLogin") {
+    // Get JSON input
+    $data = json_decode(file_get_contents("php://input"), true);
+
+    $email = trim($data['email'] ?? '');
+    $password = $data['password'] ?? '';
+
+    // ---------------- POSTGRESQL QUERY ----------------
+    $sql = "SELECT * FROM registrations WHERE email = $1 AND accountstatus = 'approved' LIMIT 1";
+    $res = pg_query_params($conn, $sql, [$email]);
+
+    if (!$res || pg_num_rows($res) === 0) {
+        http_response_code(401);
+        echo json_encode(["message" => "Resident not found or not approved"]);
+        exit;
+    }
+
+    $resident = pg_fetch_assoc($res);
+
+    // ---------------- PASSWORD CHECK ----------------
+    if (!password_verify($password, $resident['password'])) {
+        http_response_code(401);
+        echo json_encode(["message" => "Incorrect password"]);
+        exit;
+    }
+
+    // ---------------- GENERATE TOKEN ----------------
+    $token = bin2hex(random_bytes(16));
+
+    echo json_encode([
+        "message" => "Login successful",
+        "token" => $token,
+        "role" => "resident",
+        "user" => [
+            "id" => $resident['id'],
+            "email" => $resident['email']
+        ]
+    ]);
+
+    exit;
 }
+
 
 /* ---------------- INVALID ACTION ---------------- */
 else {
@@ -323,6 +364,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
