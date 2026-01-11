@@ -285,15 +285,17 @@ elseif ($action === "adminGetResidents") {
         exit;
 
 } else {
-    // UPDATE (FIXED)
+    // UPDATE (SAFE, LOGIN FRIENDLY)
     $set = [];
-    $params = [];
+    $params = []; // ✅ THIS FIXES IT
     $i = 1;
 
     foreach ($fields as $k => $v) {
-        $set[] = "$k = $" . $i;
-        $params[] = $v;
-        $i++;
+        if ($v !== null) {
+            $set[] = "$k = $" . $i;
+            $params[] = $v;
+            $i++;
+        }
     }
 
     $params[] = $id;
@@ -331,6 +333,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
