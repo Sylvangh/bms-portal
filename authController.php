@@ -396,9 +396,84 @@ elseif ($action === "getResident") {
 
     echo json_encode($resident);
     exit;
+}elseif ($action === "updateResident") {
+    // ---------------- UPDATE RESIDENT ----------------
+    $id = intval($_POST['id'] ?? 0);
+    if (!$id) {
+        echo json_encode(["status" => "error", "message" => "Missing user ID"]);
+        exit;
+    }
+
+    // Handle file upload
+    $validid = null;
+    if (isset($_FILES['validid']) && $_FILES['validid']['error'] === 0) {
+        $filename = uniqid('id_') . '_' . basename($_FILES['validid']['name']);
+        $validid = 'uploads/' . $filename;
+        if (!move_uploaded_file($_FILES['validid']['tmp_name'], $validid)) {
+            echo json_encode(["status" => "error", "message" => "Failed to upload file"]);
+            exit;
+        }
+    }
+
+    // Prepare fields (convert all name/text fields to lowercase)
+    $fields = [
+        "email" => strtolower(trim($_POST['email'] ?? '')),
+        "name" => strtolower(trim($_POST['name'] ?? '')),
+        "middlename" => strtolower(trim($_POST['middlename'] ?? '')),
+        "lastname" => strtolower(trim($_POST['lastname'] ?? '')),
+        "phone" => trim($_POST['phone'] ?? ''),
+        "age" => isset($_POST['age']) ? intval($_POST['age']) : 0,
+        "sex" => trim($_POST['sex'] ?? ''),
+        "birthday" => $_POST['birthday'] ?? '',
+        "address" => trim($_POST['address'] ?? ''),
+        "status" => trim($_POST['status'] ?? ''),
+        "pwd" => (($_POST['pwd'] ?? 'No') === 'Yes') ? 'Yes' : 'No',
+        "fourps" => (($_POST['fourps'] ?? 'No') === 'Yes') ? 'Yes' : 'No',
+        "seniorcitizen" => (($_POST['seniorcitizen'] ?? 0) == 1) ? 'TRUE' : 'FALSE',
+        "schoollevels" => strtolower(trim($_POST['schoollevels'] ?? '')),
+        "schoolname" => strtolower(trim($_POST['schoolname'] ?? '')),
+        "occupation" => strtolower(trim($_POST['occupation'] ?? '')),
+        "vaccinated" => (($_POST['vaccinated'] ?? 0) == 1) ? 'TRUE' : 'FALSE',
+        "voter" => (($_POST['voter'] ?? 0) == 1) ? 'TRUE' : 'FALSE',
+        "blottertheft" => (($_POST['blottertheft'] ?? 'No') === 'Yes') ? 'Yes' : 'No',
+        "blotterdisturbance" => (($_POST['blotterdisturbance'] ?? 'No') === 'Yes') ? 'Yes' : 'No',
+        "blotterother" => (($_POST['blotterother'] ?? 'No') === 'Yes') ? 'Yes' : 'No'
+    ];
+
+    // Optional: hash password if provided
+    if (!empty($_POST['password'])) {
+        $fields['password'] = password_hash($_POST['password'], PASSWORD_BCRYPT);
+    }
+
+    // Include uploaded file if exists
+    if ($validid) {
+        $fields['validid'] = $validid;
+    }
+
+    // Build dynamic UPDATE query
+    $set = [];
+    $params = [];
+    $i = 1;
+    foreach ($fields as $k => $v) {
+        $set[] = "$k = $" . $i;
+        $params[] = $v;
+        $i++;
+    }
+
+    $params[] = $id; // for WHERE clause
+    $sql = "UPDATE registrations SET " . implode(", ", $set) . " WHERE id = $" . $i;
+
+    $result = pg_query_params($conn, $sql, $params);
+
+    if ($result) {
+        echo json_encode(["status" => "success", "message" => "User updated successfully"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => pg_last_error($conn)]);
+    }
+
+    pg_close($conn);
+    exit;
 }
-
-
 
 /* ---------------- INVALID ACTION ---------------- */
 else {
@@ -411,6 +486,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
