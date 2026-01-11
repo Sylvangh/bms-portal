@@ -306,6 +306,7 @@ elseif ($action === "adminSaveResident") {
     echo json_encode(["status" => "success", "message" => "Resident updated successfully"]);
     exit;
 }
+}
 
 
 /* ---------------- INVALID ACTION ---------------- */
@@ -319,6 +320,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
