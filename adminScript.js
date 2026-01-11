@@ -595,7 +595,11 @@ function renderTable(data) {
       <td>${r.occupation ?? ""}</td>
       <td>${vaccinated}</td>
       <td>${voter}</td>
-  <td>${r.validid ? `<img src="${window.location.origin}/${r.validid}" width="50" />` : ""}</td>
+     <td>
+        ${r.validid 
+          ? `<img src="/${r.validid}" width="50" style="object-fit:cover;" />` 
+          : ""}
+      </td>
       <td>
         <button class="editBtn" data-id="${r.id}">Edit</button>
         <button class="deleteBtn" data-id="${r.id}">Delete</button>
@@ -1712,6 +1716,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
