@@ -609,6 +609,26 @@ elseif ($action === 'updateCertificateFees') {
     }
     exit;
 }
+        elseif ($action === "getCertificateFees") {
+    $result = pg_query($conn, "SELECT * FROM certificate_fees LIMIT 1");
+
+    if (!$result || pg_num_rows($result) === 0) {
+        echo json_encode([
+            "clearance" => 0,
+            "residency" => 0,
+            "indigency" => 0,
+            "business"  => 0
+        ]);
+        exit;
+    }
+
+    $fees = pg_fetch_assoc($result);
+    $fees = array_change_key_case($fees, CASE_LOWER);
+
+    echo json_encode($fees);
+    exit;
+}
+
 
 /* ---------------- INVALID ACTION ---------------- */
 else {
@@ -621,6 +641,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
