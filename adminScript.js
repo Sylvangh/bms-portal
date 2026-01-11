@@ -794,7 +794,7 @@ residentForm.addEventListener("submit", async e => {
   // ---------------- FILE UPLOAD ----------------
   const validIdInput = document.getElementById("validId");
   if (validIdInput.files.length > 0) {
-    formData.set("validId", validIdInput.files[0]); // ✅ file included only if selected
+   formData.set("validid", validIdInput.files[0]);
   }
 
   // ---------------- EDIT ID ----------------
@@ -1707,6 +1707,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
