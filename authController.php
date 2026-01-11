@@ -218,23 +218,22 @@ elseif ($action === "adminSaveResident") {
 $validIdPath = null;
 
 if (!empty($_FILES['validId']) && $_FILES['validId']['error'] === 0) {
-    $uploadDir = __DIR__ . "/uploads/"; // absolute path to ensure move_uploaded_file works
+    // Absolute path for PHP to save the file correctly
+    $uploadDir = __DIR__ . "/uploads/"; 
     if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
-    // Generate unique filename
+    // Generate unique filename to prevent conflicts
     $filename = uniqid("id_") . "_" . basename($_FILES['validId']['name']);
     $filePath = $uploadDir . $filename;
 
-    // Move the uploaded file
+    // Move uploaded file
     if (move_uploaded_file($_FILES['validId']['tmp_name'], $filePath)) {
-        // Store relative path for DB so browser can access it
+        // ✅ Store relative path for DB and for browser to access
         $validIdPath = "uploads/" . $filename; 
     } else {
         $validIdPath = null; // fail silently if move fails
     }
 }
-
-
 
     // ---------------- PREPARE FIELDS ----------------
     $fields = [
@@ -341,6 +340,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
