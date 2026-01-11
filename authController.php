@@ -491,6 +491,36 @@ elseif ($action === "getResident") {
     echo json_encode($rows ?: []);
     exit;
 }
+    elseif ($action === "sendAnnouncement") {
+
+    $sender = "Admin";
+    $message = trim($_POST['message'] ?? '');
+    $recipients = json_decode($_POST['recipients'] ?? '[]', true);
+
+    if ($message === '' || !is_array($recipients) || empty($recipients)) {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing message or recipients"
+        ]);
+        exit;
+    }
+
+    foreach ($recipients as $recipient) {
+        pg_query_params(
+            $conn,
+            "INSERT INTO announcements (sender, recipient, message, date_sent)
+             VALUES ($1, $2, $3, NOW())",
+            [$sender, $recipient, $message]
+        );
+    }
+
+    echo json_encode([
+        "status" => "success",
+        "message" => "Announcement sent successfully"
+    ]);
+    exit;
+}
+
 
 /* ---------------- INVALID ACTION ---------------- */
 else {
@@ -503,6 +533,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
