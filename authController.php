@@ -474,6 +474,23 @@ elseif ($action === "getResident") {
     pg_close($conn);
     exit;
 }
+    elseif ($action === "getResidents") {
+    $sql = "SELECT id, name, lastname, email 
+            FROM registrations 
+            WHERE accountstatus = 'approved'
+            ORDER BY name ASC";
+
+    $res = pg_query($conn, $sql);
+
+    if (!$res) {
+        echo json_encode([]);
+        exit;
+    }
+
+    $rows = pg_fetch_all($res);
+    echo json_encode($rows ?: []);
+    exit;
+}
 
 /* ---------------- INVALID ACTION ---------------- */
 else {
@@ -486,6 +503,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
