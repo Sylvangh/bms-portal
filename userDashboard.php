@@ -765,34 +765,34 @@ async function openManageAccount() {
     if (!res.ok) throw new Error(user.message || "Failed to load account info");
 
     // --- BASIC INFO ---
-    document.getElementById("username").value = user.email;
-    document.getElementById("fname").value = user.name;
-    document.getElementById("mname").value = user.middlename;
-    document.getElementById("lname").value = user.lastname;
-    document.getElementById("mPhone").value = user.phone;
-    document.getElementById("age").value = user.age;
-    document.getElementById("sex").value = user.sex;
-    document.getElementById("birthday").value = user.birthday;
-    document.getElementById("address").value = user.address;
-    document.getElementById("status").value = user.status;
-    document.getElementById("pwd").value = user.pwd;
-    document.getElementById("mFourPs").value = user.fourps;
-    document.getElementById("schoolName").value = user.schoolname;
-    document.getElementById("occupation").value = user.occupation;
+document.getElementById("username").value = user.email;
+document.getElementById("fname").value = user.name;
+document.getElementById("mname").value = user.middlename;
+document.getElementById("lname").value = user.lastname;
+document.getElementById("mPhone").value = user.phone;
+document.getElementById("age").value = user.age;
+document.getElementById("sex").value = user.sex;
+document.getElementById("birthday").value = user.birthday;
+document.getElementById("address").value = user.address;
+document.getElementById("status").value = user.status;
+document.getElementById("pwd").value = user.pwd;
+document.getElementById("mFourPs").value = user.fourps;       // lowercase
+document.getElementById("schoolName").value = user.schoolname; // lowercase
+document.getElementById("occupation").value = user.occupation; // lowercase
 
-    // --- CHECKBOXES ---
-    document.getElementById("seniorCitizen").checked = user.seniorcitizen == 1;
-    document.getElementById("vaccinated").checked = user.vaccinated == 1;
-    document.getElementById("voter").checked = user.voter == 1;
+document.getElementById("seniorCitizen").checked = user.seniorcitizen == 1;
+document.getElementById("vaccinated").checked = user.vaccinated == 1;
+document.getElementById("voter").checked = user.voter == 1;
 
-    // --- SCHOOL LEVELS ---
-    const levels = (user.schoollevels || '').split(",");
-    document.querySelectorAll(".school").forEach(cb => cb.checked = levels.includes(cb.value));
+// School levels
+const levels = (user.schoollevels || '').split(",");
+document.querySelectorAll(".school").forEach(cb => cb.checked = levels.includes(cb.value));
 
-    // --- IMAGE ---
-    if (user.validid) {
-      document.getElementById("previewImg").src = user.validid.startsWith("uploads/") ? user.validid : "uploads/" + user.validid;
-    }
+// Image preview
+if (user.validid) {
+    document.getElementById("previewImg").src = user.validid.startsWith("uploads/") ? user.validid : "uploads/" + user.validid;
+}
+
 
   } catch (err) {
     alert(err.message);
@@ -1128,4 +1128,5 @@ function askAI() {
 
 </body>
 </html>
+
 
