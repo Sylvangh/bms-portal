@@ -1155,26 +1155,31 @@ function loadCertificatesPage() {
       });
 
       // Load fees from DB
-      async function loadFees() {
-        try {
-          const res = await fetch("authController.php?action=getCertificateFees");
-          const data = await res.json();
+async function loadFees() {
+  try {
+    const res = await fetch("authController.php?action=getCertificateFees");
+    const data = await res.json();
 
-          feeInputs.clearance.value = data.clearance || 0;
-          feeInputs.residency.value = data.residency || 0;
-          feeInputs.indigency.value = data.indigency || 0;
-          feeInputs.business.value = data.business || 0;
-        } catch(e) {
-          console.error("Failed to load fees:", e);
-          // fallback values
-          feeInputs.clearance.value = 50;
-          feeInputs.residency.value = 30;
-          feeInputs.indigency.value = 20;
-          feeInputs.business.value = 100;
-        }
-      }
+    // ✅ handle array OR object
+    const fees = Array.isArray(data) ? data[0] : data;
 
-      loadFees(); // call on load
+    feeInputs.clearance.value = fees?.clearance ?? 50;
+    feeInputs.residency.value = fees?.residency ?? 30;
+    feeInputs.indigency.value = fees?.indigency ?? 20;
+    feeInputs.business.value  = fees?.business ?? 100;
+
+  } catch (e) {
+    console.error("Failed to load fees:", e);
+
+    // fallback values
+    feeInputs.clearance.value = 50;
+    feeInputs.residency.value = 30;
+    feeInputs.indigency.value = 20;
+    feeInputs.business.value = 100;
+  }
+}
+
+loadFees(); // call on load
     })
     .catch(err => console.error("Error loading certificates page:", err));
 }
@@ -1740,6 +1745,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
