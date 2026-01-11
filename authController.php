@@ -201,11 +201,9 @@ elseif ($action === "adminGetResidents") {
     exit;
 }
 
-
-    elseif ($action === "adminSaveResident") {
+elseif ($action === "adminSaveResident") {
 
     $id = intval($_POST['id'] ?? 0);
-    $params = [];
 
     // ---------------- FILE UPLOAD ----------------
     $validIdPath = null;
@@ -233,10 +231,10 @@ elseif ($action === "adminGetResidents") {
         "pwd" => ($_POST['pwd'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
         "fourps" => ($_POST['fourps'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
 
-        // ✅ CHECKBOXES (FORCED INT)
-        "seniorcitizen" => (int)($_POST['seniorcitizen'] ?? 0),
-        "vaccinated"   => (int)($_POST['vaccinated'] ?? 0),
-        "voter"        => (int)($_POST['voter'] ?? 0),
+        // ✅ CHECKBOXES
+        "seniorcitizen" => isset($_POST['seniorcitizen']) && $_POST['seniorcitizen'] === '1' ? 1 : 0,
+        "vaccinated"   => isset($_POST['vaccinated']) && $_POST['vaccinated'] === '1' ? 1 : 0,
+        "voter"        => isset($_POST['voter']) && $_POST['voter'] === '1' ? 1 : 0,
 
         // ---------------- SCHOOL ----------------
         "schoollevels" => !empty($_POST['schoollevels'])
@@ -251,7 +249,7 @@ elseif ($action === "adminGetResidents") {
         "blotterother" => ($_POST['blotter3'] ?? 'No') === 'Yes' ? 'Yes' : 'No',
     ];
 
-    // ✅ ADD validid ONLY IF UPLOADED (CRITICAL FIX)
+    // ✅ Only add validid if uploaded
     if ($validIdPath !== null) {
         $fields['validid'] = $validIdPath;
     }
@@ -261,56 +259,52 @@ elseif ($action === "adminGetResidents") {
         // INSERT
         $cols = [];
         $vals = [];
+        $params = [];
         $i = 1;
 
         foreach ($fields as $k => $v) {
-            if ($v !== null) {
-                $cols[] = $k;
-                $vals[] = '$' . $i;
-                $params[] = $v;
-                $i++;
-            }
+            $cols[] = $k;
+            $vals[] = '$' . $i;
+            $params[] = $v;
+            $i++;
         }
 
-        $sql = "INSERT INTO registrations (" . implode(",", $cols) . ")
-                VALUES (" . implode(",", $vals) . ")";
+        $sql = "INSERT INTO registrations (" . implode(",", $cols) . ") VALUES (" . implode(",", $vals) . ")";
         $res = pg_query_params($conn, $sql, $params);
 
         if (!$res) {
-            echo json_encode(["status" => "error", "message" => pg_last_error($conn)]);
+            echo json_encode(["status"=>"error","message"=>pg_last_error($conn)]);
             exit;
         }
 
-        echo json_encode(["status" => "success", "message" => "Resident added successfully"]);
+        echo json_encode(["status"=>"success","message"=>"Resident added successfully"]);
         exit;
 
-
- } else {
-
-        
-    $params = []; // ✅ REQUIRED — resets parameter order
+    } else {
         // UPDATE
         $set = [];
+        $params = [];
         $i = 1;
 
         foreach ($fields as $k => $v) {
-            if ($v !== null) {
-                $set[] = "$k = $" . $i;
-                $params[] = $v;
-                $i++;
-            }
+            // ✅ Include all fields, even empty string
+            $set[] = "$k = $" . $i;
+            $params[] = $v;
+            $i++;
         }
 
+        // Add the ID at the end
         $params[] = $id;
+
         $sql = "UPDATE registrations SET " . implode(",", $set) . " WHERE id = $" . $i;
         $res = pg_query_params($conn, $sql, $params);
 
         if (!$res) {
-            echo json_encode(["status" => "error", "message" => pg_last_error($conn)]);
+            echo json_encode(["status"=>"error","message"=>pg_last_error($conn)]);
             exit;
         }
 
-        echo json_encode(["status" => "success", "message" => "Resident updated successfully"]);
+        echo json_encode(["status"=>"success","message"=>"Resident updated successfully"]);
         exit;
     }
 }
@@ -326,6 +320,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
