@@ -686,6 +686,8 @@ async function editResident(id) {
     document.getElementById("birthday").value = resident.birthday ?? "";
     document.getElementById("address").value = resident.address ?? "";
     document.getElementById("status").value = resident.status ?? "";
+      
+    // ---------------- TEXT INPUTS ----------------
     document.getElementById("schoolName").value = resident.schoolname ?? "";
     document.getElementById("occupation").value = resident.occupation ?? "";
 
@@ -775,6 +777,10 @@ residentForm.addEventListener("submit", async e => {
   formData.set("vaccinated", document.getElementById("vaccinated").checked ? "1" : "0");
   formData.set("voter", document.getElementById("voter").checked ? "1" : "0");
 
+    // ---------------- SCHOOL NAME & OCCUPATION ----------------
+  formData.set("schoolname", document.getElementById("schoolName").value.trim());
+  formData.set("occupation", document.getElementById("occupation").value.trim());
+    
   // ---------------- SCHOOL LEVELS (RESET FIRST) ----------------
   formData.set("schoollevels", ""); // 🔥 IMPORTANT RESET
   document.querySelectorAll(".school:checked").forEach(cb => {
@@ -1701,6 +1707,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
