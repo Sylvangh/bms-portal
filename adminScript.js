@@ -393,116 +393,6 @@ function printOfficials() {
 
 
 
-
-
-// ===============================
-// RESIDENTS INLINE
-// ===============================
-function loadResidentsPage() {
-  const mainContent = document.getElementById("mainContent");
-  if (!mainContent) return;
-
-  fetch("residents-content.html")
-    .then(r => r.text())
-    .then(html => {
-      mainContent.innerHTML = html;
-      initResidents(); // 🔥 DITO lang i-call ang init
-      
-        const btnResidents = document.getElementById("btnResidents");
-      if (btnResidents&& typeof setActiveSidebar === "function") {
-        setActiveSidebar(btnResidents);
-      }
-      
-    })
-    .catch(err => console.error("Error loading residents page:", err));
-
-    
-}
- // ---------------- MODAL FUNCTIONS ----------------
-  function openAddResident() {
-    editResidentId = null;
-    modalTitle.textContent = "Add Resident";
-    residentForm.reset();
-    residentModal.style.display = "block";
-    // ---------------- RESET TABS WHEN OPENING EDIT ----------------
-document.querySelectorAll("#residentModal .tab-content")
-  .forEach(tc => tc.style.display = "none");
-
-document.getElementById("formTab").style.display = "block";
-
-document.querySelectorAll("#residentModal .tabBtn")
-  .forEach(b => b.classList.remove("active"));
-
-document.querySelector('#residentModal [data-tab="formTab"]')
-  .classList.add("active");
-
-// Show modal
-residentModal.style.display = "block";
-
-
-
-  }
-
-  
-// --- Close Modal ---
-function closeModal() {
-  residentModal.style.display = "none";
-}
- 
-  
-function initResidents() {
-
-  
-  // ---------------- DOM ELEMENTS ----------------
-  const residentTable = document.getElementById("residentTable");
-  const residentModal = document.getElementById("residentModal");
-  const residentForm = document.getElementById("residentForm");
-  const modalTitle = document.getElementById("modalTitle");
-
-
-  // ---------------- RECORDS MODAL ----------------
-  // ✅ Make sure button exists
-  const openRecords = document.getElementById("openRecords");
-  const closeRecords = document.getElementById("closeRecords");
-  const recordsModal = document.getElementById("recordsModal");
-
-  if (openRecords && closeRecords && recordsModal) {
-    openRecords.addEventListener("click", () => {
-      recordsModal.classList.add("active");
-    });
-
-    closeRecords.addEventListener("click", () => {
-      recordsModal.classList.remove("active");
-    });
-
-    // click outside to close
-    recordsModal.addEventListener("click", e => {
-      if (e.target === recordsModal) {
-        recordsModal.classList.remove("active");
-      }
-    });
-
-    // ESC key closes modal
-    document.addEventListener("keydown", e => {
-      if (e.key === "Escape" && recordsModal.classList.contains("active")) {
-        recordsModal.classList.remove("active");
-      }
-    });
-  } else {
-    console.warn("Records modal elements not found yet!");
-  }
-
-
-
-  
-  if (!residentTable || !residentForm || !residentModal) return; // safety
-
-  let residentsData = [];
-  let filteredData = [];
-  let currentSort = null;
-
-  
-
   // ---------------- LOAD RESIDENTS ----------------
   async function loadResidents() {
     try {
@@ -795,10 +685,10 @@ residentForm.addEventListener("submit", async e => {
   formData.set("blotter3", document.getElementById("blotter3").checked ? "Yes" : "No");
 
   // ---------------- FILE UPLOAD ----------------
-  const validIdInput = document.getElementById("validId");
-  if (validIdInput.files.length > 0) {
-    formData.set("validId", validIdInput.files[0]); // ✅ file included only if selected
-  }
+const validIdInput = document.getElementById("validId");
+if (validIdInput.files.length > 0) {
+    formData.append("validid", validIdInput.files[0]); // 🔥 match DB column
+}
 
   // ---------------- EDIT ID ----------------
   if (editResidentId) {
@@ -831,7 +721,7 @@ residentForm.addEventListener("submit", async e => {
 
 
   // ---------------- FILE PREVIEW ----------------
-  const validIdInput = document.getElementById("validId");
+
   if (validIdInput) validIdInput.addEventListener("change", function() {
     const file = this.files[0];
     if (!file) return;
@@ -896,7 +786,6 @@ tabButtons.forEach(btn => {
   // ---------------- INIT ----------------
   loadResidents();
 }
-
 
 
 
@@ -1710,6 +1599,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
