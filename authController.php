@@ -284,41 +284,34 @@ elseif ($action === "adminGetResidents") {
         echo json_encode(["status" => "success", "message" => "Resident added successfully"]);
         exit;
 
-} else {
-    // UPDATE (SAFE, LOGIN FRIENDLY)
-    $set = [];
+
+ } else {
+       
+$set = [];
     $params = []; // ✅ THIS FIXES IT
-    $i = 1;
+    $i = 1
 
-    foreach ($fields as $k => $v) {
-        if ($v !== null) {
-            $set[] = "$k = $" . $i;
-            $params[] = $v;
-            $i++;
+
+        foreach ($fields as $k => $v) {
+            if ($v !== null) {
+                $set[] = "$k = $" . $i;
+                $params[] = $v;
+                $i++;
+            }
         }
-    }
 
-    $params[] = $id;
+        $params[] = $id;
+        $sql = "UPDATE registrations SET " . implode(",", $set) . " WHERE id = $" . $i;
+        $res = pg_query_params($conn, $sql, $params);
 
-    $sql = "UPDATE registrations 
-            SET " . implode(", ", $set) . " 
-            WHERE id = $" . $i;
+        if (!$res) {
+            echo json_encode(["status" => "error", "message" => pg_last_error($conn)]);
+            exit;
+        }
 
-    $res = pg_query_params($conn, $sql, $params);
-
-    if (!$res) {
-        echo json_encode([
-            "status" => "error",
-            "message" => pg_last_error($conn)
-        ]);
+        echo json_encode(["status" => "success", "message" => "Resident updated successfully"]);
         exit;
     }
-
-    echo json_encode([
-        "status" => "success",
-        "message" => "Resident updated successfully"
-    ]);
-    exit;
 }
 
 
@@ -333,6 +326,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
