@@ -280,34 +280,33 @@ elseif ($action === "adminSaveResident") {
         echo json_encode(["status"=>"success","message"=>"Resident added successfully"]);
         exit;
 
-    } else {
-        // UPDATE
-        $set = [];
-        $params = [];
-        $i = 1;
+} else {
+    $params = [];
+    $set = [];
+    $i = 1;
 
-        foreach ($fields as $k => $v) {
-            // ✅ Include all fields, even empty string
-            $set[] = "$k = $" . $i;
-            $params[] = $v;
-            $i++;
-        }
+    foreach ($fields as $k => $v) {
+        // skip password only if null
+        if ($k === 'password' && $v === null) continue;
 
-        // Add the ID at the end
-        $params[] = $id;
+        $set[] = "$k = $" . $i;
+        $params[] = $v;
+        $i++;
+    }
 
-        $sql = "UPDATE registrations SET " . implode(",", $set) . " WHERE id = $" . $i;
-        $res = pg_query_params($conn, $sql, $params);
+    $params[] = $id;
+    $sql = "UPDATE registrations SET " . implode(",", $set) . " WHERE id = $" . $i;
+    $res = pg_query_params($conn, $sql, $params);
 
-        if (!$res) {
-            echo json_encode(["status"=>"error","message"=>pg_last_error($conn)]);
-            exit;
-        }
-
-        echo json_encode(["status"=>"success","message"=>"Resident updated successfully"]);
+    if (!$res) {
+        echo json_encode(["status" => "error", "message" => pg_last_error($conn)]);
         exit;
     }
+
+    echo json_encode(["status" => "success", "message" => "Resident updated successfully"]);
+    exit;
 }
+
 
 /* ---------------- INVALID ACTION ---------------- */
 else {
@@ -320,6 +319,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
