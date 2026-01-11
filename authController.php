@@ -351,7 +351,7 @@ if ($validIdPath !== null) $fields['validid'] = $validIdPath;
 
     exit;
 }
-        } elseif ($action === "getResident") {
+elseif ($action === "getResident") {
     // ---------------- GET RESIDENT ----------------
     $email = trim($_GET['email'] ?? '');
     if (!$email) {
@@ -384,6 +384,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
