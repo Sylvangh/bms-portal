@@ -227,55 +227,49 @@ async function loadRequests() {
   try {
     const res = await fetch("authController.php?action=getRequests2", {
       method: "POST",
-      body: new URLSearchParams({ email: currentEmail })
-    });
+    body: formData
+  });
 
-    // Check if response is ok first
-    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+  const data = await res.json();
+  requestList.innerHTML = "";
 
-    // Parse JSON safely
-    const data = await res.json();
+  data.forEach(req => {
+    if ((req.type || "").toLowerCase() !== "residency") return;
 
-    // Make sure data is an array
-    if (!Array.isArray(data)) throw new Error("Invalid data format");
+    const div = document.createElement("div");
+    div.classList.add("request-item");
 
-    requestList.innerHTML = "";
-
-    data.forEach(req => {
-      // Convert null/undefined to empty strings
-      const safePurok = (req.purok ?? '').toString().replace(/'/g, "\\'");
-      const safePrice = (req.price ?? '').toString().replace(/'/g, "\\'");
-      const safeDate = req.date ?? '';
-
-      const div = document.createElement("div");
-      div.classList.add("request-item");
-      div.innerHTML = `
-        <div class="request-info">
-          <strong>Purok:</strong> ${safePurok} <br>
-          <strong>Price:</strong> ${safePrice} <br>
-          <small>Date: ${safeDate}</small>
-         <strong>Status:</strong> ${req.status || '-'}<br>
-          <strong>Admin Message:</strong> ${req.adminmessage || 'None'}<br>
-                    <strong>Payment:</strong> ${
+    div.innerHTML = `
+      <div class="request-info">
+        <strong>Message:</strong> ${req.purpose || '-'} <br>
+        <strong>Purok:</strong> ${req.purok || '-'} <br>
+        <strong>Amount:</strong> ₱${req.price ?? '0.00'} <br>
+        <strong>Status:</strong> ${req.status || '-'} <br>
+        <strong>Admin Message:</strong> ${req.adminmessage || 'None'} <br>
+        <strong>Payment:</strong> ${
   req.status === 'Approved'
     ? (req.paid === true || req.paid === 't' || req.paid == 1
         ? 'PAID'
         : 'UNPAID')
     : 'PENDING'
 } <br>
-        </div>
-        <div class="request-actions">
-          <button onclick="editRequest(${req.id}, '${safePurok}', '${safePrice}')">Edit</button>
-          <button class="btn-delete" onclick="deleteRequest(${req.id})">Delete</button>
-        </div>
-      `;
-      requestList.appendChild(div);
-    });
+        <small>Date: ${req.date || '-'}</small>
+      </div>
 
-  } catch (err) {
-    console.error("Failed to load requests:", err);
-    alert("Failed to load requests. Check console for details.");
-  }
+      <div class="request-actions">
+        <button onclick="editRequest(
+          ${req.id},
+          '${(req.purpose || "").replace(/'/g,"\\'")}',
+          '${req.purok ?? ''}',
+          '${req.price ?? 0}'
+        )">Edit</button>
+
+        <button class="btn-delete" onclick="deleteRequest(${req.id})">Delete</button>
+      </div>
+    `;
+
+    requestList.appendChild(div);
+  });
 }
 
 
