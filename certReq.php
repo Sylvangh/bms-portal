@@ -269,6 +269,28 @@ elseif ($action === "saveRequest1") {
 
     exit;
 }
+        // ----------------------------
+// Delete Residency Request
+// ----------------------------
+elseif ($action === "deleteRequest1") {
+    $id = $_POST['id'] ?? 0;
+    if (!$id) { 
+        echo json_encode(['message' => 'Missing request ID']); 
+        exit; 
+    }
+
+    // PostgreSQL safe deletion
+    $result = pg_query_params(
+        $conn,
+        "DELETE FROM certificate_requests WHERE id=$1",
+        [$id]
+    );
+
+    echo json_encode([
+        'message' => $result ? 'Request deleted successfully' : 'Failed to delete request'
+    ]);
+    exit;
+}
 
     // ----------------------------
     // INVALID ACTION
