@@ -113,16 +113,16 @@ async function getCounts() {
 
     return {
       College: residents.filter(r =>
-        typeof r.schoolLevels === "string" &&
-        r.schoolLevels.includes("College")
+        typeof r.schoollevels === "string" &&
+        r.schoollevels.includes("College")
       ).length,
 
       "Senior Citizen": residents.filter(r =>
-        Number(r.seniorCitizen) === 1
+        Number(r.seniorcitizen) === 1
       ).length,
 
       "4Ps": residents.filter(r =>
-        r.fourPs === "Yes"
+        r.fourps === "Yes"
       ).length,
 
       Voters: residents.filter(r =>
@@ -1759,6 +1759,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
