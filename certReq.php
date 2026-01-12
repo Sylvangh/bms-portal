@@ -190,8 +190,34 @@ elseif ($action === "saveBusinessRequest") {
         exit;
     }
 }
+// ----------------------------
+// Get residency requests
+// ----------------------------
+elseif ($action === "getRequests1") {
+    $email = $_POST['email'] ?? '';
+    if (!$email) { 
+        echo json_encode([]); 
+        exit; 
+    }
 
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "SELECT id, username, type, purpose, purok, age, bioname, status, price, adminmessage, paid, date
+         FROM certificate_requests
+         WHERE username=$1 AND type='residency'
+         ORDER BY date DESC",
+        [$email]
+    );
 
+    $requests = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $requests[] = $row;
+    }
+
+    echo json_encode($requests);
+    exit;
+}
 
     // ----------------------------
     // INVALID ACTION
