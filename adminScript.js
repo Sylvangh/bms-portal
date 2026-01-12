@@ -1212,8 +1212,6 @@ function initCertificationPage() {
 // BIND SIDEBAR BUTTONS
 // ===============================
 
-
-
 // ------------------ TABLE MANAGER BUTTON ------------------
 
 function loadTableManager() {
@@ -1268,8 +1266,12 @@ function initTableManager() {
     return [...document.querySelectorAll(".column-option:checked")].map(cb => cb.value);
   }
 
-  document.querySelectorAll(".column-option").forEach(cb => cb.checked = false);
-  
+ document.querySelectorAll(".column-option").forEach(cb => {
+  if (["name", "lastname", "schoolname"].includes(cb.value)) {
+    cb.checked = true;
+  }
+});
+
   // ===============================
   // SAVE STATE FOR UNDO
   // ===============================
@@ -1429,7 +1431,18 @@ if (deleteMode && customColumns.includes(c)) {
 
   td.contentEditable = false;
 
-} else if (["voter", "seniorcitizen"].includes(c)) {
+} else if (["voter", "seniorcitizen", "fourps"].includes(c)) {
+  td.textContent =
+    row[c] === 1 ||
+    row[c] === "1" ||
+    row[c] === true ||
+    row[c] === "t" ||
+    row[c] === "Yes"
+      ? "Yes"
+      : "No";
+  td.contentEditable = false;
+
+
   td.textContent = (row[c] === 1 || row[c] === "1") ? "Yes" : "No";
   td.contentEditable = false;
 
@@ -1539,33 +1552,6 @@ btnSetTitle.onclick = () => {
     alert("Table title set to: " + window.customTitle);
   }
 };
-
-  btnSaveTable.onclick = async () => {
-    try {
-      const res = await fetch("authController.php?action=saveTable", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(tableData)
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert("Table successfully saved sa DB!");
-        localStorage.setItem("tableManagerData_v1", JSON.stringify(tableData));
-      } else {
-        alert("Error saving table: " + data.message);
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Error saving table.");
-    }
-  };
-
-
-  document.querySelectorAll('input[name="schoolFilter"]').forEach(radio => {
-  radio.addEventListener("change", () => {
-    renderTable();
-  });
-});
 
 
   // ===============================
@@ -1772,21 +1758,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
