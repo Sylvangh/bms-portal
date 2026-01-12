@@ -115,6 +115,82 @@ elseif ($action === "deleteRequest") {
     ]);
     exit;
 }
+elseif ($action === "getBusinessRequests") {
+    $email = $_POST['email'] ?? '';
+    if (!$email) { 
+        echo json_encode([]); 
+        exit; 
+    }
+
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "SELECT id, username, type, purpose, businesstype, businessname, businessaddress,
+                price, status, adminMessage, paid, date
+         FROM certificate_requests
+         WHERE username=$1 AND type='business'
+         ORDER BY date DESC",
+        [$email]
+    );
+
+    $requests = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $requests[] = $row;
+    }
+
+    echo json_encode($requests);
+    exit;
+} // ----------------------------
+// Submit / Update Business Request
+// ----------------------------
+elseif ($action === "savebusinessrequest") {
+    $email = $_POST['email'] ?? '';
+    $purpose = $_POST['purpose'] ?? '';
+    $businesstype = $_POST['businesstype'] ?? '';
+    $businessname = $_POST['businessname'] ?? '';
+    $businessaddress = $_POST['businessaddress'] ?? '';
+    $price = isset($_POST['price']) ? floatval($_POST['price']) : null;
+    $type = 'business';
+    $id = $_POST['id'] ?? null;
+
+    // Validation
+    if (!$email || !$purpose || !$businesstype || !$businessname || !$businessaddress || $price === null || $price < 0) {
+        echo json_encode(['message' => 'All fields are required and price must be valid.']);
+        exit;
+    }
+
+    if ($id) {
+        // UPDATE existing request
+        $result = pg_query_params(
+            $conn,
+            "UPDATE certificate_requests
+             SET purpose=$1, businesstype=$2, businessname=$3, businessaddress=$4, price=$5, type=$6
+             WHERE id=$7",
+            [$purpose, $businesstype, $businessname, $businessaddress, $price, $type, $id]
+        );
+
+        echo json_encode([
+            'message' => $result ? 'Business request updated successfully' : 'Failed to update request'
+        ]);
+        exit;
+
+    } else {
+        // INSERT new request
+        $result = pg_query_params(
+            $conn,
+            "INSERT INTO certificate_requests 
+             (username, type, purpose, businesstype, businessname, businessaddress, price, status, date) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, 'Pending', NOW())",
+            [$email, $type, $purpose, $businesstype, $businessname, $businessaddress, $price]
+        );
+
+        echo json_encode([
+            'message' => $result ? 'Business request submitted successfully' : 'Failed to submit request'
+        ]);
+        exit;
+    }
+}
+
 
 
     // ----------------------------
