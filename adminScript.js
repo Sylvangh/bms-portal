@@ -46,14 +46,14 @@ setInterval(updateDate, 1000); // live clock
 // ------------------ DASHBOARD FUNCTIONS ------------------
 async function updateDashboardCounts() {
   try {
-    const res = await fetch("authController.php?action=getAllResidents");
+    const res = await fetch("authController.php?action=getAllResi");
     const residents = await res.json();
 
     console.log("Fetched residents:", residents); // debug
 
-    const pending = residents.filter(r => r.accountStatus.toLowerCase().trim() === "pending").length;
-    const approved = residents.filter(r => r.accountStatus.toLowerCase().trim() === "approved").length;
-    const rejected = residents.filter(r => r.accountStatus.toLowerCase().trim() === "rejected").length;
+    const pending = residents.filter(r => r.accountstatus.toLowerCase().trim() === "pending").length;
+    const approved = residents.filter(r => r.accountstatus.toLowerCase().trim() === "approved").length;
+    const rejected = residents.filter(r => r.accounsStatus.toLowerCase().trim() === "rejected").length;
 
     console.log({ pending, approved, rejected }); // debug counts
 
@@ -1759,6 +1759,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
