@@ -1332,7 +1332,8 @@ function renderTable(data = tableData) {
       juniorHigh: "Junior High",
       elementary: "Elementary"
     };
-    data = data.filter(r => (r.schoollevels || []).includes(levelMap[selectedFilter]));
+  data = data.filter(r => (r.schoollevels || []).includes(levelMap[selectedFilter]));
+
   }
       // 30+ AGE filter
  // 30+ AGE filter
@@ -1404,7 +1405,11 @@ if (deleteMode && customColumns.includes(c)) {
 
       if (["college", "seniorHigh", "juniorHigh", "elementary"].includes(c)) {
         const levelMap = { college: "College", seniorHigh: "Senior High", juniorHigh: "Junior High", elementary: "Elementary" };
-        td.textContent = (row.schoollevels || []).includes(levelMap[c]) ? "Yes" : "No";
+       td.textContent = (row.schoollevels || "")
+  .split(",")
+  .map(s => s.trim())
+  .includes(levelMap[c]) ? "Yes" : "No";
+
         td.contentEditable = false;
       } else if (["voter", "seniorcitizen"].includes(c)) {
         td.textContent = (row[c] === 1 || row[c] === "1") ? "Yes" : "No";
@@ -1415,7 +1420,7 @@ if (deleteMode && customColumns.includes(c)) {
 
       tr.appendChild(td);
     });
-
+///////////////////////////////////////////////////////
     // Row delete button
     if (deleteMode) {
       const tdDel = document.createElement("td");
@@ -1741,6 +1746,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
