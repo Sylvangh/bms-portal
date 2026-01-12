@@ -245,13 +245,6 @@ async function loadRequests() {
           <strong>Amount:</strong> ₱${req.price ?? '0.00'} <br>
           <strong>Status:</strong> ${req.status || '-'} <br>
           <strong>Admin Message:</strong> ${req.adminmessage || 'None'} <br>
-       req.status === 'Approved'
-    ? (req.paid === true || req.paid === 't' || req.paid == 1
-        ? 'PAID'
-        : 'UNPAID')
-    : 'PENDING'
-} <br>
-
           <small>Date: ${req.date || '-'}</small>
         </div>
 
