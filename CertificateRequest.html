@@ -586,10 +586,10 @@ async function renderResidencyRequests() {
         <p><b>Biological Parent:</b> ${r.bioname || "N/A"}</p>
         <p><b>Price:</b> ₱${r.price || "0.00"}</p>
         <p><b>Status:</b> ${r.status || "N/A"}</p>
-        <p><b>Payment:</b>
-          <span style="color:${r.paid == 1 ? 'green':'red'};font-weight:bold">
-            ${r.paid == 1 ? "PAID":"UNPAID"}
-          </span>
+          <p><b>Payment:</b>
+<span style="color:${r.paid == true || r.paid == 't' || r.paid == 'true' || r.paid == 1 ? 'green' : 'red'}; font-weight:bold">
+  ${r.paid == true || r.paid == 't' || r.paid == 'true' || r.paid == 1 ? "PAID" : "UNPAID"}
+</span>
         </p>
         <p><b>Admin Message:</b> ${r.adminmessage || "None"}</p>
 
@@ -1449,6 +1449,7 @@ setInterval(renderResidencyRequests, 5000);
 renderIndigencyRequests();
 setInterval(renderIndigencyRequests, 5000);
 </script>
+
 
 
 
