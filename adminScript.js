@@ -1410,13 +1410,12 @@ if (deleteMode && customColumns.includes(c)) {
     cols.forEach(c => {
       const td = document.createElement("td");
 
-  if (c === "schoollevels") {
-  // show actual school level text
+if (c === "schoollevels") {
+  // display actual schoollevels text
   td.textContent = row.schoollevels || "";
   td.contentEditable = false;
 
 } else if (["college", "seniorHigh", "juniorHigh", "elementary"].includes(c)) {
-  // show Yes / No per level
   const levelMap = {
     college: "College",
     seniorHigh: "Senior High",
@@ -1424,31 +1423,33 @@ if (deleteMode && customColumns.includes(c)) {
     elementary: "Elementary"
   };
 
-  td.textContent = (row.schoollevels || "")
+  const levels = (row.schoollevels || "")
     .split(",")
-    .map(s => s.trim())
-    .includes(levelMap[c]) ? "Yes" : "No";
+    .map(s => s.trim().toLowerCase());
 
+  td.textContent = levels.includes(levelMap[c].toLowerCase()) ? "Yes" : "No";
   td.contentEditable = false;
 
-} else if (["voter", "seniorcitizen", "fourps"].includes(c)) {
+} else if (["voter", "seniorcitizen"].includes(c)) {
   td.textContent =
-    row[c] === 1 ||
-    row[c] === "1" ||
-    row[c] === true ||
-    row[c] === "t" ||
-    row[c] === "Yes"
+    row[c] === 1 || row[c] === "1" ? "Yes" : "No";
+  td.contentEditable = false;
+
+} else if (c === "schoolname") {
+  td.textContent = row.schoolname || "";
+  td.contentEditable = false;
+
+} else if (c === "fourps") {
+  td.textContent =
+    row.fourps === 1 || row.fourps === "1" || row.fourps === "Yes"
       ? "Yes"
       : "No";
-  td.contentEditable = false;
-
-
-  td.textContent = (row[c] === 1 || row[c] === "1") ? "Yes" : "No";
   td.contentEditable = false;
 
 } else {
   td.textContent = row[c] ?? "";
 }
+
 
 
       tr.appendChild(td);
