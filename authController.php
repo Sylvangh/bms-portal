@@ -851,7 +851,7 @@ elseif ($action === "AdmingetResidencyRequests") {
 // ----------------------------
 // Admin: Update Residency Request
 // ----------------------------
-elseif ($action === "adminupdaterequest1") { 
+elseif ($action === "adminUpdateRequest1") { 
     $id = intval($_POST['id'] ?? 0);
     $status = $_POST['status'] ?? '';
     $msg = $_POST['adminmessage'] ?? ''; 
@@ -875,6 +875,46 @@ elseif ($action === "adminupdaterequest1") {
     ]);
     exit;
 }
+// ----------------------------
+// Admin: Mark Residency Request as Paid
+// ----------------------------
+elseif ($action === "adminMarkPaid") {
+    $id = intval($_POST['id'] ?? 0);
+    if (!$id) { 
+        echo json_encode(["message" => "Missing ID"]); 
+        exit; 
+    }
+
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests SET paid=1 WHERE id=$1",
+        [$id]
+    );
+
+    echo json_encode([
+        "message" => $result ? "Marked as paid" : "Failed to mark as paid"
+    ]);
+    exit;
+}
+// ----------------------------
+// Admin: Delete Residency Request
+// ----------------------------
+elseif ($action === "adminDeleteRequest") {
+    $id = intval($_POST['id'] ?? 0);
+    if (!$id) { 
+        echo json_encode(["message" => "Missing ID"]); 
+        exit; 
+    }
+
+    // PostgreSQL safe deletion
+    $result = pg_query_params($conn, "DELETE FROM certificate_requests WHERE id=$1", [$id]);
+
+    echo json_encode([
+        "message" => $result ? "Deleted" : "Failed to delete request"
+    ]);
+    exit;
+}
 
 
 
@@ -889,6 +929,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
