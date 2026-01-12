@@ -941,7 +941,7 @@ elseif ($action === "adminDeleteRequest1") {
 elseif ($action === "adminUpdateRequest2") {
     $id = intval($_POST['id'] ?? 0);
     $status = $_POST['status'] ?? '';
-    $msg = $_POST['adminMessage'] ?? '';
+    $msg = $_POST['adminmessage'] ?? '';
 
     if (!$id || !$status) {
         echo json_encode(["message" => "Missing fields"]);
@@ -1017,6 +1017,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
