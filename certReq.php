@@ -143,7 +143,7 @@ elseif ($action === "getBusinessRequests") {
 } // ----------------------------
 // Submit / Update Business Request
 // ----------------------------
-elseif ($action === "savebusinessrequest") {
+elseif ($action === "saveBusinessRequest") {
     $email = $_POST['email'] ?? '';
     $purpose = $_POST['purpose'] ?? '';
     $businesstype = $_POST['businesstype'] ?? '';
