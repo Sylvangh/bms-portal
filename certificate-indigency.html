@@ -241,7 +241,6 @@ async function loadRequests() {
 
       div.innerHTML = `
         <div class="request-info">
-          <strong>Message:</strong> ${req.purpose || '-'} <br>
           <strong>Purok:</strong> ${req.purok || '-'} <br>
           <strong>Amount:</strong> ₱${req.price ?? '0.00'} <br>
           <strong>Status:</strong> ${req.status || '-'} <br>
@@ -257,7 +256,6 @@ async function loadRequests() {
         <div class="request-actions">
           <button onclick="editRequest(
             ${req.id},
-            '${(req.purpose || "").replace(/'/g,"\\'")}',
             '${req.purok ?? ''}',
             '${req.price ?? 0}'
           )">Edit</button>
@@ -281,7 +279,6 @@ async function loadRequests() {
 requestForm.addEventListener("submit", async e => {
   e.preventDefault();
 
-  const purpose = document.getElementById("purpose").value.trim();
   const purok = document.getElementById("purok").value.trim();
   const priceInput = document.getElementById("price").value.trim();
 
@@ -296,7 +293,6 @@ requestForm.addEventListener("submit", async e => {
   if (editingRequestId) formData.append("id", editingRequestId);
 
   formData.append("email", currentEmail);
-  formData.append("purpose", purpose);
   formData.append("purok", purok);
   formData.append("price", price);
   formData.append("type", "indigency");
@@ -322,9 +318,8 @@ requestForm.addEventListener("submit", async e => {
 
 
 // ---------------- EDIT RESIDENCY REQUEST ----------------
-function editRequest(id, purpose, purok, price) {
+function editRequest(id, purok, price) {
   editingRequestId = id;
-  document.getElementById("purpose").value = purpose;
   document.getElementById("purok").value = purok;
   document.getElementById("price").value = price;
 }
