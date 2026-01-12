@@ -659,7 +659,7 @@ async function markPaidResidency(id) {
 
   try {
     const formData = new FormData();
-    formData.append("id", id);
+    formData.append("id", Number(id)); // ensure numeric
 
     const res = await fetch("authController.php?action=adminMarkPaid1", {
       method: "POST",
@@ -669,7 +669,7 @@ async function markPaidResidency(id) {
     const data = await res.json();
     alert(data.message);
 
-    renderRequests(); // reload table/list
+    renderResidencyRequests(); // refresh the list
   } catch (err) {
     console.error(err);
     alert("Failed to mark as paid: " + err.message);
@@ -1454,6 +1454,7 @@ setInterval(renderResidencyRequests, 5000);
 renderIndigencyRequests();
 setInterval(renderIndigencyRequests, 5000);
 </script>
+
 
 
 
