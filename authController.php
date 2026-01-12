@@ -801,7 +801,29 @@ elseif ($action === "adminMarkBusinessPaid") {
         "message" => $result ? "Marked as paid" : "Failed"
     ]);
     exit;
+}// ----------------------------
+// Admin: Delete Business Request
+// ----------------------------
+elseif ($action === "deleteBusinessRequest") {
+    $id = intval($_POST['id'] ?? 0);
+    if (!$id) {
+        echo json_encode(['message' => 'Missing ID']);
+        exit;
+    }
+
+    // PostgreSQL safe deletion
+    $result = pg_query_params(
+        $conn,
+        "DELETE FROM certificate_requests WHERE id=$1",
+        [$id]
+    );
+
+    echo json_encode([
+        'message' => $result ? 'Request deleted successfully' : 'Failed to delete request'
+    ]);
+    exit;
 }
+
 
 
 /* ---------------- INVALID ACTION ---------------- */
@@ -815,6 +837,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
