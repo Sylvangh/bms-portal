@@ -906,9 +906,7 @@ async function renderIndigencyRequests() {
 <span style="color:${r.paid == true || r.paid == 't' || r.paid == 'true' || r.paid == 1 ? 'green' : 'red'}; font-weight:bold">
   ${r.paid == true || r.paid == 't' || r.paid == 'true' || r.paid == 1 ? "PAID" : "UNPAID"}
 </span>
-
-
-      <p><b>Admin Message:</b> ${r.adminMessage || "None"}</p>
+      <p><b>Admin Message:</b> ${r.adminmessage || "None"}</p>
 
       <div class="actions">
         <button class="approve" onclick="approveIndigecny(${r.id})">Approve</button>
@@ -1453,6 +1451,7 @@ setInterval(renderResidencyRequests, 5000);
 renderIndigencyRequests();
 setInterval(renderIndigencyRequests, 5000);
 </script>
+
 
 
 
