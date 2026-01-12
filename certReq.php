@@ -93,7 +93,29 @@ try {
             ]);
             exit;
         }
+    }// ----------------------------
+// Delete request
+// ----------------------------
+elseif ($action === "deleteRequest") {
+    $id = intval($_POST['id'] ?? 0);
+    if (!$id) { 
+        echo json_encode(['message' => 'Missing request ID']); 
+        exit; 
     }
+
+    // Use pg_query_params for safe parameterized query
+    $result = pg_query_params(
+        $conn, 
+        "DELETE FROM certificate_requests WHERE id=$1", 
+        [$id]
+    );
+
+    echo json_encode([
+        'message' => $result ? 'Request deleted successfully' : 'Failed to delete request'
+    ]);
+    exit;
+}
+
 
     // ----------------------------
     // INVALID ACTION
