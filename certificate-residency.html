@@ -283,17 +283,17 @@ async function loadRequests() {
     requestList.appendChild(div);
   });
 }
-
+// ---------------- SUBMIT / UPDATE RESIDENCY REQUEST ----------------
 requestForm.addEventListener("submit", async e => {
   e.preventDefault();
 
   const purpose = document.getElementById("purpose").value.trim();
   const ageInput = document.getElementById("age").value.trim();
   const purok = document.getElementById("purok").value.trim();
-  const bioName = document.getElementById("bioName").value.trim();
+  const bioname = document.getElementById("bioName").value.trim(); // lowercase
   const priceInput = document.getElementById("price").value.trim();
 
-  if (!purpose || !purok || !bioName || priceInput === '' || ageInput === '')
+  if (!purpose || !purok || !bioname || priceInput === '' || ageInput === '')
     return alert("All fields are required");
 
   const age = Number(ageInput);
@@ -311,12 +311,12 @@ requestForm.addEventListener("submit", async e => {
   formData.append("purpose", purpose);
   formData.append("age", age);
   formData.append("purok", purok);
-  formData.append("bioName", bioName);
+  formData.append("bioname", bioname); // lowercase key
   formData.append("price", price);
   formData.append("type", "residency");
 
   try {
-    const res = await fetch("authController.php?action=saveRequest1", {
+    const res = await fetch("certReq.php?action=saveRequest1", {
       method: "POST",
       body: formData
     });
@@ -326,7 +326,7 @@ requestForm.addEventListener("submit", async e => {
 
     requestForm.reset();
     editingRequestId = null;
-    loadRequests();
+    loadRequests(); // refresh the list
   } catch (err) {
     console.error(err);
     alert("Error saving request");
@@ -335,15 +335,16 @@ requestForm.addEventListener("submit", async e => {
 
 
 
-// Edit request
-function editRequest(id, purpose, age, purok, bioName, price) {
+// ---------------- EDIT RESIDENCY REQUEST ----------------
+function editRequest(id, purpose, age, purok, bioname, price) {
   editingRequestId = id;
   document.getElementById("purpose").value = purpose;
   document.getElementById("age").value = age;
   document.getElementById("purok").value = purok;
-  document.getElementById("bioName").value = bioName;
+  document.getElementById("bioName").value = bioname; // lowercase
   document.getElementById("price").value = price;
 }
+
 
 // Delete request
 async function deleteRequest(id) {
@@ -351,7 +352,7 @@ async function deleteRequest(id) {
   const formData = new FormData();
   formData.append("id", id);
 
-  const res = await fetch("authController.php?action=deleteRequest1", {
+  const res = await fetch("certReq.php?action=deleteRequest1", {
     method: "POST",
     body: formData
   });
