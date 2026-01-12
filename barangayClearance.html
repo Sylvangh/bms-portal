@@ -265,7 +265,12 @@ async function loadRequests() {
         <strong>Amount:</strong> ₱${req.price ?? 0} <br>
         <strong>Status:</strong> ${req.status || '-'} <br>
         <strong>Admin Message:</strong> ${req.adminmessage || 'None'} <br>
-        <strong>Payment:</strong> ${req.paid ? 'PAID' : 'UNPAID'} <br>
+        <strong>Payment:</strong> ${
+  req.status === 'Approved'
+    ? (req.paid == 1 ? 'PAID' : 'UNPAID')
+    : 'PENDING'
+} <br>
+
         <small>Date: ${req.date || '-'}</small> <br>
       </div>
 
@@ -378,6 +383,7 @@ document.getElementById("btnBack").addEventListener("click", () => {
 // Load requests on page load
 document.addEventListener("DOMContentLoaded", loadRequests);
 </script>
+
 
 
 
