@@ -76,16 +76,17 @@ async function updatePendingClearance() {
   try {
     const res = await fetch("authController.php?action=getPendingClearanceCount");
     const data = await res.json();
-    
-    console.log("Pending clearances:", data); // Debug
 
-    const onlineEl = document.getElementById("PendingCountClearance");
-    if (onlineEl) onlineEl.textContent = data.pendingClearance || 0;
+    console.log("Pending clearances:", data);
+
+    const el = document.getElementById("PendingCountClearance");
+    if (el) el.textContent = data.pendingClearance ?? 0;
 
   } catch (err) {
     console.error("Error fetching pending clearance count:", err);
   }
 }
+
 
 // Run on page load and every 5 seconds
 
@@ -1759,6 +1760,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
