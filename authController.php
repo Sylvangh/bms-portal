@@ -650,6 +650,56 @@ elseif ($action === "getRequests") {
     echo json_encode($requests);
     exit;
 }
+        // ----------------------------
+// Submit or update request
+elseif ($action === "saveRequest") {
+
+    $email   = $_POST['email']   ?? '';
+    $purpose = $_POST['purpose'] ?? '';
+    $purok   = $_POST['purok'] ?? ''; // ✅ Add purok
+    $price   = isset($_POST['price']) ? floatval($_POST['price']) : null;
+    $age     = isset($_POST['age']) ? intval($_POST['age']) : null;
+    $id      = $_POST['id'] ?? null;
+    $type    = 'clearance';
+
+    // Validation
+    if (!$email || !$purpose || !$purok || $price === null || $price < 0 || $age === null || $age <= 0) {
+        echo json_encode([
+            'message' => 'All fields are required. Age must be positive, price must be valid, and purok must be provided.'
+        ]);
+        exit;
+    }
+
+    if ($id) {
+        // UPDATE request
+        $result = pg_query_params(
+            $conn,
+            "UPDATE certificate_requests 
+             SET purpose=$1, price=$2, age=$3, purok=$4 
+             WHERE id=$5 AND username=$6",
+            [$purpose, $price, $age, $purok, $id, $email]
+        );
+
+        echo json_encode([
+            'message' => $result ? "Request updated successfully" : "Failed to update request"
+        ]);
+        exit;
+    } else {
+        // INSERT new request
+        $result = pg_query_params(
+            $conn,
+            "INSERT INTO certificate_requests 
+             (username, type, purpose, price, age, purok, status, date) 
+             VALUES ($1, $2, $3, $4, $5, $6, 'Pending', NOW())",
+            [$email, $type, $purpose, $price, $age, $purok]
+        );
+
+        echo json_encode([
+            'message' => $result ? "Request submitted successfully" : "Failed to submit request"
+        ]);
+        exit;
+    }
+}
 
 
 /* ---------------- INVALID ACTION ---------------- */
@@ -663,6 +713,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
