@@ -254,6 +254,13 @@ async function loadRequests() {
           <strong>Purok:</strong> ${safePurok} <br>
           <strong>Price:</strong> ${safePrice} <br>
           <small>Date: ${safeDate}</small>
+                    <strong>Payment:</strong> ${
+  req.status === 'Approved'
+    ? (req.paid === true || req.paid === 't' || req.paid == 1
+        ? 'PAID'
+        : 'UNPAID')
+    : 'PENDING'
+} <br>
         </div>
         <div class="request-actions">
           <button onclick="editRequest(${req.id}, '${safePurok}', '${safePrice}')">Edit</button>
