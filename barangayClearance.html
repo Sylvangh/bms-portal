@@ -243,7 +243,7 @@ async function loadRequests() {
   const formData = new FormData();
   formData.append("email", currentEmail);
 
-  const res = await fetch("authController.php?action=getRequests", {
+  const res = await fetch("certReq.php?action=getRequests", {
     method: "POST",
     body: formData
   });
@@ -317,7 +317,7 @@ requestForm.addEventListener("submit", async e => {
 
   try {
     // action=saveRequest must be in the query string
-    const res = await fetch("authController.php?action=saveRequest", {
+    const res = await fetch("certReq.php?action=saveRequest", {
       method: "POST",
       body: formData
     });
@@ -355,7 +355,7 @@ async function deleteRequest(id) {
   formData.append("id", id);
 
   try {
-    const res = await fetch("authController.php?action=deleteRequest", {
+    const res = await fetch("certReq.php?action=deleteRequest", {
       method: "POST",
       body: formData
     });
@@ -378,5 +378,6 @@ document.getElementById("btnBack").addEventListener("click", () => {
 // Load requests on page load
 document.addEventListener("DOMContentLoaded", loadRequests);
 </script>
+
 
 
