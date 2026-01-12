@@ -1005,18 +1005,20 @@ elseif ($action === "adminMarkPaid2") {
     echo json_encode(["message" => "Deleted"]);
     exit;
 }
+elseif ($action === "getAllResi") {
 
-        elseif ($action === "getAllResi") {
-    $result = $conn->query("SELECT * FROM registrations");
+    $result = pg_query($conn, "SELECT * FROM registrations");
     $residents = [];
-    while($row = $result->fetch_assoc()) {
-        $row['accountstatus'] = strtolower($row['accountstatus']); // para siguradong lowercase
+
+    while ($row = pg_fetch_assoc($result)) {
+        $row['accountstatus'] = strtolower(trim($row['accountstatus']));
         $residents[] = $row;
     }
+
     echo json_encode($residents);
-    $conn->close();
     exit;
 }
+
 
         // ----------------------------
 // Get pending clearance count
@@ -1040,6 +1042,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
