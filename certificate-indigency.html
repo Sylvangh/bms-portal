@@ -225,7 +225,7 @@ let editingRequestId = null;
 // --- Load User Requests safely ---
 async function loadRequests() {
   try {
-    const res = await fetch("authController.php?action=getRequests2", {
+    const res = await fetch("certReq.php?action=getRequests2", {
       method: "POST",
     body: formData
   });
@@ -274,9 +274,57 @@ async function loadRequests() {
 
 
 // --- Add / Update Request ---
+// ---------------- SUBMIT / UPDATE RESIDENCY REQUEST ----------------
+requestForm.addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const purpose = document.getElementById("purpose").value.trim();
+  const purok = document.getElementById("purok").value.trim();
+  const priceInput = document.getElementById("price").value.trim();
+
+  if (!purpose || !purok || priceInput === '' )
+    return alert("All fields are required");
+
+  const price = Number(priceInput);
+  if (isNaN(price) || price < 0)
+    return alert("Invalid price");
+
+  const formData = new FormData();
+  if (editingRequestId) formData.append("id", editingRequestId);
+
+  formData.append("email", currentEmail);
+  formData.append("purpose", purpose);
+  formData.append("purok", purok);
+  formData.append("price", price);
+  formData.append("type", "indigency");
+
+  try {
+    const res = await fetch("certReq.php?action=saveRequest2", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+    alert(data.message);
+
+    requestForm.reset();
+    editingRequestId = null;
+    loadRequests(); // refresh the list
+  } catch (err) {
+    console.error(err);
+    alert("Error saving request");
+  }
+});
 
 
 
+// ---------------- EDIT RESIDENCY REQUEST ----------------
+function editRequest(id, purpose, purok, price) {
+  editingRequestId = id;
+  document.getElementById("purpose").value = purpose;
+  document.getElementById("purok").value = purok;
+  document.getElementById("price").value = price;
+}
 
 // --- Delete Request ---
 async function deleteRequest(id) {
@@ -286,7 +334,7 @@ async function deleteRequest(id) {
   formData.append("id", id);
 
   try {
-    const res = await fetch("authController.php?action=deleteRequest2", {
+    const res = await fetch("certReq.php?action=deleteRequest2", {
       method: "POST",
       body: formData
     });
@@ -309,4 +357,4 @@ document.getElementById("btnBack").addEventListener("click", () => {
 // --- Load requests on page load ---
 document.addEventListener("DOMContentLoaded", loadRequests);
 
-</script> authController.php?action=saveRequest2"
+</script> 
