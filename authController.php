@@ -848,6 +848,33 @@ elseif ($action === "AdmingetResidencyRequests") {
     exit;
 }
 
+// ----------------------------
+// Admin: Update Residency Request
+// ----------------------------
+elseif ($action === "adminupdaterequest1") { 
+    $id = intval($_POST['id'] ?? 0);
+    $status = $_POST['status'] ?? '';
+    $msg = $_POST['adminmessage'] ?? ''; 
+
+    if (!$id || !$status) {
+        echo json_encode(["message" => "Missing fields"]);
+        exit;
+    }
+
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests 
+         SET status=$1, adminmessage=$2 
+         WHERE id=$3",
+        [$status, $msg, $id]
+    );
+
+    echo json_encode([
+        "message" => $result ? "Updated" : "Failed"
+    ]);
+    exit;
+}
 
 
 
@@ -862,6 +889,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
