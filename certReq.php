@@ -218,6 +218,57 @@ elseif ($action === "getRequests1") {
     echo json_encode($requests);
     exit;
 }
+// ----------------------------
+// Save / Update Residency Request
+// ----------------------------
+elseif ($action === "saveRequest1") {
+
+    $email   = $_POST['email']   ?? '';
+    $purpose = $_POST['purpose'] ?? '';
+    $age     = isset($_POST['age']) ? intval($_POST['age']) : null;
+    $purok   = $_POST['purok']   ?? '';
+    $bioname = $_POST['bioname'] ?? ''; // match DB column lowercase
+    $price   = isset($_POST['price']) ? floatval($_POST['price']) : 0;
+    $type    = $_POST['type'] ?? 'residency';
+    $id      = $_POST['id'] ?? null;
+
+    // Validation
+    if (!$email || !$purpose || !$purok || !$bioname || $age === null || $age <= 0) {
+        echo json_encode(['message' => 'All fields are required']);
+        exit;
+    }
+
+    if ($id) {
+        // UPDATE existing request
+        $result = pg_query_params(
+            $conn,
+            "UPDATE certificate_requests 
+             SET purpose=$1, age=$2, purok=$3, bioname=$4, price=$5, type=$6
+             WHERE id=$7 AND username=$8",
+            [$purpose, $age, $purok, $bioname, $price, $type, $id, $email]
+        );
+
+        echo json_encode([
+            'message' => $result ? 'Request updated successfully' : 'Failed to update request'
+        ]);
+
+    } else {
+        // INSERT new request
+        $result = pg_query_params(
+            $conn,
+            "INSERT INTO certificate_requests
+             (username, type, purpose, age, purok, bioname, price, status, date)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, 'Pending', NOW())",
+            [$email, $type, $purpose, $age, $purok, $bioname, $price]
+        );
+
+        echo json_encode([
+            'message' => $result ? 'Request submitted successfully' : 'Failed to submit request'
+        ]);
+    }
+
+    exit;
+}
 
     // ----------------------------
     // INVALID ACTION
