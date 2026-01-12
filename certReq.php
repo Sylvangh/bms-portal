@@ -291,6 +291,84 @@ elseif ($action === "deleteRequest1") {
     ]);
     exit;
 }
+        elseif ($action === "getRequests2") {
+    $email = $_POST['email'] ?? '';
+    if (!$email) {
+        echo json_encode([]);
+        exit;
+    }
+
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "SELECT id, purok, price, date 
+         FROM certificate_requests 
+         WHERE username=$1 AND type='indigency' 
+         ORDER BY date DESC",
+        [$email]
+    );
+
+    $requests = [];
+    while ($row = pg_fetch_assoc($result)) {
+        // Convert to string to avoid JS errors
+        $row['purok'] = (string)($row['purok'] ?? '');
+        $row['price'] = (string)($row['price'] ?? '0.00');
+        $row['date']  = $row['date'] ?? '';
+        $requests[] = $row;
+    }
+
+    // Ensure proper JSON header
+    header('Content-Type: application/json');
+    echo json_encode($requests);
+    exit;
+}// ----------------------------
+// Save / Update Indigency Request
+// ----------------------------
+elseif ($action === "saveRequest2") {
+    $email = $_POST['email'] ?? '';
+    $purok = $_POST['purok'] ?? '';
+    $price = $_POST['price'] ?? '';
+    $id = $_POST['id'] ?? null;
+    $type = 'indigency'; // default type
+
+    // Validation
+    if (!$email || !$purok || $price === '') {
+        echo json_encode(['message' => 'All fields are required']);
+        exit;
+    }
+
+    if ($id) {
+        // Update existing request
+        $result = pg_query_params(
+            $conn,
+            "UPDATE certificate_requests 
+             SET purok=$1, price=$2 
+             WHERE id=$3 AND username=$4",
+            [$purok, $price, $id, $email]
+        );
+
+        echo json_encode([
+            'message' => $result ? "Request updated successfully" : "Failed to update request"
+        ]);
+
+    } else {
+        // Insert new request
+        $status = 'Pending';
+        $result = pg_query_params(
+            $conn,
+            "INSERT INTO certificate_requests (username, type, purok, price, status, date) 
+             VALUES ($1, $2, $3, $4, $5, NOW())",
+            [$email, $type, $purok, $price, $status]
+        );
+
+        echo json_encode([
+            'message' => $result ? "Request submitted successfully" : "Failed to submit request"
+        ]);
+    }
+
+    exit;
+}
+
 
     // ----------------------------
     // INVALID ACTION
