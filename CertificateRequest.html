@@ -344,7 +344,7 @@ document.getElementById("sendReject").onclick = async () => {
     body:new URLSearchParams({
       id: currentRejectId,
       status:"Rejected",
-      adminMessage: rejectMessage.value
+      adminmessage: rejectMessage.value
     })
   });
   rejectMessage.value="";
@@ -580,24 +580,26 @@ async function renderResidencyRequests() {
     return `
       <div class="request">
         <h3>${r.name} ${r.lastname}</h3>
-        <p><b>Date:</b> ${r.date}</p>
-        <p><b>Gender:</b> ${r.age || "N/A"}</p>
+        <p><b>Date:</b> ${r.date || "N/A"}</p>
+        <p><b>Age:</b> ${r.age || "N/A"}</p>
         <p><b>Purok:</b> ${r.purok || "N/A"}</p>
-        <p><b>biological parent:</b> ${r.bioName}</p>
-        <p><b>Price:</b> ${r.price || "N/A"}</p>
-        <p><b>Status:</b> ${r.status}</p>
+        <p><b>Biological Parent:</b> ${r.bioname || "N/A"}</p>
+        <p><b>Price:</b> ₱${r.price || "0.00"}</p>
+        <p><b>Status:</b> ${r.status || "N/A"}</p>
         <p><b>Payment:</b>
           <span style="color:${r.paid == 1 ? 'green':'red'};font-weight:bold">
             ${r.paid == 1 ? "PAID":"UNPAID"}
           </span>
         </p>
-        <p><b>Admin Message:</b> ${r.adminMessage || "None"}</p>
+        <p><b>Admin Message:</b> ${r.adminmessage || "None"}</p>
 
         <div class="actions">
           <button class="approve" onclick="approveResidency(${r.id})">Approve</button>
           <button class="reject" onclick="openRejectResidency(${r.id})">Reject</button>
           <button class="markPaid" onclick="markPaidResidency(${r.id})">Mark Paid</button>
-          <button class="print" onclick="printResidency('${r.name}','${r.lastname}','${r.age}','${r.purok}','${r.bioName}','${r.price}')">Print</button>
+          <button class="print" onclick="printResidency(
+            '${r.name}','${r.lastname}','${r.age}','${r.purok}','${r.bioname}','${r.price}'
+          )">Print</button>
           <button class="remove" onclick="deleteResidency(${r.id})">Delete</button>
         </div>
       </div>
@@ -610,7 +612,7 @@ async function renderResidencyRequests() {
 async function approveResidency(id) {
   await fetch("authController.php?action=adminUpdateRequest1", {
     method:"POST",
-    body:new URLSearchParams({id, status:"Approved", adminMessage:"Approved"})
+    body:new URLSearchParams({id, status:"Approved", adminmessage:"Approved"})
   });
   renderResidencyRequests();
 }
@@ -629,7 +631,7 @@ document.getElementById("sendResidencyReject").onclick = async () => {
       body:new URLSearchParams({
         id: currentRejectResidencyId,
         status:"Rejected",
-        adminMessage: residencyRejectMessage.value
+        adminmessage: residencyRejectMessage.value
       })
     });
     const data = await res.json();
@@ -1214,7 +1216,7 @@ document.getElementById("sendBusinessReject").onclick = async () => {
       body:new URLSearchParams({
         id: currentRejectBusinessId,
         status:"Rejected",
-        adminMessage: businessRejectMessage.value
+        adminmessage: businessRejectMessage.value
       })
     });
     const data = await res.json();
@@ -1447,6 +1449,7 @@ setInterval(renderResidencyRequests, 5000);
 renderIndigencyRequests();
 setInterval(renderIndigencyRequests, 5000);
 </script>
+
 
 
 
