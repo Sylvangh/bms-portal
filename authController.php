@@ -717,26 +717,20 @@ elseif ($action === "adminMarkPaid") {
     ]);
     exit;
 }
-        // ----------------------------
-// Delete request
-// ----------------------------
-elseif ($action === "deleteRequest") {
+   elseif ($action === "adminDeleteRequest") {
     $id = intval($_POST['id'] ?? 0);
     if (!$id) { 
-        echo json_encode(['message' => 'Missing request ID']); 
+        echo json_encode(["message" => "Missing ID"]); 
         exit; 
     }
 
-    // Use pg_query_params for safe parameterized query
     $result = pg_query_params(
-        $conn, 
-        "DELETE FROM certificate_requests WHERE id=$1", 
+        $conn,
+        "DELETE FROM certificate_requests WHERE id=$1",
         [$id]
     );
 
-    echo json_encode([
-        'message' => $result ? 'Request deleted successfully' : 'Failed to delete request'
-    ]);
+    echo json_encode(["message" => "Deleted"]);
     exit;
 }
 
@@ -753,6 +747,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
