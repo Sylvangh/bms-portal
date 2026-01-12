@@ -963,25 +963,30 @@ elseif ($action === "adminUpdateRequest2") {
     exit;
 }
 
-        elseif ($action === "adminMarkPaid2") {
+elseif ($action === "adminMarkPaid2") {
     $id = intval($_POST['id'] ?? 0);
-    if (!$id) { 
-        echo json_encode(["message" => "Missing ID"]); 
-        exit; 
+
+    if (!$id) {
+        echo json_encode(["message" => "Missing ID"]);
+        exit;
     }
 
-    // PostgreSQL safe parameterized query
     $result = pg_query_params(
         $conn,
-        "UPDATE certificate_requests SET paid=1 WHERE id=$1",
+        "UPDATE certificate_requests 
+         SET paid = TRUE 
+         WHERE id = $1",
         [$id]
     );
 
-    echo json_encode([
-        "message" => $result ? "Marked as paid" : "Failed to mark as paid"
-    ]);
+    if ($result && pg_affected_rows($result) > 0) {
+        echo json_encode(["message" => "Marked as paid"]);
+    } else {
+        echo json_encode(["message" => "Failed to mark as paid"]);
+    }
     exit;
 }
+
      elseif
 ($action === "adminDeleteRequest2") {
     $id = intval($_POST['id'] ?? 0);
@@ -1012,6 +1017,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
