@@ -246,6 +246,13 @@ async function loadRequests() {
           <strong>Status:</strong> ${req.status || '-'} <br>
           <strong>Admin Message:</strong> ${req.adminmessage || 'None'} <br>
           <small>Date: ${req.date || '-'}</small>
+                  <strong>Payment:</strong> ${
+  req.status === 'Approved'
+    ? (req.paid === true || req.paid === 't' || req.paid == 1
+        ? 'PAID'
+        : 'UNPAID')
+    : 'PENDING'
+} <br>
         </div>
 
         <div class="request-actions">
