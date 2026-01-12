@@ -790,10 +790,10 @@ elseif ($action === "adminMarkBusinessPaid") {
         exit;
     }
 
-    // PostgreSQL safe parameterized query
+    // Set paid = true explicitly (PostgreSQL boolean)
     $result = pg_query_params(
         $conn,
-        "UPDATE certificate_requests SET paid=1 WHERE id=$1",
+        "UPDATE certificate_requests SET paid=true WHERE id=$1",
         [$id]
     );
 
@@ -801,7 +801,9 @@ elseif ($action === "adminMarkBusinessPaid") {
         "message" => $result ? "Marked as paid" : "Failed"
     ]);
     exit;
-}// ----------------------------
+}
+
+        // ----------------------------
 // Admin: Delete Business Request
 // ----------------------------
 elseif ($action === "deleteBusinessRequest") {
@@ -837,6 +839,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
