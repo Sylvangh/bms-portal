@@ -902,12 +902,11 @@ async function renderIndigencyRequests() {
       <p><b>Purok:</b> ${r.purok}</p>
       <p><b>Amount:</b> ${r.price}</p>
       <p><b>Status:</b> ${r.status}</p>
-
       <p><b>Payment:</b>
-        <span style="color:${r.paid == 1 ? 'green':'red'};font-weight:bold">
-          ${r.paid == 1 ? "PAID":"UNPAID"}
-        </span>
-      </p>
+<span style="color:${r.paid == true || r.paid == 't' || r.paid == 'true' || r.paid == 1 ? 'green' : 'red'}; font-weight:bold">
+  ${r.paid == true || r.paid == 't' || r.paid == 'true' || r.paid == 1 ? "PAID" : "UNPAID"}
+</span>
+
 
       <p><b>Admin Message:</b> ${r.adminMessage || "None"}</p>
 
@@ -952,7 +951,7 @@ document.getElementById("sendIndigencyReject").onclick = async () => {
     body: new URLSearchParams({
       id: currentRejectId,
       status: "Rejected",
-      adminMessage: indigencyRejectMessage.value
+      adminmessage: indigencyRejectMessage.value
     })
   });
 
@@ -1454,6 +1453,7 @@ setInterval(renderResidencyRequests, 5000);
 renderIndigencyRequests();
 setInterval(renderIndigencyRequests, 5000);
 </script>
+
 
 
 
