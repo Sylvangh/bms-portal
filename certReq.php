@@ -298,30 +298,41 @@ elseif ($action === "deleteRequest1") {
         exit;
     }
 
-    // PostgreSQL safe parameterized query
     $result = pg_query_params(
         $conn,
-        "SELECT id, purok, price, date 
-         FROM certificate_requests 
-         WHERE username=$1 AND type='indigency' 
+        "SELECT 
+            id,
+            purok,
+            price,
+            status,
+            adminmessage,
+            paid,
+            date
+         FROM certificate_requests
+         WHERE username = $1
+           AND type = 'indigency'
          ORDER BY date DESC",
         [$email]
     );
 
     $requests = [];
     while ($row = pg_fetch_assoc($result)) {
-        // Convert to string to avoid JS errors
         $row['purok'] = (string)($row['purok'] ?? '');
         $row['price'] = (string)($row['price'] ?? '0.00');
-        $row['date']  = $row['date'] ?? '';
+        $row['status'] = $row['status'] ?? '';
+        $row['adminmessage'] = $row['adminmessage'] ?? '';
+        $row['paid'] = $row['paid'] ?? false;
+        $row['date'] = $row['date'] ?? '';
         $requests[] = $row;
     }
 
-    // Ensure proper JSON header
     header('Content-Type: application/json');
     echo json_encode($requests);
     exit;
-}// ----------------------------
+}
+
+        
+        // ----------------------------
 // Save / Update Indigency Request
 // ----------------------------
 elseif ($action === "saveRequest2") {
