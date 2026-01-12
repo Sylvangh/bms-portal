@@ -1006,6 +1006,18 @@ elseif ($action === "adminMarkPaid2") {
     exit;
 }
 
+        elseif ($action === "getAllResi") {
+    $result = $conn->query("SELECT * FROM registrations");
+    $residents = [];
+    while($row = $result->fetch_assoc()) {
+        $row['accountstatus'] = strtolower($row['accountstatus']); // para siguradong lowercase
+        $residents[] = $row;
+    }
+    echo json_encode($residents);
+    $conn->close();
+    exit;
+}
+
 /* ---------------- INVALID ACTION ---------------- */
 else {
     throw new Exception("Invalid action");
@@ -1017,6 +1029,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
