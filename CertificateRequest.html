@@ -1138,10 +1138,9 @@ const businessRejectMessage = document.getElementById("businessRejectMessage");
 let currentRejectBusinessId = null;
 
 const businessRequestsList = document.getElementById("businessRequestsList");
-
 // ---------------- LOAD BUSINESS REQUESTS ----------------
 async function loadBusinessRequests() {
-  const res = await fetch("authController.php?action=adminGetBusinessRequests");
+  const res = await fetch("authController.php?action=admingetbusinessrequests");
   return await res.json();
 }
 
@@ -1153,7 +1152,7 @@ async function renderBusinessRequests() {
   const filtered = data.filter(r =>
     (r.username || "").toLowerCase().includes(search) ||
     ((r.name || "") + " " + (r.lastname || "")).toLowerCase().includes(search) ||
-    (r.businessName || "").toLowerCase().includes(search)
+    (r.businessname || "").toLowerCase().includes(search)
   );
 
   if (!filtered.length) {
@@ -1165,30 +1164,33 @@ async function renderBusinessRequests() {
     return `
       <div class="request">
         <h3>${r.name} ${r.lastname}</h3>
-        <p><b>Business Type:</b> ${r.businessType || "N/A"}</p>
-        <p><b>Business Name:</b> ${r.businessName || "N/A"}</p>
-        <p><b>Business Address:</b> ${r.businessAddress || "N/A"}</p>
-        <p><b>Amount:</b> ${r.price || "N/A"}</p>
-        <p><b>Purpose:</b> ${r.purpose}</p>
-        <p><b>Status:</b> ${r.status}</p>
+        <p><b>Business Type:</b> ${r.businesstype || "N/A"}</p>
+        <p><b>Business Name:</b> ${r.businessname || "N/A"}</p>
+        <p><b>Business Address:</b> ${r.businessaddress || "N/A"}</p>
+        <p><b>Amount:</b> ${r.price ?? "N/A"}</p>
+        <p><b>Purpose:</b> ${r.purpose || "-"}</p>
+        <p><b>Status:</b> ${r.status || "-"}</p>
         <p><b>Payment:</b>
           <span style="color:${r.paid == 1 ? 'green':'red'}; font-weight:bold">
-            ${r.paid == 1 ? "PAID":"UNPAID"}
+            ${r.paid == 1 ? "PAID" : "UNPAID"}
           </span>
         </p>
-        <p><b>Admin Message:</b> ${r.adminMessage || "None"}</p>
+        <p><b>Admin Message:</b> ${r.adminmessage || "None"}</p>
 
         <div class="actions">
           <button class="approve" onclick="approveBusiness(${r.id})">Approve</button>
           <button class="reject" onclick="openRejectBusiness(${r.id})">Reject</button>
           <button class="markPaid" onclick="markPaidBusiness(${r.id})">Mark Paid</button>
-          <button class="print" onclick="printBusiness('${r.name}','${r.lastname}','${r.businessType}','${r.businessName}','${r.businessAddress}','${r.price}')">Print</button>
+          <button class="print" onclick="printBusiness(
+            '${r.name}', '${r.lastname}', '${r.businesstype}', '${r.businessname}', '${r.businessaddress}', '${r.price}'
+          )">Print</button>
           <button class="remove" onclick="deleteBusiness(${r.id})">Delete</button>
         </div>
       </div>
     `;
   }).join("");
 }
+
 
 // ---------------- APPROVE ----------------
 async function approveBusiness(id) {
@@ -1445,6 +1447,7 @@ setInterval(renderResidencyRequests, 5000);
 renderIndigencyRequests();
 setInterval(renderIndigencyRequests, 5000);
 </script>
+
 
 
 
