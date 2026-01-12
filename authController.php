@@ -1024,9 +1024,24 @@ elseif ($action === "getAllResi") {
 // Get pending clearance count
 // ----------------------------
 elseif ($action === "getPendingClearanceCount") {
-    $result = $conn->query("SELECT COUNT(*) as pendingCount FROM certificate_requests WHERE status='Pending'");
-    $row = $result->fetch_assoc();
-    echo json_encode(['pendingClearance' => intval($row['pendingCount'])]);
+
+    $result = pg_query(
+        $conn,
+        "SELECT COUNT(*) AS pendingcount 
+         FROM certificate_requests 
+         WHERE LOWER(status) = 'pending'"
+    );
+
+    if (!$result) {
+        echo json_encode(["pendingClearance" => 0]);
+        exit;
+    }
+
+    $row = pg_fetch_assoc($result);
+
+    echo json_encode([
+        "pendingClearance" => intval($row['pendingcount'])
+    ]);
     exit;
 }
 
@@ -1042,6 +1057,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
