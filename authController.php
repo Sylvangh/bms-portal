@@ -885,18 +885,18 @@ elseif ($action === "adminMarkPaid1") {
         exit; 
     }
 
-    // PostgreSQL safe parameterized query
     $result = pg_query_params(
         $conn,
-        "UPDATE certificate_requests SET paid=1 WHERE id=$1",
+        "UPDATE certificate_requests SET paid=1 WHERE id=$1 RETURNING id",
         [$id]
     );
 
     echo json_encode([
-        "message" => $result ? "Marked as paid" : "Failed to mark as paid"
+        "message" => $result && pg_fetch_assoc($result) ? "Marked as paid" : "Failed to mark as paid"
     ]);
     exit;
 }
+
 // ----------------------------
 // Admin: Delete Residency Request
 // ----------------------------
@@ -929,6 +929,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
