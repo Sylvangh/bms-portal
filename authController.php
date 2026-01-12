@@ -826,6 +826,29 @@ elseif ($action === "deleteBusinessRequest") {
     exit;
 }
 
+        // ----------------------------
+// Admin: Get Residency Requests
+// ----------------------------
+elseif ($action === "AdmingetResidencyRequests") {
+
+    $result = pg_query($conn, "
+        SELECT cr.*, r.name, r.lastname
+        FROM certificate_requests cr
+        LEFT JOIN registrations r ON cr.username = r.email
+        WHERE cr.type='residency'
+        ORDER BY cr.date DESC
+    ");
+
+    $data = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $data[] = $row;
+    }
+
+    echo json_encode($data);
+    exit;
+}
+
+
 
 
 /* ---------------- INVALID ACTION ---------------- */
@@ -839,6 +862,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
