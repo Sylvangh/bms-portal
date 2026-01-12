@@ -354,22 +354,24 @@ document.getElementById("cancelReject").onclick = ()=>{
   modal.classList.add("hidden");
   rejectMessage.value="";
 };
+  
 
 async function markPaid(id) {
   if (!confirm("Mark this request as PAID?")) return;
 
   try {
+    const formData = new FormData();
+    formData.append("id", id);
+
     const res = await fetch("authController.php?action=adminMarkPaid", {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ id: id.toString() }) // ensure id is string
+      body: formData
     });
 
     const data = await res.json();
     alert(data.message);
 
-    // Refresh the list after marking as paid
-    renderRequests(); // or your function to reload table
+    renderRequests(); // reload table/list
   } catch (err) {
     console.error(err);
     alert("Failed to mark as paid: " + err.message);
@@ -1441,5 +1443,6 @@ setInterval(renderResidencyRequests, 5000);
 renderIndigencyRequests();
 setInterval(renderIndigencyRequests, 5000);
 </script>
+
 
 
