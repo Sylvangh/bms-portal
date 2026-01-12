@@ -275,14 +275,13 @@ async function loadRequests() {
 
 
 // --- Add / Update Request ---
-// ---------------- SUBMIT / UPDATE RESIDENCY REQUEST ----------------
 requestForm.addEventListener("submit", async e => {
   e.preventDefault();
 
   const purok = document.getElementById("purok").value.trim();
   const priceInput = document.getElementById("price").value.trim();
 
-  if (!purpose || !purok || priceInput === '' )
+  if (!purok || priceInput === '')
     return alert("All fields are required");
 
   const price = Number(priceInput);
@@ -308,15 +307,14 @@ requestForm.addEventListener("submit", async e => {
 
     requestForm.reset();
     editingRequestId = null;
-    loadRequests(); // refresh the list
+    loadRequests();
   } catch (err) {
     console.error(err);
     alert("Error saving request");
   }
 });
 
-
-
+   
 // ---------------- EDIT RESIDENCY REQUEST ----------------
 function editRequest(id, purok, price) {
   editingRequestId = id;
