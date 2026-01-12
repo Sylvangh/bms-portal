@@ -1018,6 +1018,17 @@ elseif ($action === "adminMarkPaid2") {
     exit;
 }
 
+        // ----------------------------
+// Get pending clearance count
+// ----------------------------
+elseif ($action === "getPendingClearanceCount") {
+    $result = $conn->query("SELECT COUNT(*) as pendingCount FROM certificate_requests WHERE status='Pending'");
+    $row = $result->fetch_assoc();
+    echo json_encode(['pendingClearance' => intval($row['pendingCount'])]);
+    exit;
+}
+
+
 /* ---------------- INVALID ACTION ---------------- */
 else {
     throw new Exception("Invalid action");
@@ -1029,6 +1040,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
