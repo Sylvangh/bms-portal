@@ -222,54 +222,57 @@ const requestList = document.getElementById("requestList");
 let editingRequestId = null;
 
 // --- Load User Requests ---
-// --- Load User Requests safely ---
 async function loadRequests() {
   try {
+    const formData = new FormData(); // ✅ CREATE IT
+    formData.append("email", currentEmail); // ✅ SEND EMAIL
+
     const res = await fetch("certReq.php?action=getRequests2", {
       method: "POST",
-    body: formData
-  });
+      body: formData
+    });
 
-  const data = await res.json();
-  requestList.innerHTML = "";
+    const data = await res.json();
+    requestList.innerHTML = "";
 
-  data.forEach(req => {
-    if ((req.type || "").toLowerCase() !== "indigency") return;
+    data.forEach(req => {
+      const div = document.createElement("div");
+      div.classList.add("request-item");
 
-    const div = document.createElement("div");
-    div.classList.add("request-item");
+      div.innerHTML = `
+        <div class="request-info">
+          <strong>Message:</strong> ${req.purpose || '-'} <br>
+          <strong>Purok:</strong> ${req.purok || '-'} <br>
+          <strong>Amount:</strong> ₱${req.price ?? '0.00'} <br>
+          <strong>Status:</strong> ${req.status || '-'} <br>
+          <strong>Admin Message:</strong> ${req.adminmessage || 'None'} <br>
+          <strong>Payment:</strong> ${
+            req.status === 'Approved'
+              ? (req.paid == true || req.paid == 1 ? 'PAID' : 'UNPAID')
+              : 'PENDING'
+          } <br>
+          <small>Date: ${req.date || '-'}</small>
+        </div>
 
-    div.innerHTML = `
-      <div class="request-info">
-        <strong>Message:</strong> ${req.purpose || '-'} <br>
-        <strong>Purok:</strong> ${req.purok || '-'} <br>
-        <strong>Amount:</strong> ₱${req.price ?? '0.00'} <br>
-        <strong>Status:</strong> ${req.status || '-'} <br>
-        <strong>Admin Message:</strong> ${req.adminmessage || 'None'} <br>
-        <strong>Payment:</strong> ${
-  req.status === 'Approved'
-    ? (req.paid === true || req.paid === 't' || req.paid == 1
-        ? 'PAID'
-        : 'UNPAID')
-    : 'PENDING'
-} <br>
-        <small>Date: ${req.date || '-'}</small>
-      </div>
+        <div class="request-actions">
+          <button onclick="editRequest(
+            ${req.id},
+            '${(req.purpose || "").replace(/'/g,"\\'")}',
+            '${req.purok ?? ''}',
+            '${req.price ?? 0}'
+          )">Edit</button>
 
-      <div class="request-actions">
-        <button onclick="editRequest(
-          ${req.id},
-          '${(req.purpose || "").replace(/'/g,"\\'")}',
-          '${req.purok ?? ''}',
-          '${req.price ?? 0}'
-        )">Edit</button>
+          <button class="btn-delete" onclick="deleteRequest(${req.id})">Delete</button>
+        </div>
+      `;
 
-        <button class="btn-delete" onclick="deleteRequest(${req.id})">Delete</button>
-      </div>
-    `;
+      requestList.appendChild(div);
+    });
 
-    requestList.appendChild(div);
-  });
+  } catch (err) {
+    console.error(err);
+    alert("Failed to load requests");
+  }
 }
 
 
