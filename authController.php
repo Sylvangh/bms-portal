@@ -753,8 +753,55 @@ elseif ($action === "admingetbusinessrequests") {
     echo json_encode($data);
     exit;
 }
+// ----------------------------
+// Admin: Update Business Request
+// ----------------------------
+elseif ($action === "adminUpdateBusinessRequest") {
+    $id = intval($_POST['id'] ?? 0);
+    $status = $_POST['status'] ?? '';
+    $msg = $_POST['adminmessage'] ?? ''; // match DB column lowercase
 
+    if (!$id || !$status) {
+        echo json_encode(["message" => "Missing fields"]);
+        exit;
+    }
 
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests 
+         SET status=$1, adminmessage=$2 
+         WHERE id=$3",
+        [$status, $msg, $id]
+    );
+
+    echo json_encode([
+        "message" => $result ? "Updated" : "Failed"
+    ]);
+    exit;
+}
+// ----------------------------
+// Admin: Mark Business Request as Paid
+// ----------------------------
+elseif ($action === "adminMarkBusinessPaid") {
+    $id = intval($_POST['id'] ?? 0);
+    if (!$id) {
+        echo json_encode(["message" => "Missing ID"]);
+        exit;
+    }
+
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests SET paid=1 WHERE id=$1",
+        [$id]
+    );
+
+    echo json_encode([
+        "message" => $result ? "Marked as paid" : "Failed"
+    ]);
+    exit;
+}
 
 
 /* ---------------- INVALID ACTION ---------------- */
@@ -768,6 +815,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
