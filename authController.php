@@ -886,18 +886,21 @@ elseif ($action === "adminMarkPaid1") {
         exit;
     }
 
-    // Set paid = true explicitly (PostgreSQL boolean)
+    // Use RETURNING to ensure a row was updated
     $result = pg_query_params(
         $conn,
-        "UPDATE certificate_requests SET paid=true WHERE id=$1",
+        "UPDATE certificate_requests SET paid=true WHERE id=$1 RETURNING id",
         [$id]
     );
 
+    $row = pg_fetch_assoc($result);
+
     echo json_encode([
-        "message" => $result ? "Marked as paid" : "Failed"
+        "message" => $row ? "Marked as paid" : "Failed to mark as paid"
     ]);
     exit;
 }
+
 
 // ----------------------------
 // Admin: Delete Residency Request
@@ -931,6 +934,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
