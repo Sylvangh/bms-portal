@@ -49,21 +49,21 @@ async function updateDashboardCounts() {
     const res = await fetch("authController.php?action=getAllResi");
     const residents = await res.json();
 
-    console.log("Fetched residents:", residents); // debug
+    const pending = residents.filter(
+      r => r.accountstatus === "pending"
+    ).length;
 
-    const pending = residents.filter(r => r.accountstatus.toLowerCase().trim() === "pending").length;
-    const approved = residents.filter(r => r.accountstatus.toLowerCase().trim() === "approved").length;
-    const rejected = residents.filter(r => r.accounsStatus.toLowerCase().trim() === "rejected").length;
+    const approved = residents.filter(
+      r => r.accountstatus === "approved"
+    ).length;
 
-    console.log({ pending, approved, rejected }); // debug counts
+    const rejected = residents.filter(
+      r => r.accountstatus === "rejected"
+    ).length;
 
-    const pendingEl = document.getElementById("pendingCount");
-    const approvedEl = document.getElementById("approvedCount");
-    const rejectedEl = document.getElementById("rejectedCount");
-
-    if (pendingEl) pendingEl.textContent = pending;
-    if (approvedEl) approvedEl.textContent = approved;
-    if (rejectedEl) rejectedEl.textContent = rejected;
+    document.getElementById("pendingCount").textContent = pending;
+    document.getElementById("approvedCount").textContent = approved;
+    document.getElementById("rejectedCount").textContent = rejected;
 
   } catch (err) {
     console.error("Error fetching dashboard data:", err);
@@ -1759,6 +1759,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
