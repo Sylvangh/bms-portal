@@ -286,7 +286,6 @@ async function loadRequests() {
   });
 }
 
-
 // Add / Update request
 requestForm.addEventListener("submit", async e => {
   e.preventDefault();
@@ -310,13 +309,14 @@ requestForm.addEventListener("submit", async e => {
 
   const formData = new FormData();
   if (editingRequestId) formData.append("id", editingRequestId);
-  formData.append("email", currentEmail);
-  formData.append("purpose", purpose);
-  formData.append("price", price);
-  formData.append("age", age);
-  formData.append("purok", purok);
+  formData.append("email", currentEmail);   // <-- must match PHP $_POST['email']
+  formData.append("purpose", purpose);      // <-- matches $_POST['purpose']
+  formData.append("price", price);          // <-- matches $_POST['price']
+  formData.append("age", age);              // <-- matches $_POST['age']
+  formData.append("purok", purok);          // <-- matches $_POST['purok']
 
   try {
+    // action=saveRequest must be in the query string
     const res = await fetch("authController.php?action=saveRequest", {
       method: "POST",
       body: formData
@@ -328,13 +328,14 @@ requestForm.addEventListener("submit", async e => {
     requestForm.reset();
     editingRequestId = null;
 
-    // reload requests using lowercase keys
+    // reload requests
     await loadRequests();
   } catch (err) {
     console.error(err);
     alert("Error saving request");
   }
 });
+
 
 
 // Edit request
@@ -377,4 +378,5 @@ document.getElementById("btnBack").addEventListener("click", () => {
 // Load requests on page load
 document.addEventListener("DOMContentLoaded", loadRequests);
 </script>
+
 
