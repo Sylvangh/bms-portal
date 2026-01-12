@@ -721,26 +721,24 @@ elseif ($action === "adminMarkPaid") {
 // ----------------------------
 // Admin: Delete request
 // ----------------------------
-async function markPaid(id) {
-  if (!confirm("Mark this request as PAID?")) return;
+elseif ($action === "adminMarkPaid") {
+    $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
 
-  try {
-    const formData = new FormData();
-    formData.append("id", id);
+    if ($id <= 0) { 
+        echo json_encode(["message" => "Missing or invalid ID"]); 
+        exit; 
+    }
 
-    const res = await fetch("authController.php?action=adminMarkPaid", {
-      method: "POST",
-      body: formData
-    });
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests SET paid=1 WHERE id=$1",
+        [$id]
+    );
 
-    const data = await res.json();
-    alert(data.message);
-
-    renderRequests(); // reload table/list
-  } catch (err) {
-    console.error(err);
-    alert("Failed to mark as paid: " + err.message);
-  }
+    echo json_encode([
+        "message" => $result ? "Marked as paid" : "Failed to mark as paid"
+    ]);
+    exit;
 }
 
 
@@ -755,6 +753,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
