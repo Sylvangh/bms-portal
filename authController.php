@@ -878,21 +878,23 @@ elseif ($action === "adminUpdateRequest1") {
 // ----------------------------
 // Admin: Mark Residency Request as Paid
 // ----------------------------
+    
 elseif ($action === "adminMarkPaid1") {
     $id = intval($_POST['id'] ?? 0);
-    if (!$id) { 
-        echo json_encode(["message" => "Missing ID"]); 
-        exit; 
+    if (!$id) {
+        echo json_encode(["message" => "Missing ID"]);
+        exit;
     }
 
+    // Set paid = true explicitly (PostgreSQL boolean)
     $result = pg_query_params(
         $conn,
-        "UPDATE certificate_requests SET paid=1 WHERE id=$1 RETURNING id",
+        "UPDATE certificate_requests SET paid=true WHERE id=$1",
         [$id]
     );
 
     echo json_encode([
-        "message" => $result && pg_fetch_assoc($result) ? "Marked as paid" : "Failed to mark as paid"
+        "message" => $result ? "Marked as paid" : "Failed"
     ]);
     exit;
 }
@@ -929,6 +931,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
