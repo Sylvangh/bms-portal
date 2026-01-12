@@ -244,7 +244,7 @@ async function loadRequests() {
   const formData = new FormData();
   formData.append("email", currentEmail);
 
-  const res = await fetch("authController.php?action=getBusinessRequests", {
+  const res = await fetch("certReq.php?action=getBusinessRequests", {
     method: "POST",
     body: formData
   });
@@ -253,27 +253,27 @@ async function loadRequests() {
   requestList.innerHTML = "";
 
   data.forEach(req => {
-    if(req.type !== "business") return;
+    if ((req.type || "").toLowerCase() !== "business") return;
 
     requestList.innerHTML += `
       <div class="request-item">
         <div class="request-info">
-          <strong>Type:</strong> ${req.businessType || '-'}<br>
-          <strong>Business:</strong> ${req.businessName || '-'}<br>
-          <strong>Address:</strong> ${req.businessAddress || '-'}<br>
+          <strong>Type:</strong> ${req.businesstype || '-'}<br>
+          <strong>Business:</strong> ${req.businessname || '-'}<br>
+          <strong>Address:</strong> ${req.businessaddress || '-'}<br>
           <strong>Amount:</strong> ₱${req.price ?? 0}<br>
           <strong>Purpose:</strong> ${req.purpose || '-'}<br>
           <strong>Status:</strong> ${req.status || '-'}<br>
-          <strong>Admin Message:</strong> ${req.adminMessage || 'None'}<br>
+          <strong>Admin Message:</strong> ${req.adminmessage || 'None'}<br>
           <strong>Payment:</strong> ${req.paid == 1 ? "PAID" : "UNPAID"}<br>
           <small>Date: ${req.date || '-'}</small><br>
         </div>
         <div class="request-actions">
           <button onclick="editRequest(
             ${req.id},
-            '${(req.businessType || "").replace(/'/g,"\\'")}',
-            '${(req.businessName || "").replace(/'/g,"\\'")}',
-            '${(req.businessAddress || "").replace(/'/g,"\\'")}',
+            '${(req.businesstype || "").replace(/'/g,"\\'")}',
+            '${(req.businessname || "").replace(/'/g,"\\'")}',
+            '${(req.businessaddress || "").replace(/'/g,"\\'")}',
             '${(req.purpose || "").replace(/'/g,"\\'")}',
             '${req.price ?? 0}'
           )">Edit</button>
@@ -289,12 +289,12 @@ requestForm.addEventListener("submit", async e => {
   e.preventDefault();
 
   const purpose = document.getElementById("purpose").value.trim();
-  const businessType = document.getElementById("businessType").value.trim();
-  const businessName = document.getElementById("businessName").value.trim();
-  const businessAddress = document.getElementById("businessAddress").value.trim();
+  const businesstype = document.getElementById("businessType").value.trim();
+  const businessname = document.getElementById("businessName").value.trim();
+  const businessaddress = document.getElementById("businessAddress").value.trim();
   const priceInput = document.getElementById("price").value.trim();
 
-  if(!purpose || !businessType || !businessName || !businessAddress || priceInput === '')
+  if(!purpose || !businesstype || !businessname || !businessaddress || priceInput === '')
     return alert("All fields are required");
 
   const price = Number(priceInput);
@@ -304,15 +304,15 @@ requestForm.addEventListener("submit", async e => {
   if(editingRequestId) formData.append("id", editingRequestId);
 
   formData.append("email", currentEmail);
-  formData.append("businessType", businessType);
-  formData.append("businessName", businessName);
-  formData.append("businessAddress", businessAddress);
+  formData.append("businesstype", businesstype);
+  formData.append("businessname", businessname);
+  formData.append("businessaddress", businessaddress);
   formData.append("purpose", purpose);
   formData.append("price", price);
   formData.append("type", "business");
 
   try {
-    const res = await fetch("authController.php?action=saveBusinessRequest", {
+    const res = await fetch("certReq.php?action=saveBusinessRequest", {
       method: "POST",
       body: formData
     });
@@ -329,14 +329,15 @@ requestForm.addEventListener("submit", async e => {
 });
 
 // ---------------- EDIT ----------------
-function editRequest(id, businessType, businessName, businessAddress, purposeText, price) {
+function editRequest(id, businesstype, businessname, businessaddress, purposeText, price) {
   editingRequestId = id;
-  document.getElementById("businessType").value = businessType;
-  document.getElementById("businessName").value = businessName;
-  document.getElementById("businessAddress").value = businessAddress;
+  document.getElementById("businessType").value = businesstype;
+  document.getElementById("businessName").value = businessname;
+  document.getElementById("businessAddress").value = businessaddress;
   document.getElementById("purpose").value = purposeText;
   document.getElementById("price").value = price;
 }
+
 
 // ---------------- DELETE ----------------
 async function deleteRequest(id){
@@ -345,7 +346,7 @@ async function deleteRequest(id){
   const formData = new FormData();
   formData.append("id", id);
 
-  const res = await fetch("authController.php?action=deleteBusinessRequest", {
+  const res = await fetch("certReq.php?action=deleteBusinessRequest", {
     method: "POST",
     body: formData
   });
@@ -362,3 +363,4 @@ document.getElementById("btnBack").addEventListener("click", () => {
 // Load requests on page load
 document.addEventListener("DOMContentLoaded", loadRequests);
 </script>
+
