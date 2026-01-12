@@ -733,6 +733,27 @@ elseif ($action === "adminMarkPaid") {
     echo json_encode(["message" => "Deleted"]);
     exit;
 }
+        // ----------------------------
+// Admin: Get Business Requests
+// ----------------------------
+elseif ($action === "admingetbusinessrequests") {
+    $result = pg_query($conn, "
+        SELECT cr.*, r.name, r.lastname
+        FROM certificate_requests cr
+        LEFT JOIN registrations r ON cr.username = r.email
+        WHERE cr.type='business'
+        ORDER BY cr.date DESC
+    ");
+
+    $data = [];
+    while ($row = pg_fetch_assoc($result)) {
+        $data[] = $row;
+    }
+
+    echo json_encode($data);
+    exit;
+}
+
 
 
 
@@ -747,6 +768,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
