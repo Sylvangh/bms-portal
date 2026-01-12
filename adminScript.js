@@ -1332,7 +1332,12 @@ function renderTable(data = tableData) {
       juniorHigh: "Junior High",
       elementary: "Elementary"
     };
-  data = data.filter(r => (r.schoollevels || []).includes(levelMap[selectedFilter]));
+data = data.filter(r =>
+  (r.schoollevels || "")
+    .split(",")
+    .map(s => s.trim())
+    .includes(levelMap[selectedFilter])
+);
 
   }
       // 30+ AGE filter
@@ -1403,20 +1408,35 @@ if (deleteMode && customColumns.includes(c)) {
     cols.forEach(c => {
       const td = document.createElement("td");
 
-      if (["college", "seniorHigh", "juniorHigh", "elementary"].includes(c)) {
-        const levelMap = { college: "College", seniorHigh: "Senior High", juniorHigh: "Junior High", elementary: "Elementary" };
-       td.textContent = (row.schoollevels || "")
-  .split(",")
-  .map(s => s.trim())
-  .includes(levelMap[c]) ? "Yes" : "No";
+  if (c === "schoollevels") {
+  // show actual school level text
+  td.textContent = row.schoollevels || "";
+  td.contentEditable = false;
 
-        td.contentEditable = false;
-      } else if (["voter", "seniorcitizen"].includes(c)) {
-        td.textContent = (row[c] === 1 || row[c] === "1") ? "Yes" : "No";
-        td.contentEditable = false;
-      } else {
-        td.textContent = row[c] ?? "";
-      }
+} else if (["college", "seniorHigh", "juniorHigh", "elementary"].includes(c)) {
+  // show Yes / No per level
+  const levelMap = {
+    college: "College",
+    seniorHigh: "Senior High",
+    juniorHigh: "Junior High",
+    elementary: "Elementary"
+  };
+
+  td.textContent = (row.schoollevels || "")
+    .split(",")
+    .map(s => s.trim())
+    .includes(levelMap[c]) ? "Yes" : "No";
+
+  td.contentEditable = false;
+
+} else if (["voter", "seniorcitizen"].includes(c)) {
+  td.textContent = (row[c] === 1 || row[c] === "1") ? "Yes" : "No";
+  td.contentEditable = false;
+
+} else {
+  td.textContent = row[c] ?? "";
+}
+
 
       tr.appendChild(td);
     });
@@ -1448,8 +1468,14 @@ if (deleteMode && customColumns.includes(c)) {
 
   // ===== RESULT COUNT =====
   const yesCountEl = document.getElementById("yesCount");
-  if (yesCountEl) yesCountEl.textContent = `Showing: ${data.length} result(s)`;
+  if (yesCountEl) yesCountEl.textContent = `Showing: ${data.length} result(s)`; 
 }
+
+// School level filter listener
+document.querySelectorAll('input[name="schoolFilter"]').forEach(radio => {
+  radio.addEventListener("change", () => renderTable());
+});
+
 
   // ===============================
   // SORT
@@ -1746,12 +1772,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
-
-
-
-
-
-
 
 
 
