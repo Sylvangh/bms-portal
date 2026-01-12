@@ -234,7 +234,7 @@ async function loadRequests() {
   requestList.innerHTML = "";
 
   data.forEach(req => {
-    if ((req.type || "").toLowerCase() !== "residency") return;
+    if ((req.type || "").toLowerCase() !== "indigency") return;
 
     const div = document.createElement("div");
     div.classList.add("request-item");
@@ -274,44 +274,9 @@ async function loadRequests() {
 
 
 // --- Add / Update Request ---
-requestForm.addEventListener("submit", async e => {
-  e.preventDefault();
 
-  const purok = document.getElementById("purok").value.trim();
-  const price = document.getElementById("price").value.trim();
 
-  if (!purok || !price) return alert("Please fill in all fields");
 
-  const formData = new FormData();
-  if (editingRequestId) formData.append("id", editingRequestId);
-  formData.append("email", currentEmail);
-  formData.append("purok", purok);
-  formData.append("price", price);
-
-  try {
-    const res = await fetch("authController.php?action=saveRequest2", {
-      method: "POST",
-      body: formData
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Failed to save request");
-
-    alert(data.message);
-    requestForm.reset();
-    editingRequestId = null;
-    loadRequests();
-  } catch (err) {
-    console.error(err);
-    alert("Error saving request: " + err.message);
-  }
-});
-
-// --- Edit Request ---
-function editRequest(id, purok, price) {
-  editingRequestId = id;
-  document.getElementById("purok").value = purok;
-  document.getElementById("price").value = price;
-}
 
 // --- Delete Request ---
 async function deleteRequest(id) {
@@ -344,4 +309,4 @@ document.getElementById("btnBack").addEventListener("click", () => {
 // --- Load requests on page load ---
 document.addEventListener("DOMContentLoaded", loadRequests);
 
-</script>
+</script> authController.php?action=saveRequest2"
