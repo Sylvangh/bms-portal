@@ -905,7 +905,7 @@ elseif ($action === "adminMarkPaid1") {
 // ----------------------------
 // Admin: Delete Residency Request
 // ----------------------------
-elseif ($action === "adminDeleteRequest") {
+elseif ($action === "adminDeleteRequest1") {
     $id = intval($_POST['id'] ?? 0);
     if (!$id) { 
         echo json_encode(["message" => "Missing ID"]); 
@@ -934,6 +934,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
