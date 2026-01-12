@@ -700,28 +700,6 @@ elseif ($action === "adminUpdateRequest") {
 // Admin: Mark request as paid
 // ----------------------------
 elseif ($action === "adminMarkPaid") {
-    $id = intval($_POST['id'] ?? 0);
-    if (!$id) { 
-        echo json_encode(["message" => "Missing ID"]); 
-        exit; 
-    }
-
-    // PostgreSQL safe parameterized query
-    $result = pg_query_params(
-        $conn,
-        "UPDATE certificate_requests SET paid=1 WHERE id=$1",
-        [$id]
-    );
-
-    echo json_encode([
-        "message" => $result ? "Marked as paid" : "Failed to mark as paid"
-    ]);
-    exit;
-}
-// ----------------------------
-// Admin: Delete request
-// ----------------------------
-elseif ($action === "adminMarkPaid") {
     $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
 
     if ($id <= 0) { 
@@ -742,6 +720,7 @@ elseif ($action === "adminMarkPaid") {
 }
 
 
+
 /* ---------------- INVALID ACTION ---------------- */
 else {
     throw new Exception("Invalid action");
@@ -753,6 +732,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
