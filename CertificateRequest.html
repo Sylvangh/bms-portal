@@ -696,7 +696,7 @@ function printResidency(name, lastname,age,purok,bioName,price ) {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Barangay Business Clearance</title>
+<title>Certificate of Residency</title>
 
 <style>
   @page {
@@ -780,12 +780,6 @@ function printResidency(name, lastname,age,purok,bioName,price ) {
 }
 
 
- .or-details {
-    margin-top: 80px;
-    margin-left: 0.50in;   /* move left */
-    font-size: 11pt;
-    line-height: 1.3;
-}
 
 @media print {
   body {
@@ -794,6 +788,25 @@ function printResidency(name, lastname,age,purok,bioName,price ) {
   }
 }
 
+  .approved-text {
+  display: inline-block;
+  margin-top: 30px;   /* 👈 moves it DOWN */
+  margin-bottom: 20px;
+}
+
+
+ .or-details {
+    margin-top: 110px;
+    margin-left: 0.50in;   /* move left */
+    font-size: 11pt;
+    line-height: 1.3;
+}
+
+.signature {
+  margin-top: 40px;   /* 👈 increase this to move DOWN */
+  margin-bottom: 10px;
+  text-align: left;
+}
 </style>
 </head>
 <body>
@@ -826,19 +839,21 @@ function printResidency(name, lastname,age,purok,bioName,price ) {
       Purok 3, Barangay Peñafrancia, Sta. Magdalena, Sorsogon.
     </p>
 
-    <div class="signature">
-      Approved by:<br>
-      <b>ROLLY C. FULGAR</b><br>
-      Punong Barangay
-    </div>
+<span class="approved-text">Approved by:</span><br>
+     <div class="signature">
+  <b>ROLLY C. FULGAR</b><br>
+  PUNONG BARANGAY
+</div>
+
 
     <div class="or-details">
       OR No.:________<br>
-      Issued on:${today}<br>
+      Issued on: ${today}<br>
       Issued at: Brgy. Peñafrancia<br>
-      Amount Paid:  ₱${price}.00
+      Amount Paid: ₱${price}.00
     </div>
   </div>
+  
 
 </div>
 </body>
@@ -1451,6 +1466,7 @@ setInterval(renderResidencyRequests, 5000);
 renderIndigencyRequests();
 setInterval(renderIndigencyRequests, 5000);
 </script>
+
 
 
 
