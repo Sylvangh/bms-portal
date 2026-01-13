@@ -1331,14 +1331,18 @@ function renderTable(data = tableData) {
   tbody.innerHTML = "";
 
   // ===== FILTER =====
+
   const selectedFilter = document.querySelector('input[name="schoolFilter"]:checked')?.value;
   if (selectedFilter) {
-    const levelMap = {
-      college: "College Undergraduate",
-      seniorHigh: "Senior High",
-      juniorHigh: "Junior High",
-      elementary: "Elementary"
-    };
+  const levelMap = {
+    "College Graduate": "College Graduate",
+    "College Undergraduate": "College Undergraduate",
+    "High School Graduate": "High School Graduate",
+    "High School Undergraduate": "High School Undergraduate",
+    "Elementary Graduate": "Elementary Graduate",
+    "Elementary Undergraduate": "Elementary Undergraduate",
+    "None": "None"
+  };
 data = data.filter(r =>
   (r.schoollevels || "")
     .split(",")
@@ -1408,56 +1412,42 @@ if (deleteMode && customColumns.includes(c)) {
   thead.appendChild(trHead);
 
 // ===== BODY =====
-data.forEach((row, rowIndex) => {
-  const tr = document.createElement("tr");
-  tr.innerHTML = `<td>${rowIndex + 1}</td>`; // dynamic row number
+  data.forEach((row, rowIndex) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${rowIndex + 1}</td>`; // dynamic row number
 
-  cols.forEach(c => {
-    const td = document.createElement("td");
+    cols.forEach(c => {
+      const td = document.createElement("td");
 
-    if (c === "schoollevels") {
-      // display actual schoollevels text
-      td.textContent = row.schoollevels || "";
-      td.contentEditable = false;
+if ([
+  "College Graduate",
+  "College Undergraduate",
+  "High School Graduate",
+  "High School Undergraduate",
+  "Elementary Graduate",
+  "Elementary Undergraduate",
+  "None"
+].includes(c)) {
 
-    } else if ([
-      "College Graduate",
-      "College Undergraduate",
-      "High School Graduate",
-      "High School Undergraduate",
-      "Elementary Graduate",
-      "Elementary Undergraduate",
-      "None"
-    ].includes(c)) {
-      // display Yes/No for each level
-      const levels = (row.schoollevels || "")
-        .split(",")
-        .map(s => s.trim().toLowerCase());
+  const levelMap = {
+    "College Graduate": "College Graduate",
+    "College Undergraduate": "College Undergraduate",
+    "High School Graduate": "High School Graduate",
+    "High School Undergraduate": "High School Undergraduate",
+    "Elementary Graduate": "Elementary Graduate",
+    "Elementary Undergraduate": "Elementary Undergraduate",
+    "None": "None"
+  };
 
-      td.textContent = levels.includes(c.toLowerCase()) ? "Yes" : "No";
-      
-      td.contentEditable = false;
-} else if (["voter", "seniorcitizen"].includes(c)) {
-  td.textContent =
-    row[c] === 1 || row[c] === "1" ? "Yes" : "No";
-  td.contentEditable = false;
-
-} else if (c === "schoolname") {
-  td.textContent = row.schoolname || "";
-  td.contentEditable = false;
-
-} else if (c === "fourps") {
-  td.textContent =
-    row.fourps === 1 || row.fourps === "1" || row.fourps === "Yes"
-      ? "Yes"
-      : "No";
-  td.contentEditable = false;
-
-} else {
-  td.textContent = row[c] ?? "";
-}
-
-
+  td.textContent = (row.schoolLevels || []).includes(levelMap[c]) ? "Yes" : "No";
+  
+        td.contentEditable = false;
+      } else if (["voter", "seniorCitizen"].includes(c)) {
+        td.textContent = (row[c] === 1 || row[c] === "1") ? "Yes" : "No";
+        td.contentEditable = false;
+      } else {
+        td.textContent = row[c] ?? "";
+      }
 
       tr.appendChild(td);
     });
@@ -1784,6 +1774,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
