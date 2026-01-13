@@ -107,45 +107,45 @@ function loadDashboardChart() {
   const ctx = document.getElementById("residentsChart");
   if (!ctx) return;
 
-async function getCounts() {
-  try {
-    const res = await fetch("authController.php?action=adminGetResidents");
-    const residents = await res.json();
+  async function getCounts() {
+    try {
+      const res = await fetch("authController.php?action=adminGetResidents");
+      const residents = await res.json();
 
-    return {
-      College: residents.filter(r =>
-        typeof r.schoollevels === "string" &&
-        r.schoollevels.includes("College")
-      ).length,
+      return {
+        "College Undergraduate": residents.filter(r =>
+          typeof r.schoollevels === "string" &&
+          r.schoollevels.toLowerCase().includes("college Undergraduate")
+        ).length,
 
-      "Senior Citizen": residents.filter(r =>
-        Number(r.seniorcitizen) === 1
-      ).length,
+        "Senior Citizen": residents.filter(r =>
+          Number(r.seniorcitizen) === 1
+        ).length,
 
-      "4Ps": residents.filter(r =>
-        r.fourps === "Yes"
-      ).length,
+        "4Ps": residents.filter(r =>
+          (r.fourps || "").toLowerCase() === "yes"
+        ).length,
 
-      Voters: residents.filter(r =>
-        Number(r.voter) === 1
-      ).length,
+        Voters: residents.filter(r =>
+          Number(r.voter) === 1
+        ).length,
 
-      PWD: residents.filter(r =>
-        r.pwd === "Yes"
-      ).length,
-    };
+        PWD: residents.filter(r =>
+          (r.pwd || "").toLowerCase() === "yes"
+        ).length,
+      };
 
-  } catch (err) {
-    console.error("Error fetching residents:", err);
-    return {
-      College: 0,
-      "Senior Citizen": 0,
-      "4Ps": 0,
-      Voters: 0,
-      PWD: 0
-    };
+    } catch (err) {
+      console.error("Error fetching residents:", err);
+      return {
+        "College Undergraduate": 0,
+        "Senior Citizen": 0,
+        "4Ps": 0,
+        Voters: 0,
+        PWD: 0
+      };
+    }
   }
-}
 
 
   async function renderChart() {
@@ -657,8 +657,9 @@ if (applyFilter) applyFilter.onclick = () => {
             return r.pwd === "Yes";
           case "seniorcitizen": 
             return r.seniorcitizen == 1; // lowercase to match PostgreSQL
-          case "college": 
-            return r.schoollevels?.includes("College"); // lowercase column
+        case "college Undergraduate":
+          return typeof r.schoollevels === "string" &&
+                 r.schoollevels.toLowerCase().includes("college Undergraduate"); // lowercase column
           case "voter": 
             return r.voter == 1;
           case "fourps": 
@@ -882,8 +883,8 @@ residentForm.addEventListener("submit", async e => {
       case "seniorCitizen":
         count = residentsData.filter(r => r.seniorcitizen == 1).length;
         break;
-      case "college":
-        count = residentsData.filter(r => r.schoollevels?.includes("College")).length;
+      case "College Undergraduate":
+        count = residentsData.filter(r => r.schoollevels?.includes("College Undergraduate")).length;
         break;
       case "voter":
         count = residentsData.filter(r => r.voter == 1).length;
@@ -1330,7 +1331,7 @@ function renderTable(data = tableData) {
   const selectedFilter = document.querySelector('input[name="schoolFilter"]:checked')?.value;
   if (selectedFilter) {
     const levelMap = {
-      college: "College",
+      college: "College Undergraduate",
       seniorHigh: "Senior High",
       juniorHigh: "Junior High",
       elementary: "Elementary"
@@ -1416,13 +1417,15 @@ if (c === "schoollevels") {
   td.textContent = row.schoollevels || "";
   td.contentEditable = false;
 
-} else if (["college", "seniorHigh", "juniorHigh", "elementary"].includes(c)) {
+} else if (["College Undergraduate", "Senior High", "Junior High", "Elementary"].includes(c)) {
+
   const levelMap = {
-    college: "College",
-    seniorHigh: "Senior High",
-    juniorHigh: "Junior High",
-    elementary: "Elementary"
+    "College Undergraduate": "College Undergraduate",
+    "Senior High": "Senior High",
+    "Junior High": "Junior High",
+    "Elementary": "Elementary"
   };
+
 
   const levels = (row.schoollevels || "")
     .split(",")
@@ -1760,7 +1763,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
-
 
 
 
