@@ -1334,14 +1334,14 @@ function renderTable(data = tableData) {
 
   const selectedFilter = document.querySelector('input[name="schoolFilter"]:checked')?.value;
   if (selectedFilter) {
-  const levelMap = {
-    "College Graduate": "College Graduate",
-    "College Undergraduate": "College Undergraduate",
-    "High School Graduate": "High School Graduate",
-    "High School Undergraduate": "High School Undergraduate",
-    "Elementary Graduate": "Elementary Graduate",
-    "Elementary Undergraduate": "Elementary Undergraduate",
-    "None": "None"
+    const levelMap = {
+    CollegeGraduate: "College Graduate",
+    CollegeUndergraduate: "College Undergraduate",
+    HighSchoolGraduate: "High School Graduate",
+    HighSchoolUndergraduate: "High School Undergraduate",
+    ElementaryGraduate: "Elementary Graduate",
+    ElementaryUndergraduate: "Elementary Undergraduate",
+    none: "None"
   };
 data = data.filter(r =>
   (r.schoollevels || "")
@@ -1420,23 +1420,23 @@ if (deleteMode && customColumns.includes(c)) {
       const td = document.createElement("td");
 
 if ([
-  "College Graduate",
-  "College Undergraduate",
-  "High School Graduate",
-  "High School Undergraduate",
-  "Elementary Graduate",
-  "Elementary Undergraduate",
-  "None"
+  "CollegeGraduate",
+  "CollegeUndergraduate",
+  "HighSchoolGraduate",
+  "HighSchoolUndergraduate",
+  "ElementaryGraduate",
+  "ElementaryUndergraduate",
+  "none"
 ].includes(c)) {
 
   const levelMap = {
-    "College Graduate": "College Graduate",
-    "College Undergraduate": "College Undergraduate",
-    "High School Graduate": "High School Graduate",
-    "High School Undergraduate": "High School Undergraduate",
-    "Elementary Graduate": "Elementary Graduate",
-    "Elementary Undergraduate": "Elementary Undergraduate",
-    "None": "None"
+    CollegeGraduate: "College Graduate",
+    CollegeUndergraduate: "College Undergraduate",
+    HighSchoolGraduate: "High School Graduate",
+    HighSchoolUndergraduate: "High School Undergraduate",
+    ElementaryGraduate: "Elementary Graduate",
+    ElementaryUndergraduate: "Elementary Undergraduate",
+    none: "None"
   };
 
   td.textContent = (row.schoolLevels || []).includes(levelMap[c]) ? "Yes" : "No";
@@ -1774,6 +1774,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
