@@ -621,14 +621,41 @@ body::before {
       <fieldset>
         <label><input type="checkbox" id="seniorCitizen"> Senior Citizen</label>
       </fieldset>
-      <fieldset>
-        <legend>School Level (Select at least one)</legend>
-        <label><input type="checkbox" class="school" value="Elementary"> Elementary</label>
-        <label><input type="checkbox" class="school" value="Junior High"> Junior High</label>
-        <label><input type="checkbox" class="school" value="Senior High"> Senior High</label>
-        <label><input type="checkbox" class="school" value="College"> College</label>
-        <span class="error" id="schoolError"></span>
-      </fieldset>
+<fieldset>
+  <legend>
+    Highest Educational Attainment (Select at least one)
+  </legend>
+  <label>
+    <input type="checkbox" class="school" value="College Graduate">
+    College Graduate
+  </label>
+  <label>
+    <input type="checkbox" class="school" value="College Undergraduate">
+    College Undergraduate
+  </label>
+  <label>
+    <input type="checkbox" class="school" value="High School Graduate">
+    High School Graduate
+  </label>
+  <label>
+    <input type="checkbox" class="school" value="High School Undergraduate">
+    High School Undergraduate
+  </label>
+  <label>
+    <input type="checkbox" class="school" value="Elementary Graduate">
+    Elementary Graduate
+  </label>
+  <label>
+    <input type="checkbox" class="school" value="Elementary Undergraduate">
+    Elementary Undergraduate
+  </label>
+  <label>
+    <input type="checkbox" class="school" value="None">
+    None
+  </label>
+
+  <span class="error" id="schoolError"></span>
+</fieldset>
       <div class="form-group">
         <input type="text" id="schoolName" placeholder=" " required>
         <label>Name of School</label>
@@ -1156,6 +1183,7 @@ function askAI() {
 
 </body>
 </html>
+
 
 
 
