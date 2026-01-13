@@ -650,29 +650,30 @@ if (applyFilter) applyFilter.onclick = () => {
 
   if (checkboxes.length === 0) {
     filteredData = [...residentsData];
-  } else {
-    filteredData = residentsData.filter(r =>
-      Array.from(checkboxes).every(cb => {
-        switch(cb.value.toLowerCase()) {
-          case "pwd": 
-            return r.pwd === "Yes";
-          case "seniorcitizen": 
-            return r.seniorcitizen == 1; // lowercase to match PostgreSQL
-        case "college Undergraduate":
+} else {
+  filteredData = residentsData.filter(r =>
+    Array.from(checkboxes).every(cb => {
+      const val = cb.value.trim().toLowerCase(); // lowercase the checkbox value for consistent comparison
+      switch(val) {
+        case "pwd": 
+          return (r.pwd || "").toLowerCase() === "yes";
+        case "seniorcitizen": 
+          return Number(r.seniorcitizen) === 1;
+        case "college undergraduate": // lowercase to match val
           return typeof r.schoollevels === "string" &&
-                 r.schoollevels.toLowerCase().includes("college undergraduate"); // lowercase column
-          case "voter": 
-            return r.voter == 1;
-          case "fourps": 
-            return r.fourps === "Yes"; // lowercase column
-          case "occupation": 
-            return r.occupation && r.occupation.trim() !== "";
-          default:
-            return true; // unknown filters won't block
-        }
-      })
-    );
-  }
+                 r.schoollevels.toLowerCase().includes("college undergraduate");
+        case "voter": 
+          return Number(r.voter) === 1;
+        case "fourps": 
+          return (r.fourps || "").toLowerCase() === "yes";
+        case "occupation": 
+          return r.occupation && r.occupation.trim() !== "";
+        default:
+          return true; // unknown filters won't block
+      }
+    })
+  );
+}
 
   if (currentSort) sortResidents(currentSort);
   else renderTable(filteredData);
