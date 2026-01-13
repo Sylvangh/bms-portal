@@ -113,10 +113,11 @@ function loadDashboardChart() {
       const residents = await res.json();
 
       return {
-        "College Undergraduate": residents.filter(r =>
-          typeof r.schoollevels === "string" &&
-          r.schoollevels.toLowerCase().includes("college Undergraduate")
-        ).length,
+    "College Undergraduate": residents.filter(r =>
+  typeof r.schoollevels === "string" &&
+  r.schoollevels.toLowerCase().includes("college undergraduate") // lowercase match
+).length,
+
 
         "Senior Citizen": residents.filter(r =>
           Number(r.seniorcitizen) === 1
