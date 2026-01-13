@@ -1045,6 +1045,54 @@ elseif ($action === "getPendingClearanceCount") {
     exit;
 }
 
+        elseif ($action === "adminDeleteResident") {
+    $id = intval($_GET['id'] ?? 0);
+    if (!$id) {
+        echo json_encode(["message" => "Missing resident ID"]);
+        exit;
+    }
+
+    $sql = "DELETE FROM registrations WHERE id=$id";
+    $result = pg_query($conn, $sql);
+
+    if ($result) {
+        echo json_encode(["message" => "Resident deleted successfully"]);
+    } else {
+        echo json_encode(["message" => "Error deleting resident: " . pg_last_error($conn)]);
+    }
+
+    pg_close($conn);
+    exit;
+}
+
+        
+elseif ($action === "deleteAnnouncements") {
+
+    $ids = json_decode($_POST['ids'] ?? '[]', true);
+
+    if (!is_array($ids) || empty($ids)) {
+        echo json_encode(["message" => "No announcements selected"]);
+        exit;
+    }
+
+    // Sanitize IDs (force integers)
+    $ids = array_map('intval', $ids);
+
+    // Build IN clause: 1,2,3
+    $idList = implode(',', $ids);
+
+    $sql = "DELETE FROM announcements WHERE id IN ($idList)";
+    $result = pg_query($conn, $sql);
+
+    echo json_encode([
+        "message" => $result
+            ? "Selected announcements deleted"
+            : "Failed to delete announcements"
+    ]);
+    exit;
+}
+
+
 
 /* ---------------- INVALID ACTION ---------------- */
 else {
@@ -1057,6 +1105,9 @@ else {
 
 echo json_encode($response);
 exit();
+
+
+
 
 
 

@@ -107,45 +107,46 @@ function loadDashboardChart() {
   const ctx = document.getElementById("residentsChart");
   if (!ctx) return;
 
-async function getCounts() {
-  try {
-    const res = await fetch("authController.php?action=adminGetResidents");
-    const residents = await res.json();
+  async function getCounts() {
+    try {
+      const res = await fetch("authController.php?action=adminGetResidents");
+      const residents = await res.json();
 
-    return {
-      College: residents.filter(r =>
-        typeof r.schoollevels === "string" &&
-        r.schoollevels.includes("College")
-      ).length,
+      return {
+    "College Undergraduate": residents.filter(r =>
+  typeof r.schoollevels === "string" &&
+  r.schoollevels.toLowerCase().includes("college undergraduate") // lowercase match
+).length,
 
-      "Senior Citizen": residents.filter(r =>
-        Number(r.seniorcitizen) === 1
-      ).length,
 
-      "4Ps": residents.filter(r =>
-        r.fourps === "Yes"
-      ).length,
+        "Senior Citizen": residents.filter(r =>
+          Number(r.seniorcitizen) === 1
+        ).length,
 
-      Voters: residents.filter(r =>
-        Number(r.voter) === 1
-      ).length,
+        "4Ps": residents.filter(r =>
+          (r.fourps || "").toLowerCase() === "yes"
+        ).length,
 
-      PWD: residents.filter(r =>
-        r.pwd === "Yes"
-      ).length,
-    };
+        Voters: residents.filter(r =>
+          Number(r.voter) === 1
+        ).length,
 
-  } catch (err) {
-    console.error("Error fetching residents:", err);
-    return {
-      College: 0,
-      "Senior Citizen": 0,
-      "4Ps": 0,
-      Voters: 0,
-      PWD: 0
-    };
+        PWD: residents.filter(r =>
+          (r.pwd || "").toLowerCase() === "yes"
+        ).length,
+      };
+
+    } catch (err) {
+      console.error("Error fetching residents:", err);
+      return {
+        "College Undergraduate": 0,
+        "Senior Citizen": 0,
+        "4Ps": 0,
+        Voters: 0,
+        PWD: 0
+      };
+    }
   }
-}
 
 
   async function renderChart() {
@@ -649,28 +650,30 @@ if (applyFilter) applyFilter.onclick = () => {
 
   if (checkboxes.length === 0) {
     filteredData = [...residentsData];
-  } else {
-    filteredData = residentsData.filter(r =>
-      Array.from(checkboxes).every(cb => {
-        switch(cb.value.toLowerCase()) {
-          case "pwd": 
-            return r.pwd === "Yes";
-          case "seniorcitizen": 
-            return r.seniorcitizen == 1; // lowercase to match PostgreSQL
-          case "college": 
-            return r.schoollevels?.includes("College"); // lowercase column
-          case "voter": 
-            return r.voter == 1;
-          case "fourps": 
-            return r.fourps === "Yes"; // lowercase column
-          case "occupation": 
-            return r.occupation && r.occupation.trim() !== "";
-          default:
-            return true; // unknown filters won't block
-        }
-      })
-    );
-  }
+} else {
+  filteredData = residentsData.filter(r =>
+    Array.from(checkboxes).every(cb => {
+      const val = cb.value.trim().toLowerCase(); // lowercase the checkbox value for consistent comparison
+      switch(val) {
+        case "pwd": 
+          return (r.pwd || "").toLowerCase() === "yes";
+        case "seniorcitizen": 
+          return Number(r.seniorcitizen) === 1;
+        case "college undergraduate": // lowercase to match val
+          return typeof r.schoollevels === "string" &&
+                 r.schoollevels.toLowerCase().includes("college undergraduate");
+        case "voter": 
+          return Number(r.voter) === 1;
+        case "fourps": 
+          return (r.fourps || "").toLowerCase() === "yes";
+        case "occupation": 
+          return r.occupation && r.occupation.trim() !== "";
+        default:
+          return true; // unknown filters won't block
+      }
+    })
+  );
+}
 
   if (currentSort) sortResidents(currentSort);
   else renderTable(filteredData);
@@ -882,8 +885,8 @@ residentForm.addEventListener("submit", async e => {
       case "seniorCitizen":
         count = residentsData.filter(r => r.seniorcitizen == 1).length;
         break;
-      case "college":
-        count = residentsData.filter(r => r.schoollevels?.includes("College")).length;
+      case "College Undergraduate":
+        count = residentsData.filter(r => r.schoollevels?.includes("College Undergraduate")).length;
         break;
       case "voter":
         count = residentsData.filter(r => r.voter == 1).length;
@@ -1312,89 +1315,74 @@ function redo() {
   const next = JSON.parse(redoStack.pop());
   tableData = next.tableData;
   customColumns = next.customColumns;
-  renderTable();
+  renderTable();j
 }
   btnUndo.onclick = undo;
   btnRedo.onclick = redo;
 
   // ===============================
 function renderTable(data = tableData) {
-  const cols = [...getSelectedColumns(), ...customColumns];
   const thead = table.querySelector("thead");
   const tbody = table.querySelector("tbody");
 
   thead.innerHTML = "";
   tbody.innerHTML = "";
 
-  // ===== FILTER =====
-  const selectedFilter = document.querySelector('input[name="schoolFilter"]:checked')?.value;
-  if (selectedFilter) {
-    const levelMap = {
-      college: "College",
-      seniorHigh: "Senior High",
-      juniorHigh: "Junior High",
-      elementary: "Elementary"
-    };
-data = data.filter(r =>
-  (r.schoollevels || "")
-    .split(",")
-    .map(s => s.trim())
-    .includes(levelMap[selectedFilter])
-);
+  // Get selected columns and add all school level columns
+  const baseCols = [...getSelectedColumns(), ...customColumns];
+  const schoolLevels = [
+    "College Graduate",
+    "College Undergraduate",
+    "High School Graduate",
+    "High School Undergraduate",
+    "Elementary Graduate",
+    "Elementary Undergraduate",
+    "None"
+  ];
 
+  const cols = [...baseCols];
+  schoolLevels.forEach(level => {
+    if (!cols.includes(level)) cols.push(level);
+  });
+
+  // ===== 30+ AGE filter =====
+  const filter30PlusChecked = document.getElementById("filter30Plus")?.checked;
+  if (filter30PlusChecked) {
+    data = data.filter(r => parseInt(r.age) >= 30);
   }
-      // 30+ AGE filter
- // 30+ AGE filter
-if (filter30Plus?.checked) {
-  data = data.filter(r => parseInt(r.age) >= 30);
-}
-
 
   // ===== HEADER =====
   const trHead = document.createElement("tr");
   trHead.innerHTML = "<th>No.</th>";
 
-  cols.forEach((c, colIndex) => {
+  cols.forEach(c => {
     const th = document.createElement("th");
     th.textContent = c.charAt(0).toUpperCase() + c.slice(1);
 
-    // Add custom column delete button in deleteMode
-  // ===== CUSTOM COLUMN DELETE BUTTON =====
-if (deleteMode && customColumns.includes(c)) {
-  const btnDelCol = document.createElement("button");
-  btnDelCol.textContent = "Delete";
-  btnDelCol.style.marginLeft = "5px";
-  btnDelCol.style.background = "red";
-  btnDelCol.style.color = "white";
-  btnDelCol.style.border = "none";
-  btnDelCol.style.cursor = "pointer";
+    if (deleteMode && customColumns.includes(c)) {
+      const btnDelCol = document.createElement("button");
+      btnDelCol.textContent = "Delete";
+      btnDelCol.style.marginLeft = "5px";
+      btnDelCol.style.background = "red";
+      btnDelCol.style.color = "white";
+      btnDelCol.style.border = "none";
+      btnDelCol.style.cursor = "pointer";
 
-  btnDelCol.onclick = () => {
-    if (!confirm(`Delete column "${c}"?`)) return;
+      btnDelCol.onclick = () => {
+        if (!confirm(`Delete column "${c}"?`)) return;
+        saveState();
+        const index = customColumns.indexOf(c);
+        if (index > -1) customColumns.splice(index, 1);
+        tableData.forEach(r => delete r[c]);
+        renderTable();
+      };
 
-    // ✅ SAVE STATE INCLUDING customColumns
-    undoStack.push(JSON.stringify({
-      tableData: tableData,
-      customColumns: customColumns
-    }));
-    redoStack = [];
-
-    // Delete column
-    const colIndexInCustom = customColumns.indexOf(c);
-    if (colIndexInCustom > -1) customColumns.splice(colIndexInCustom, 1);
-    tableData.forEach(r => delete r[c]);
-
-    renderTable();
-  };
-
-  th.appendChild(btnDelCol);
-}
-
+      th.appendChild(btnDelCol);
+    }
 
     trHead.appendChild(th);
   });
 
-  // Row delete header
   if (deleteMode) {
     const thDel = document.createElement("th");
     thDel.textContent = "Action";
@@ -1406,56 +1394,43 @@ if (deleteMode && customColumns.includes(c)) {
   // ===== BODY =====
   data.forEach((row, rowIndex) => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${rowIndex + 1}</td>`; // dynamic row number
+    tr.innerHTML = `<td>${rowIndex + 1}</td>`; // row number
 
     cols.forEach(c => {
       const td = document.createElement("td");
 
-if (c === "schoollevels") {
-  // display actual schoollevels text
-  td.textContent = row.schoollevels || "";
-  td.contentEditable = false;
+      if (c === "schoollevels") {
+        td.textContent = row.schoollevels || "";
+        td.contentEditable = false;
 
-} else if (["college", "seniorHigh", "juniorHigh", "elementary"].includes(c)) {
-  const levelMap = {
-    college: "College",
-    seniorHigh: "Senior High",
-    juniorHigh: "Junior High",
-    elementary: "Elementary"
-  };
+      } else if (schoolLevels.includes(c)) {
+        const levels = (row.schoollevels || "")
+          .split(",")
+          .map(s => s.trim().toLowerCase());
 
-  const levels = (row.schoollevels || "")
-    .split(",")
-    .map(s => s.trim().toLowerCase());
+        td.textContent = levels.includes(c.toLowerCase()) ? "Yes" : "No";
+        td.dataset.level = c.toLowerCase(); // important for filter
+        td.contentEditable = false;
 
-  td.textContent = levels.includes(levelMap[c].toLowerCase()) ? "Yes" : "No";
-  td.contentEditable = false;
+      } else if (["voter", "seniorcitizen"].includes(c)) {
+        td.textContent = row[c] === 1 || row[c] === "1" ? "Yes" : "No";
+        td.contentEditable = false;
 
-} else if (["voter", "seniorcitizen"].includes(c)) {
-  td.textContent =
-    row[c] === 1 || row[c] === "1" ? "Yes" : "No";
-  td.contentEditable = false;
+      } else if (c === "schoolname") {
+        td.textContent = row.schoolname || "";
+        td.contentEditable = false;
 
-} else if (c === "schoolname") {
-  td.textContent = row.schoolname || "";
-  td.contentEditable = false;
+      } else if (c === "fourps") {
+        td.textContent = row.fourps === 1 || row.fourps === "1" || row.fourps === "Yes" ? "Yes" : "No";
+        td.contentEditable = false;
 
-} else if (c === "fourps") {
-  td.textContent =
-    row.fourps === 1 || row.fourps === "1" || row.fourps === "Yes"
-      ? "Yes"
-      : "No";
-  td.contentEditable = false;
-
-} else {
-  td.textContent = row[c] ?? "";
-}
-
-
+      } else {
+        td.textContent = row[c] ?? "";
+      }
 
       tr.appendChild(td);
     });
-///////////////////////////////////////////////////////
+
     // Row delete button
     if (deleteMode) {
       const tdDel = document.createElement("td");
@@ -1483,13 +1458,37 @@ if (c === "schoollevels") {
 
   // ===== RESULT COUNT =====
   const yesCountEl = document.getElementById("yesCount");
-  if (yesCountEl) yesCountEl.textContent = `Showing: ${data.length} result(s)`; 
+  if (yesCountEl) yesCountEl.textContent = `Showing: ${data.length} result(s)`;
 }
 
-// School level filter listener
+// ===== SCHOOL LEVEL RADIO FILTER =====
 document.querySelectorAll('input[name="schoolFilter"]').forEach(radio => {
-  radio.addEventListener("change", () => renderTable());
+  radio.addEventListener("change", () => {
+    const selectedRadio = document.querySelector('input[name="schoolFilter"]:checked');
+
+    if (!selectedRadio) {
+      // show all rows if no filter selected
+      document.querySelectorAll("tbody tr").forEach(tr => tr.style.display = "");
+      return;
+    }
+
+    const value = selectedRadio.value.toLowerCase();
+
+    document.querySelectorAll("tbody tr").forEach(tr => {
+      const cells = tr.querySelectorAll("td");
+      let show = false;
+
+      cells.forEach(td => {
+        if (td.textContent.toLowerCase() === "yes" && td.dataset.level === value) {
+          show = true;
+        }
+      });
+
+      tr.style.display = show ? "" : "none";
+    });
+  });
 });
+
 
 
   // ===============================
@@ -1760,7 +1759,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
-
 
 
 
