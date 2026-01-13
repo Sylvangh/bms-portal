@@ -1212,6 +1212,7 @@ function initCertificationPage() {
 }
 
 
+
 // ===============================
 // BIND SIDEBAR BUTTONS
 // ===============================
@@ -1315,74 +1316,89 @@ function redo() {
   const next = JSON.parse(redoStack.pop());
   tableData = next.tableData;
   customColumns = next.customColumns;
-  renderTable();j
+  renderTable();
 }
   btnUndo.onclick = undo;
   btnRedo.onclick = redo;
 
   // ===============================
 function renderTable(data = tableData) {
+  const cols = [...getSelectedColumns(), ...customColumns];
   const thead = table.querySelector("thead");
   const tbody = table.querySelector("tbody");
 
   thead.innerHTML = "";
   tbody.innerHTML = "";
 
-  // Get selected columns and add all school level columns
-  const baseCols = [...getSelectedColumns(), ...customColumns];
-  const schoolLevels = [
-    "College Graduate",
-    "College Undergraduate",
-    "High School Graduate",
-    "High School Undergraduate",
-    "Elementary Graduate",
-    "Elementary Undergraduate",
-    "None"
-  ];
+  // ===== FILTER =====
+  const selectedFilter = document.querySelector('input[name="schoolFilter"]:checked')?.value;
+  if (selectedFilter) {
+    const levelMap = {
+      college: "College Undergraduate",
+      seniorHigh: "Senior High",
+      juniorHigh: "Junior High",
+      elementary: "Elementary"
+    };
+data = data.filter(r =>
+  (r.schoollevels || "")
+    .split(",")
+    .map(s => s.trim())
+    .includes(levelMap[selectedFilter])
+);
 
-  const cols = [...baseCols];
-  schoolLevels.forEach(level => {
-    if (!cols.includes(level)) cols.push(level);
-  });
-
-  // ===== 30+ AGE filter =====
-  const filter30PlusChecked = document.getElementById("filter30Plus")?.checked;
-  if (filter30PlusChecked) {
-    data = data.filter(r => parseInt(r.age) >= 30);
   }
+      // 30+ AGE filter
+ // 30+ AGE filter
+if (filter30Plus?.checked) {
+  data = data.filter(r => parseInt(r.age) >= 30);
+}
+
 
   // ===== HEADER =====
   const trHead = document.createElement("tr");
   trHead.innerHTML = "<th>No.</th>";
 
-  cols.forEach(c => {
+  cols.forEach((c, colIndex) => {
     const th = document.createElement("th");
     th.textContent = c.charAt(0).toUpperCase() + c.slice(1);
 
-    if (deleteMode && customColumns.includes(c)) {
-      const btnDelCol = document.createElement("button");
-      btnDelCol.textContent = "Delete";
-      btnDelCol.style.marginLeft = "5px";
-      btnDelCol.style.background = "red";
-      btnDelCol.style.color = "white";
-      btnDelCol.style.border = "none";
-      btnDelCol.style.cursor = "pointer";
+    // Add custom column delete button in deleteMode
+  // ===== CUSTOM COLUMN DELETE BUTTON =====
+if (deleteMode && customColumns.includes(c)) {
+  const btnDelCol = document.createElement("button");
+  btnDelCol.textContent = "Delete";
+  btnDelCol.style.marginLeft = "5px";
+  btnDelCol.style.background = "red";
+  btnDelCol.style.color = "white";
+  btnDelCol.style.border = "none";
+  btnDelCol.style.cursor = "pointer";
 
-      btnDelCol.onclick = () => {
-        if (!confirm(`Delete column "${c}"?`)) return;
-        saveState();
-        const index = customColumns.indexOf(c);
-        if (index > -1) customColumns.splice(index, 1);
-        tableData.forEach(r => delete r[c]);
-        renderTable();
-      };
+  btnDelCol.onclick = () => {
+    if (!confirm(`Delete column "${c}"?`)) return;
 
-      th.appendChild(btnDelCol);
-    }
+    // ✅ SAVE STATE INCLUDING customColumns
+    undoStack.push(JSON.stringify({
+      tableData: tableData,
+      customColumns: customColumns
+    }));
+    redoStack = [];
+
+    // Delete column
+    const colIndexInCustom = customColumns.indexOf(c);
+    if (colIndexInCustom > -1) customColumns.splice(colIndexInCustom, 1);
+    tableData.forEach(r => delete r[c]);
+
+    renderTable();
+  };
+
+  th.appendChild(btnDelCol);
+}
+
 
     trHead.appendChild(th);
   });
 
+  // Row delete header
   if (deleteMode) {
     const thDel = document.createElement("th");
     thDel.textContent = "Action";
@@ -1391,46 +1407,61 @@ function renderTable(data = tableData) {
 
   thead.appendChild(trHead);
 
-  // ===== BODY =====
-  data.forEach((row, rowIndex) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${rowIndex + 1}</td>`; // row number
+// ===== BODY =====
+data.forEach((row, rowIndex) => {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td>${rowIndex + 1}</td>`; // dynamic row number
 
-    cols.forEach(c => {
-      const td = document.createElement("td");
+  cols.forEach(c => {
+    const td = document.createElement("td");
 
-      if (c === "schoollevels") {
-        td.textContent = row.schoollevels || "";
-        td.contentEditable = false;
+    if (c === "schoollevels") {
+      // display actual schoollevels text
+      td.textContent = row.schoollevels || "";
+      td.contentEditable = false;
 
-      } else if (schoolLevels.includes(c)) {
-        const levels = (row.schoollevels || "")
-          .split(",")
-          .map(s => s.trim().toLowerCase());
+    } else if ([
+      "College Graduate",
+      "College Undergraduate",
+      "High School Graduate",
+      "High School Undergraduate",
+      "Elementary Graduate",
+      "Elementary Undergraduate",
+      "None"
+    ].includes(c)) {
+      // display Yes/No for each level
+      const levels = (row.schoollevels || "")
+        .split(",")
+        .map(s => s.trim().toLowerCase());
 
-        td.textContent = levels.includes(c.toLowerCase()) ? "Yes" : "No";
-        td.dataset.level = c.toLowerCase(); // important for filter
-        td.contentEditable = false;
+      td.textContent = levels.includes(c.toLowerCase()) ? "Yes" : "No";
+      
+      td.contentEditable = false;
+} else if (["voter", "seniorcitizen"].includes(c)) {
+  td.textContent =
+    row[c] === 1 || row[c] === "1" ? "Yes" : "No";
+  td.contentEditable = false;
 
-      } else if (["voter", "seniorcitizen"].includes(c)) {
-        td.textContent = row[c] === 1 || row[c] === "1" ? "Yes" : "No";
-        td.contentEditable = false;
+} else if (c === "schoolname") {
+  td.textContent = row.schoolname || "";
+  td.contentEditable = false;
 
-      } else if (c === "schoolname") {
-        td.textContent = row.schoolname || "";
-        td.contentEditable = false;
+} else if (c === "fourps") {
+  td.textContent =
+    row.fourps === 1 || row.fourps === "1" || row.fourps === "Yes"
+      ? "Yes"
+      : "No";
+  td.contentEditable = false;
 
-      } else if (c === "fourps") {
-        td.textContent = row.fourps === 1 || row.fourps === "1" || row.fourps === "Yes" ? "Yes" : "No";
-        td.contentEditable = false;
+} else {
+  td.textContent = row[c] ?? "";
+}
 
-      } else {
-        td.textContent = row[c] ?? "";
-      }
+
 
       tr.appendChild(td);
     });
-
+///////////////////////////////////////////////////////
     // Row delete button
     if (deleteMode) {
       const tdDel = document.createElement("td");
@@ -1458,38 +1489,33 @@ function renderTable(data = tableData) {
 
   // ===== RESULT COUNT =====
   const yesCountEl = document.getElementById("yesCount");
-  if (yesCountEl) yesCountEl.textContent = `Showing: ${data.length} result(s)`;
+  if (yesCountEl) yesCountEl.textContent = `Showing: ${data.length} result(s)`; 
 }
 
-// ===== SCHOOL LEVEL RADIO FILTER =====
+// School level filter listener
 document.querySelectorAll('input[name="schoolFilter"]').forEach(radio => {
-  radio.addEventListener("change", () => {
-    const selectedRadio = document.querySelector('input[name="schoolFilter"]:checked');
-
-    if (!selectedRadio) {
-      // show all rows if no filter selected
-      document.querySelectorAll("tbody tr").forEach(tr => tr.style.display = "");
-      return;
-    }
-
-    const value = selectedRadio.value.toLowerCase();
+  radio.addEventListener("change", e => {
+    const value = e.target.value;
 
     document.querySelectorAll("tbody tr").forEach(tr => {
-      const cells = tr.querySelectorAll("td");
-      let show = false;
+      if (value === "All") {
+        tr.style.display = "";
+      } else {
+        // Find the cell that corresponds to this school level
+        const cells = tr.querySelectorAll("td");
+        let show = false;
 
-      cells.forEach(td => {
-        if (td.textContent.toLowerCase() === "yes" && td.dataset.level === value) {
-          show = true;
-        }
-      });
+        cells.forEach(td => {
+          if (td.textContent.toLowerCase() === "yes" && td.dataset.level === value.toLowerCase()) {
+            show = true;
+          }
+        });
 
-      tr.style.display = show ? "" : "none";
+        tr.style.display = show ? "" : "none";
+      }
     });
   });
 });
-
-
 
   // ===============================
   // SORT
@@ -1601,7 +1627,6 @@ document.addEventListener("click", function (e) {
 });
 // Global table title
 window.customTitle = "Resident Table";
-
 
 // ------------------ PASTE HERE ------------------
 // ---------------- PRINT BUTTON (Full layout, works for dynamic table) ----------------
@@ -1759,6 +1784,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
