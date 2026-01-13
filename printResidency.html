@@ -86,7 +86,7 @@
     <label for="purok">Purok:</label>
     <input type="text" id="purok" placeholder="Enter purok">
 
-    <label for="bioName">Biological father/mother etc.:Example daugther/son of Juan Tamad<</label>
+    <label for="bioName">Biological father/mother etc.:Example daugther/son of John Doe</label>
     <input type="text" id="bioName" placeholder="Enter: Example daugther/son of Juan Tamad">
 
     <label for="paid">Amount Paid:</label>
@@ -157,14 +157,14 @@
 }
 
 .right .no-indent {
-  text-indent: 0;
+  text-indent: 20;
   margin-bottom: 12px;
   position: relative;
   top: -40px;      /* keeps it slightly higher */
   left: -20px;     /* moves it 20px to the left */
 }
 .right .no-indent {
-  text-indent: 0;
+  text-indent: 20;
   margin-bottom: 12px;
   margin-left: -0.1in;   /* ✅ negative value moves it left */
   position: relative;
@@ -224,10 +224,10 @@
 <div class="page">
 
   <div class="right">
-    <h1>BARANGAY CERTIFICATION</h1>
-
+    <h1>Certificate of Residency</h1>
+<br>
     <p class="no-indent"><b>TO WHOM IT MAY CONCERN:</b></p>
-
+<br>
     <p>
       This is to <span class="highlight"><b>CERTIFY</b></span> that 
       <span class="highlight"><b>${name}</b></span>, ${age} yrs old, 
@@ -249,10 +249,12 @@
       Issued this ${today}at the Barangay Hall, 
       Purok 3, Barangay Peñafrancia, Sta. Magdalena, Sorsogon.
     </p>
+    <br><br>
 
-  <div class="signature">
-  <span class="approved-text">Approved by:</span><br>
-  <b>ROLLY C. FULGAR</b>
+
+  <span class="approved-text">Approved by:</span><br><br>
+    <div class="signature">
+  <b>ROLLY C. FULGAR</b><br>
   PUNONG BARANGAY
 </div>
 
@@ -282,7 +284,6 @@
   </script>
 </body>
 </html>
-
 
 
 
