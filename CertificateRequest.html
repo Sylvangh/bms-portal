@@ -822,9 +822,9 @@ function printResidency(name, lastname,age,purok,bioName,price ) {
 
   <div class="right">
     <h1>Certificate of Residency</h1>
-
+<br>
     <p class="no-indent"><b>TO WHOM IT MAY CONCERN:</b></p>
-
+<br>
     <p>
       This is to <span class="highlight"><b>CERTIFY</b></span> that 
       <span class="highlight"><b>${name}</b></span>, ${age} yrs old, 
@@ -847,22 +847,19 @@ function printResidency(name, lastname,age,purok,bioName,price ) {
       Purok 3, Barangay Peñafrancia, Sta. Magdalena, Sorsogon.
     </p>
     
-  <div class="signature">
-  <span class="approved-text">Approved by:</span><br>
+  <span class="approved-text">Approved by:</span><br><br>
+    <div class="signature">
   <b>ROLLY C. FULGAR</b><br>
   PUNONG BARANGAY
 </div>
 
-
-
     <div class="or-details">
       OR No.:________<br>
-      Issued on: ${today}<br>
+      Issued on:${today}<br>
       Issued at: Brgy. Peñafrancia<br>
-      Amount Paid: ₱${price}.00
+      Amount Paid:  ₱${price}.00
     </div>
   </div>
-  
 
 </div>
 </body>
@@ -1491,6 +1488,7 @@ setInterval(renderResidencyRequests, 5000);
 renderIndigencyRequests();
 setInterval(renderIndigencyRequests, 5000);
 </script>
+
 
 
 
