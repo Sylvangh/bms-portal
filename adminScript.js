@@ -1329,70 +1329,43 @@ function renderTable(data = tableData) {
   thead.innerHTML = "";
   tbody.innerHTML = "";
 
-  // ===== FILTER =====
-  const selectedFilter = document.querySelector('input[name="schoolFilter"]:checked')?.value;
-  if (selectedFilter) {
-    const levelMap = {
-      college: "College Undergraduate",
-      seniorHigh: "Senior High",
-      juniorHigh: "Junior High",
-      elementary: "Elementary"
-    };
-data = data.filter(r =>
-  (r.schoollevels || "")
-    .split(",")
-    .map(s => s.trim())
-    .includes(levelMap[selectedFilter])
-);
-
+  // ===== 30+ AGE filter =====
+  const filter30PlusChecked = document.getElementById("filter30Plus")?.checked;
+  if (filter30PlusChecked) {
+    data = data.filter(r => parseInt(r.age) >= 30);
   }
-      // 30+ AGE filter
- // 30+ AGE filter
-if (filter30Plus?.checked) {
-  data = data.filter(r => parseInt(r.age) >= 30);
-}
-
 
   // ===== HEADER =====
   const trHead = document.createElement("tr");
   trHead.innerHTML = "<th>No.</th>";
 
-  cols.forEach((c, colIndex) => {
+  cols.forEach((c) => {
     const th = document.createElement("th");
     th.textContent = c.charAt(0).toUpperCase() + c.slice(1);
 
-    // Add custom column delete button in deleteMode
-  // ===== CUSTOM COLUMN DELETE BUTTON =====
-if (deleteMode && customColumns.includes(c)) {
-  const btnDelCol = document.createElement("button");
-  btnDelCol.textContent = "Delete";
-  btnDelCol.style.marginLeft = "5px";
-  btnDelCol.style.background = "red";
-  btnDelCol.style.color = "white";
-  btnDelCol.style.border = "none";
-  btnDelCol.style.cursor = "pointer";
+    // Custom column delete button in deleteMode
+    if (deleteMode && customColumns.includes(c)) {
+      const btnDelCol = document.createElement("button");
+      btnDelCol.textContent = "Delete";
+      btnDelCol.style.marginLeft = "5px";
+      btnDelCol.style.background = "red";
+      btnDelCol.style.color = "white";
+      btnDelCol.style.border = "none";
+      btnDelCol.style.cursor = "pointer";
 
-  btnDelCol.onclick = () => {
-    if (!confirm(`Delete column "${c}"?`)) return;
+      btnDelCol.onclick = () => {
+        if (!confirm(`Delete column "${c}"?`)) return;
 
-    // ✅ SAVE STATE INCLUDING customColumns
-    undoStack.push(JSON.stringify({
-      tableData: tableData,
-      customColumns: customColumns
-    }));
-    redoStack = [];
+        saveState();
+        const colIndexInCustom = customColumns.indexOf(c);
+        if (colIndexInCustom > -1) customColumns.splice(colIndexInCustom, 1);
+        tableData.forEach(r => delete r[c]);
 
-    // Delete column
-    const colIndexInCustom = customColumns.indexOf(c);
-    if (colIndexInCustom > -1) customColumns.splice(colIndexInCustom, 1);
-    tableData.forEach(r => delete r[c]);
+        renderTable();
+      };
 
-    renderTable();
-  };
-
-  th.appendChild(btnDelCol);
-}
-
+      th.appendChild(btnDelCol);
+    }
 
     trHead.appendChild(th);
   });
@@ -1406,61 +1379,56 @@ if (deleteMode && customColumns.includes(c)) {
 
   thead.appendChild(trHead);
 
-// ===== BODY =====
-data.forEach((row, rowIndex) => {
-  const tr = document.createElement("tr");
-  tr.innerHTML = `<td>${rowIndex + 1}</td>`; // dynamic row number
+  // ===== BODY =====
+  data.forEach((row, rowIndex) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${rowIndex + 1}</td>`; // dynamic row number
 
-  cols.forEach(c => {
-    const td = document.createElement("td");
+    cols.forEach(c => {
+      const td = document.createElement("td");
 
-    if (c === "schoollevels") {
-      // display actual schoollevels text
-      td.textContent = row.schoollevels || "";
-      td.contentEditable = false;
-} else if ([
-  "College Graduate",
-  "College Undergraduate",
-  "High School Graduate",
-  "High School Undergraduate",
-  "Elementary Graduate",
-  "Elementary Undergraduate",
-  "None"
-].includes(c)) {
-  const levels = (row.schoollevels || "")
-    .split(",")
-    .map(s => s.trim().toLowerCase());
+      if (c === "schoollevels") {
+        // display actual schoollevels text
+        td.textContent = row.schoollevels || "";
+        td.contentEditable = false;
 
-  td.textContent = levels.includes(c.toLowerCase()) ? "Yes" : "No";
-  td.dataset.level = c.toLowerCase(); // <-- add this line
-  td.contentEditable = false;
-}
+      } else if ([
+        "College Graduate",
+        "College Undergraduate",
+        "High School Graduate",
+        "High School Undergraduate",
+        "Elementary Graduate",
+        "Elementary Undergraduate",
+        "None"
+      ].includes(c)) {
+        // Yes/No cells for school levels
+        const levels = (row.schoollevels || "")
+          .split(",")
+          .map(s => s.trim().toLowerCase());
 
- else if (["voter", "seniorcitizen"].includes(c)) {
-  td.textContent =
-    row[c] === 1 || row[c] === "1" ? "Yes" : "No";
-  td.contentEditable = false;
+        td.textContent = levels.includes(c.toLowerCase()) ? "Yes" : "No";
+        td.dataset.level = c.toLowerCase(); // used for radio filter
+        td.contentEditable = false;
 
-} else if (c === "schoolname") {
-  td.textContent = row.schoolname || "";
-  td.contentEditable = false;
+      } else if (["voter", "seniorcitizen"].includes(c)) {
+        td.textContent = row[c] === 1 || row[c] === "1" ? "Yes" : "No";
+        td.contentEditable = false;
 
-} else if (c === "fourps") {
-  td.textContent =
-    row.fourps === 1 || row.fourps === "1" || row.fourps === "Yes"
-      ? "Yes"
-      : "No";
-  td.contentEditable = false;
+      } else if (c === "schoolname") {
+        td.textContent = row.schoolname || "";
+        td.contentEditable = false;
 
-} else {
-  td.textContent = row[c] ?? "";
-}
+      } else if (c === "fourps") {
+        td.textContent = row.fourps === 1 || row.fourps === "1" || row.fourps === "Yes" ? "Yes" : "No";
+        td.contentEditable = false;
 
-
+      } else {
+        td.textContent = row[c] ?? "";
+      }
 
       tr.appendChild(td);
     });
-///////////////////////////////////////////////////////
+
     // Row delete button
     if (deleteMode) {
       const tdDel = document.createElement("td");
@@ -1491,19 +1459,18 @@ data.forEach((row, rowIndex) => {
   if (yesCountEl) yesCountEl.textContent = `Showing: ${data.length} result(s)`; 
 }
 
-// School level filter listener
+// ===== SCHOOL LEVEL RADIO FILTER =====
 document.querySelectorAll('input[name="schoolFilter"]').forEach(radio => {
   radio.addEventListener("change", () => {
 
-    // Check if any radio is selected
+    // If no radio selected, show all rows
     const selectedRadio = document.querySelector('input[name="schoolFilter"]:checked');
     if (!selectedRadio) {
-      // Show all rows if no filter selected
       document.querySelectorAll("tbody tr").forEach(tr => tr.style.display = "");
-      return; // exit early
+      return;
     }
 
-    const value = selectedRadio.value.toLowerCase(); // lowercase for comparison
+    const value = selectedRadio.value.toLowerCase();
 
     document.querySelectorAll("tbody tr").forEach(tr => {
       const cells = tr.querySelectorAll("td");
@@ -1519,7 +1486,6 @@ document.querySelectorAll('input[name="schoolFilter"]').forEach(radio => {
     });
   });
 });
-
 
 
   // ===============================
