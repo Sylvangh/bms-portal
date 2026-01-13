@@ -1418,7 +1418,6 @@ data.forEach((row, rowIndex) => {
       // display actual schoollevels text
       td.textContent = row.schoollevels || "";
       td.contentEditable = false;
-
 } else if ([
   "College Graduate",
   "College Undergraduate",
@@ -1433,9 +1432,10 @@ data.forEach((row, rowIndex) => {
     .map(s => s.trim().toLowerCase());
 
   td.textContent = levels.includes(c.toLowerCase()) ? "Yes" : "No";
-  td.dataset.level = c.toLowerCase(); // <-- crucial
+  td.dataset.level = c.toLowerCase(); // <-- add this line
   td.contentEditable = false;
 }
+
  else if (["voter", "seniorcitizen"].includes(c)) {
   td.textContent =
     row[c] === 1 || row[c] === "1" ? "Yes" : "No";
@@ -1493,27 +1493,33 @@ data.forEach((row, rowIndex) => {
 
 // School level filter listener
 document.querySelectorAll('input[name="schoolFilter"]').forEach(radio => {
-  radio.addEventListener("change", e => {
-    const value = e.target.value.toLowerCase(); // lowercase
+  radio.addEventListener("change", () => {
+
+    // Check if any radio is selected
+    const selectedRadio = document.querySelector('input[name="schoolFilter"]:checked');
+    if (!selectedRadio) {
+      // Show all rows if no filter selected
+      document.querySelectorAll("tbody tr").forEach(tr => tr.style.display = "");
+      return; // exit early
+    }
+
+    const value = selectedRadio.value.toLowerCase(); // lowercase for comparison
 
     document.querySelectorAll("tbody tr").forEach(tr => {
-      if (value === "all") {
-        tr.style.display = "";
-      } else {
-        const cells = tr.querySelectorAll("td");
-        let show = false;
+      const cells = tr.querySelectorAll("td");
+      let show = false;
 
-        cells.forEach(td => {
-          if (td.textContent.toLowerCase() === "yes" && td.dataset.level === value) {
-            show = true;
-          }
-        });
+      cells.forEach(td => {
+        if (td.textContent.toLowerCase() === "yes" && td.dataset.level === value) {
+          show = true;
+        }
+      });
 
-        tr.style.display = show ? "" : "none";
-      }
+      tr.style.display = show ? "" : "none";
     });
   });
 });
+
 
 
   // ===============================
