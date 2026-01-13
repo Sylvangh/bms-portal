@@ -1045,6 +1045,26 @@ elseif ($action === "getPendingClearanceCount") {
     exit;
 }
 
+        elseif ($action === "adminDeleteResident") {
+    $id = intval($_GET['id'] ?? 0);
+    if (!$id) {
+        echo json_encode(["message" => "Missing resident ID"]);
+        exit;
+    }
+
+    $sql = "DELETE FROM registrations WHERE id=$id";
+    $result = pg_query($conn, $sql);
+
+    if ($result) {
+        echo json_encode(["message" => "Resident deleted successfully"]);
+    } else {
+        echo json_encode(["message" => "Error deleting resident: " . pg_last_error($conn)]);
+    }
+
+    pg_close($conn);
+    exit;
+}
+
 
 /* ---------------- INVALID ACTION ---------------- */
 else {
@@ -1057,6 +1077,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
