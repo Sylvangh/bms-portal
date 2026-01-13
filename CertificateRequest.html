@@ -1072,18 +1072,18 @@ function printIndigency(name, lastname, purok, price) {
   }
 
   .signature {
-    margin-top: 100px;
+    margin-top: 50px;
     text-align: left;
     
   }
 
   .signature b {
     display: block;
-    margin-top: 10px;
+    margin-top: 15px;
   }
 
  .or-details {
-    margin-top: 80px;
+    margin-top: 60px;
     margin-left: 0.50in;   /* move left */
     font-size: 12pt;
     line-height: 1.3;
@@ -1094,6 +1094,11 @@ function printIndigency(name, lastname, purok, price) {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+}
+
+.approved-text {
+  display: inline-block;
+  margin-bottom: 50x; /* 👈 space between "Approved by:" and the name */
 }
 
 </style>
@@ -1120,11 +1125,13 @@ function printIndigency(name, lastname, purok, price) {
       Barangay Peñafrancia, Sta. Magdalena, Sorsogon.
     </p>
 
-    <div class="signature">
-      Approved by:
-      <b>ROLLY C. FULGAR</b>
-      PUNONG BARANGAY
-    </div>
+  
+  <span class="approved-text">Approved by:</span><br>
+   <div class="signature">
+  <b>ROLLY C. FULGAR</b>
+  PUNONG BARANGAY
+</div>
+
 
     <div class="or-details">
       OR No.:________<br>
@@ -1466,6 +1473,7 @@ setInterval(renderResidencyRequests, 5000);
 renderIndigencyRequests();
 setInterval(renderIndigencyRequests, 5000);
 </script>
+
 
 
 
