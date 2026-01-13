@@ -1065,6 +1065,32 @@ elseif ($action === "getPendingClearanceCount") {
     exit;
 }
 
+        
+// DELETE MULTIPLE ANNOUNCEMENTS (ADMIN)
+elseif ($action === "deleteAnnouncements") {
+    $ids = json_decode($_POST['ids'] ?? '[]', true);
+
+    if (!is_array($ids) || empty($ids)) {
+        echo json_encode(["message" => "No announcements selected"]);
+        exit;
+    }
+
+    // PostgreSQL-safe deletion using ANY($1)
+    $result = pg_query_params(
+        $conn,
+        "DELETE FROM announcements WHERE id = ANY($1::int[])",
+        [ $ids ]  // array of integers
+    );
+
+    echo json_encode([
+        "message" => $result
+            ? "Selected announcements deleted"
+            : "Failed to delete announcements"
+    ]);
+    exit;
+}
+
+
 
 /* ---------------- INVALID ACTION ---------------- */
 else {
@@ -1077,6 +1103,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
