@@ -1066,8 +1066,8 @@ elseif ($action === "getPendingClearanceCount") {
 }
 
         
-// DELETE MULTIPLE ANNOUNCEMENTS (ADMIN)
 elseif ($action === "deleteAnnouncements") {
+
     $ids = json_decode($_POST['ids'] ?? '[]', true);
 
     if (!is_array($ids) || empty($ids)) {
@@ -1075,12 +1075,14 @@ elseif ($action === "deleteAnnouncements") {
         exit;
     }
 
-    // PostgreSQL-safe deletion using ANY($1)
-    $result = pg_query_params(
-        $conn,
-        "DELETE FROM announcements WHERE id = ANY($1::int[])",
-        [ $ids ]  // array of integers
-    );
+    // Sanitize IDs (force integers)
+    $ids = array_map('intval', $ids);
+
+    // Build IN clause: 1,2,3
+    $idList = implode(',', $ids);
+
+    $sql = "DELETE FROM announcements WHERE id IN ($idList)";
+    $result = pg_query($conn, $sql);
 
     echo json_encode([
         "message" => $result
@@ -1103,6 +1105,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
