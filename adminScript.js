@@ -1489,29 +1489,13 @@ data.forEach((row, rowIndex) => {
 }
 
 // School level filter listener
+// School level filter listener — FIXED
 document.querySelectorAll('input[name="schoolFilter"]').forEach(radio => {
-  radio.addEventListener("change", e => {
-    const value = e.target.value;
-
-    document.querySelectorAll("tbody tr").forEach(tr => {
-      if (value === "All") {
-        tr.style.display = "";
-      } else {
-        // Find the cell that corresponds to this school level
-        const cells = tr.querySelectorAll("td");
-        let show = false;
-
-        cells.forEach(td => {
-          if (td.textContent.toLowerCase() === "yes" && td.dataset.level === value.toLowerCase()) {
-            show = true;
-          }
-        });
-
-        tr.style.display = show ? "" : "none";
-      }
-    });
+  radio.addEventListener("change", () => {
+    renderTable(); // re-apply the filter and re-render the table
   });
 });
+;
 
   // ===============================
   // SORT
@@ -1780,6 +1764,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
