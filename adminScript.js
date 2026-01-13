@@ -1331,26 +1331,30 @@ function renderTable(data = tableData) {
   tbody.innerHTML = "";
 
   // ===== FILTER =====
-  const selectedFilter = document.querySelector('input[name="schoolFilter"]:checked')?.value;
-  if (selectedFilter) {
-  const levelMap = {
-    "College Graduate": "College Graduate",
-    "College Undergraduate": "College Undergraduate",
-    "High School Graduate": "High School Graduate",
-    "High School Undergraduate": "High School Undergraduate",
-    "Elementary Graduate": "Elementary Graduate",
-    "Elementary Undergraduate": "Elementary Undergraduate",
-    "None": "None"
-  };
-data = data.filter(r =>
-  (r.schoollevels || "")
-    .split(",")
-    .map(s => s.trim())
-    .includes(levelMap[selectedFilter])
-);
 
-  }
-      // 30+ AGE filter
+// ===== FILTER =====
+const selectedFilter = document.querySelector('input[name="schoolFilter"]:checked')?.value;
+
+if (selectedFilter) {
+  data = data.filter(r => {
+    // Normalize schoolLevels to an array
+    let levels = [];
+    if (Array.isArray(r.schoollevels)) {
+      levels = r.schoollevels;
+    } else if (typeof r.schoollevels === "string") {
+      levels = r.schoollevels.split(",").map(s => s.trim());
+    }
+
+    // Handle "None"
+    if (selectedFilter === "None") {
+      return levels.length === 0;
+    }
+
+    // Check if selected level is included
+    return levels.includes(selectedFilter);
+  });
+}
+
  // 30+ AGE filter
 if (filter30Plus?.checked) {
   data = data.filter(r => parseInt(r.age) >= 30);
@@ -1411,46 +1415,48 @@ if (deleteMode && customColumns.includes(c)) {
   thead.appendChild(trHead);
 
 // ===== BODY =====
-  data.forEach((row, rowIndex) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${rowIndex + 1}</td>`; // dynamic row number
+data.forEach((row, rowIndex) => {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td>${rowIndex + 1}</td>`; // dynamic row number
 
-    cols.forEach(c => {
-      const td = document.createElement("td");
+  cols.forEach(c => {
+    const td = document.createElement("td");
 
-if ([
-  "College Graduate",
-  "College Undergraduate",
-  "High School Graduate",
-  "High School Undergraduate",
-  "Elementary Graduate",
-  "Elementary Undergraduate",
-  "None"
-].includes(c)) {
+    const schoolLevelsColumns = [
+      "College Graduate",
+      "College Undergraduate",
+      "High School Graduate",
+      "High School Undergraduate",
+      "Elementary Graduate",
+      "Elementary Undergraduate",
+      "None"
+    ];
 
-  const levelMap = {
-    "College Graduate": "College Graduate",
-    "College Undergraduate": "College Undergraduate",
-    "High School Graduate": "High School Graduate",
-    "High School Undergraduate": "High School Undergraduate",
-    "Elementary Graduate": "Elementary Graduate",
-    "Elementary Undergraduate": "Elementary Undergraduate",
-    "None": "None"
-  };
-
-
-  td.textContent = (row.schoolLevels || []).includes(levelMap[c]) ? "Yes" : "No";
-  
-        td.contentEditable = false;
-      } else if (["voter", "seniorCitizen"].includes(c)) {
-        td.textContent = (row[c] === 1 || row[c] === "1") ? "Yes" : "No";
-        td.contentEditable = false;
-      } else {
-        td.textContent = row[c] ?? "";
+    if (schoolLevelsColumns.includes(c)) {
+      // Convert schoolLevels to array if it's a string
+      let levels = [];
+      if (Array.isArray(row.schoolLevels)) {
+        levels = row.schoolLevels;
+      } else if (typeof row.schoolLevels === "string") {
+        levels = row.schoolLevels.split(",").map(s => s.trim());
       }
 
-      tr.appendChild(td);
-    });
+      if (c === "None") {
+        td.textContent = levels.length === 0 ? "Yes" : "No";
+      } else {
+        td.textContent = levels.includes(c) ? "Yes" : "No";
+      }
+
+      td.contentEditable = false;
+    } else if (["voter", "seniorCitizen"].includes(c)) {
+      td.textContent = (row[c] === 1 || row[c] === "1") ? "Yes" : "No";
+      td.contentEditable = false;
+    } else {
+      td.textContent = row[c] ?? "";
+    }
+
+    tr.appendChild(td);
+  });
 ///////////////////////////////////////////////////////
     // Row delete button
     if (deleteMode) {
@@ -1774,6 +1780,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default page
   loadDashboard();
 });
+
 
 
 
