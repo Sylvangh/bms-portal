@@ -1419,24 +1419,24 @@ data.forEach((row, rowIndex) => {
       td.textContent = row.schoollevels || "";
       td.contentEditable = false;
 
-    } else if ([
-      "College Graduate",
-      "College Undergraduate",
-      "High School Graduate",
-      "High School Undergraduate",
-      "Elementary Graduate",
-      "Elementary Undergraduate",
-      "None"
-    ].includes(c)) {
-      // display Yes/No for each level
-      const levels = (row.schoollevels || "")
-        .split(",")
-        .map(s => s.trim().toLowerCase());
+} else if ([
+  "College Graduate",
+  "College Undergraduate",
+  "High School Graduate",
+  "High School Undergraduate",
+  "Elementary Graduate",
+  "Elementary Undergraduate",
+  "None"
+].includes(c)) {
+  const levels = (row.schoollevels || "")
+    .split(",")
+    .map(s => s.trim().toLowerCase());
 
-      td.textContent = levels.includes(c.toLowerCase()) ? "Yes" : "No";
-      
-      td.contentEditable = false;
-} else if (["voter", "seniorcitizen"].includes(c)) {
+  td.textContent = levels.includes(c.toLowerCase()) ? "Yes" : "No";
+  td.dataset.level = c.toLowerCase(); // <-- crucial
+  td.contentEditable = false;
+}
+ else if (["voter", "seniorcitizen"].includes(c)) {
   td.textContent =
     row[c] === 1 || row[c] === "1" ? "Yes" : "No";
   td.contentEditable = false;
@@ -1494,18 +1494,17 @@ data.forEach((row, rowIndex) => {
 // School level filter listener
 document.querySelectorAll('input[name="schoolFilter"]').forEach(radio => {
   radio.addEventListener("change", e => {
-    const value = e.target.value;
+    const value = e.target.value.toLowerCase(); // lowercase
 
     document.querySelectorAll("tbody tr").forEach(tr => {
-      if (value === "All") {
+      if (value === "all") {
         tr.style.display = "";
       } else {
-        // Find the cell that corresponds to this school level
         const cells = tr.querySelectorAll("td");
         let show = false;
 
         cells.forEach(td => {
-          if (td.textContent.toLowerCase() === "yes" && td.dataset.level === value.toLowerCase()) {
+          if (td.textContent.toLowerCase() === "yes" && td.dataset.level === value) {
             show = true;
           }
         });
@@ -1515,6 +1514,7 @@ document.querySelectorAll('input[name="schoolFilter"]').forEach(radio => {
     });
   });
 });
+
 
   // ===============================
   // SORT
