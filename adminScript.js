@@ -1315,19 +1315,35 @@ function redo() {
   const next = JSON.parse(redoStack.pop());
   tableData = next.tableData;
   customColumns = next.customColumns;
-  renderTable();
+  renderTable();j
 }
   btnUndo.onclick = undo;
   btnRedo.onclick = redo;
 
   // ===============================
 function renderTable(data = tableData) {
-  const cols = [...getSelectedColumns(), ...customColumns];
   const thead = table.querySelector("thead");
   const tbody = table.querySelector("tbody");
 
   thead.innerHTML = "";
   tbody.innerHTML = "";
+
+  // Get selected columns and add all school level columns
+  const baseCols = [...getSelectedColumns(), ...customColumns];
+  const schoolLevels = [
+    "College Graduate",
+    "College Undergraduate",
+    "High School Graduate",
+    "High School Undergraduate",
+    "Elementary Graduate",
+    "Elementary Undergraduate",
+    "None"
+  ];
+
+  const cols = [...baseCols];
+  schoolLevels.forEach(level => {
+    if (!cols.includes(level)) cols.push(level);
+  });
 
   // ===== 30+ AGE filter =====
   const filter30PlusChecked = document.getElementById("filter30Plus")?.checked;
@@ -1339,11 +1355,10 @@ function renderTable(data = tableData) {
   const trHead = document.createElement("tr");
   trHead.innerHTML = "<th>No.</th>";
 
-  cols.forEach((c) => {
+  cols.forEach(c => {
     const th = document.createElement("th");
     th.textContent = c.charAt(0).toUpperCase() + c.slice(1);
 
-    // Custom column delete button in deleteMode
     if (deleteMode && customColumns.includes(c)) {
       const btnDelCol = document.createElement("button");
       btnDelCol.textContent = "Delete";
@@ -1355,12 +1370,10 @@ function renderTable(data = tableData) {
 
       btnDelCol.onclick = () => {
         if (!confirm(`Delete column "${c}"?`)) return;
-
         saveState();
-        const colIndexInCustom = customColumns.indexOf(c);
-        if (colIndexInCustom > -1) customColumns.splice(colIndexInCustom, 1);
+        const index = customColumns.indexOf(c);
+        if (index > -1) customColumns.splice(index, 1);
         tableData.forEach(r => delete r[c]);
-
         renderTable();
       };
 
@@ -1370,7 +1383,6 @@ function renderTable(data = tableData) {
     trHead.appendChild(th);
   });
 
-  // Row delete header
   if (deleteMode) {
     const thDel = document.createElement("th");
     thDel.textContent = "Action";
@@ -1382,32 +1394,22 @@ function renderTable(data = tableData) {
   // ===== BODY =====
   data.forEach((row, rowIndex) => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${rowIndex + 1}</td>`; // dynamic row number
+    tr.innerHTML = `<td>${rowIndex + 1}</td>`; // row number
 
     cols.forEach(c => {
       const td = document.createElement("td");
 
       if (c === "schoollevels") {
-        // display actual schoollevels text
         td.textContent = row.schoollevels || "";
         td.contentEditable = false;
 
-      } else if ([
-        "College Graduate",
-        "College Undergraduate",
-        "High School Graduate",
-        "High School Undergraduate",
-        "Elementary Graduate",
-        "Elementary Undergraduate",
-        "None"
-      ].includes(c)) {
-        // Yes/No cells for school levels
+      } else if (schoolLevels.includes(c)) {
         const levels = (row.schoollevels || "")
           .split(",")
           .map(s => s.trim().toLowerCase());
 
         td.textContent = levels.includes(c.toLowerCase()) ? "Yes" : "No";
-        td.dataset.level = c.toLowerCase(); // used for radio filter
+        td.dataset.level = c.toLowerCase(); // important for filter
         td.contentEditable = false;
 
       } else if (["voter", "seniorcitizen"].includes(c)) {
@@ -1456,16 +1458,16 @@ function renderTable(data = tableData) {
 
   // ===== RESULT COUNT =====
   const yesCountEl = document.getElementById("yesCount");
-  if (yesCountEl) yesCountEl.textContent = `Showing: ${data.length} result(s)`; 
+  if (yesCountEl) yesCountEl.textContent = `Showing: ${data.length} result(s)`;
 }
 
 // ===== SCHOOL LEVEL RADIO FILTER =====
 document.querySelectorAll('input[name="schoolFilter"]').forEach(radio => {
   radio.addEventListener("change", () => {
-
-    // If no radio selected, show all rows
     const selectedRadio = document.querySelector('input[name="schoolFilter"]:checked');
+
     if (!selectedRadio) {
+      // show all rows if no filter selected
       document.querySelectorAll("tbody tr").forEach(tr => tr.style.display = "");
       return;
     }
@@ -1486,6 +1488,7 @@ document.querySelectorAll('input[name="schoolFilter"]').forEach(radio => {
     });
   });
 });
+
 
 
   // ===============================
