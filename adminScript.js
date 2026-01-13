@@ -660,7 +660,7 @@ if (applyFilter) applyFilter.onclick = () => {
             return r.seniorcitizen == 1; // lowercase to match PostgreSQL
         case "college Undergraduate":
           return typeof r.schoollevels === "string" &&
-                 r.schoollevels.toLowerCase().includes("college Undergraduate"); // lowercase column
+                 r.schoollevels.toLowerCase().includes("college undergraduate"); // lowercase column
           case "voter": 
             return r.voter == 1;
           case "fourps": 
@@ -1418,15 +1418,25 @@ if (c === "schoollevels") {
   td.textContent = row.schoollevels || "";
   td.contentEditable = false;
 
-} else if (["College Undergraduate", "Senior High", "Junior High", "Elementary"].includes(c)) {
+} else if ([
+    "College Graduate",
+    "College Undergraduate",
+    "High School Graduate",
+    "High School Undergraduate",
+    "Elementary Graduate",
+    "Elementary Undergraduate",
+    "None"
+  ].includes(c)) {
 
   const levelMap = {
+    "College Graduate": "College Graduate",
     "College Undergraduate": "College Undergraduate",
-    "Senior High": "Senior High",
-    "Junior High": "Junior High",
-    "Elementary": "Elementary"
+    "High School Graduate": "High School Graduate",
+    "High School Undergraduate": "High School Undergraduate",
+    "Elementary Graduate": "Elementary Graduate",
+    "Elementary Undergraduate": "Elementary Undergraduate",
+    "None": "None"
   };
-
 
   const levels = (row.schoollevels || "")
     .split(",")
