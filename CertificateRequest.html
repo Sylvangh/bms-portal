@@ -502,7 +502,7 @@ function printClearance(name, lastname, age, purpose,price,purok) {
     <p class="no-indent"><b>TO WHOM IT MAY CONCERN:</b></p>
 
     <p>
-      THIS IS TO CERTIFY that <span class="highlight"><b>${name}</b></span>,
+      THIS IS TO CERTIFY that <span class="highlight"><b>${fullName}</b></span>,
      <b>${age}</b> years old, Filipino citizen, is a bonafide resident of Purok ${purok},
       Barangay Peñafrancia, Sta. Magdalena, Sorsogon and has no derogatory
       record in this community.
@@ -527,6 +527,7 @@ function printClearance(name, lastname, age, purpose,price,purok) {
 
     <div class="or-details">
       OR No.:________<br>
+      Control No.:________<br>
       Issued on: ${today}<br>
       Issued at: Brgy. Peñafrancia<br>
       Amount Paid: ₱${price}.00
@@ -697,6 +698,7 @@ async function deleteResidency(id) {
 // PRINT
 function printResidency(name, lastname,age,purok,bioName,price ) {
   // similar sa printClearance, pero pwedeng palitan ng title & content
+  const fullName = `${name ?? ''} ${lastname ?? ''}`.trim().toUpperCase();
   const today = new Date().toLocaleDateString();
   const win = window.open("", "_blank");
   win.document.write(`
@@ -827,13 +829,13 @@ function printResidency(name, lastname,age,purok,bioName,price ) {
 <br>
     <p>
       This is to <span class="highlight"><b>CERTIFY</b></span> that 
-      <span class="highlight"><b>${name}</b></span>, ${age} yrs old, 
+      <span class="highlight"><b>${fullName}</b></span>, ${age} yrs old, 
       a bonafide resident of Purok ${purok}, Barangay Peñafrancia, Sta. Magdalena, Sorsogon.
     </p>
 
     <p>
       <span class="highlight"><b>FURTHER CERTIFY</b></span> that 
-      <span class="highlight"><b>B${name}</b></span> is the 
+      <span class="highlight"><b>${fullName}</b></span> is the 
       biological <span class="highlight"><b>${bioName}</b></span>.
     </p>
 
@@ -855,6 +857,7 @@ function printResidency(name, lastname,age,purok,bioName,price ) {
 
     <div class="or-details">
       OR No.:________<br>
+      Control No.:________<br>
       Issued on:${today}<br>
       Issued at: Brgy. Peñafrancia<br>
       Amount Paid:  ₱${price}.00
@@ -1141,6 +1144,7 @@ function printIndigency(name, lastname, purok, price) {
 
     <div class="or-details">
       OR No.:________<br>
+      Control No.:________<br>
       Issued on: ${today}<br>
       Issued at: Brgy. Peñafrancia<br>
       Amount Paid: ₱${price}.00
@@ -1451,6 +1455,7 @@ function printBusiness(name, lastname, businessType, businessName, businessAddre
 
     <div class="or-details">
       OR No.:________<br>
+      Control No.:________<br>
       Issued on: ${today}<br>
       Issued at: Brgy. Peñafrancia<br>
       Amount Paid: ₱${price}.00
@@ -1488,6 +1493,7 @@ setInterval(renderResidencyRequests, 5000);
 renderIndigencyRequests();
 setInterval(renderIndigencyRequests, 5000);
 </script>
+
 
 
 
