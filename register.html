@@ -524,7 +524,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedIdBase64 = "";
 
   // --- Show default preview on load ---
-  previewImg.src = "default-avatar.png";
+  previewImg.src = "logo.png";
   previewImg.style.display = "block";
 
   // --- Update preview name dynamically ---
@@ -550,7 +550,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       reader.readAsDataURL(file);
     } else {
-      previewImg.src = "default-avatar.png";
+      previewImg.src = "logo.png";
       selectedIdBase64 = "";
     }
   });
@@ -636,6 +636,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
 
 
