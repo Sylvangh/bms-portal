@@ -400,8 +400,30 @@ elseif ($action === "deleteRequest2") {
     ]);
     exit;
 }
+    // ----------------------------
+    // certificate
+    // ----------------------------
+        elseif ($action === "getCertReq") {
+        $email = $_POST['email'] ?? '';
+        if (!$email) {
+            echo json_encode([]);
+            exit;
+        }
 
+        $result = pg_query_params(
+            $conn, 
+            "SELECT * FROM certificate_requests WHERE username=$1 AND type='certificate' ORDER BY date DESC", 
+            [$email]
+        );
 
+        $requests = [];
+        while ($row = pg_fetch_assoc($result)) {
+            $requests[] = $row;
+        }
+
+        echo json_encode($requests);
+        exit;
+    }
 
     // ----------------------------
     // INVALID ACTION
