@@ -344,22 +344,30 @@ function editRequest(id, businesstype, businessname, businessaddress, purposeTex
   document.getElementById("price").value = price;
 }
 
-
-// ---------------- DELETE ----------------
-async function deleteRequest(id){
-  if(!confirm("Delete this request?")) return;
+// Delete request
+async function deleteRequest(id) {
+  if (!confirm("Are you sure you want to delete this request?")) return;
 
   const formData = new FormData();
   formData.append("id", id);
 
-  const res = await fetch("certReq.php?action=deleteBusinessRequest", {
-    method: "POST",
-    body: formData
-  });
-  const data = await res.json();
-  alert(data.message);
-  loadRequests();
+  try {
+    const res = await fetch("certReq.php?action=deleteBusinessRequest", {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to delete request");
+
+    alert(data.message);
+    loadRequests();
+  } catch (err) {
+    console.error(err);
+    alert("Error deleting request: " + err.message);
+  }
 }
+
+
 
 // ---------------- BACK ----------------
 document.getElementById("btnBack").addEventListener("click", () => {
@@ -369,6 +377,7 @@ document.getElementById("btnBack").addEventListener("click", () => {
 // Load requests on page load
 document.addEventListener("DOMContentLoaded", loadRequests);
 </script>
+
 
 
 
