@@ -1092,6 +1092,72 @@ elseif ($action === "deleteAnnouncements") {
     exit;
 }
 
+    
+// ----------------------------
+// Admin: Update request status / message
+// ----------------------------
+elseif ($action === "adminUpdateRequestCert") {
+    $id = intval($_POST['id'] ?? 0);
+    $status = $_POST['status'] ?? '';
+    $msg = $_POST['adminMessage'] ?? '';
+
+    if (!$id || !$status) {
+        echo json_encode(["message" => "Missing fields"]);
+        exit;
+    }
+
+    // PostgreSQL safe parameterized query
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests 
+         SET status=$1, adminMessage=$2 
+         WHERE id=$3",
+        [$status, $msg, $id]
+    );
+
+    echo json_encode([
+        "message" => $result ? "Updated" : "Failed"
+    ]);
+    exit;
+}
+// ----------------------------
+// Admin: Mark request as paid
+// ----------------------------
+elseif ($action === "adminMarkPaidCert") {
+    $id = intval($_POST['id'] ?? 0);
+    if (!$id) { 
+        echo json_encode(["message" => "Missing ID"]); 
+        exit; 
+    }
+
+    $result = pg_query_params(
+        $conn,
+        "UPDATE certificate_requests SET paid = TRUE WHERE id = $1",
+        [$id]
+    );
+
+    echo json_encode([
+        "message" => $result ? "Marked as paid" : "Failed to mark as paid"
+    ]);
+    exit;
+}
+   elseif ($action === "adminDeleteRequestCert") {
+    $id = intval($_POST['id'] ?? 0);
+    if (!$id) { 
+        echo json_encode(["message" => "Missing ID"]); 
+        exit; 
+    }
+
+    $result = pg_query_params(
+        $conn,
+        "DELETE FROM certificate_requests WHERE id=$1",
+        [$id]
+    );
+
+    echo json_encode(["message" => "Deleted"]);
+    exit;
+}
+
 
 
 /* ---------------- INVALID ACTION ---------------- */
@@ -1105,6 +1171,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
