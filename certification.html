@@ -325,7 +325,7 @@ requestForm.addEventListener("submit", async e => {
 
   try {
     // action=saveRequest must be in the query string
-    const res = await fetch("certReq.php?action=saveRequest", {
+    const res = await fetch("certReq.php?action=saveCert", {
       method: "POST",
       body: formData
     });
@@ -363,7 +363,7 @@ async function deleteRequest(id) {
   formData.append("id", id);
 
   try {
-    const res = await fetch("certReq.php?action=deleteRequest", {
+    const res = await fetch("certReq.php?action=deleteCert", {
       method: "POST",
       body: formData
     });
