@@ -1021,7 +1021,7 @@ elseif ($action === "getAllResi") {
 
 
         // ----------------------------
-// Get pending clearance count
+// Get pending certificate count
 // ----------------------------
 elseif ($action === "getPendingClearanceCount") {
 
@@ -1100,7 +1100,7 @@ elseif ($action === "adminGetCertRequests") {
         SELECT cr.*, r.name, r.lastname
         FROM certificate_requests cr
         LEFT JOIN registrations r ON cr.username = r.email
-        WHERE cr.type='certicate'
+        WHERE cr.type='certificate'
         ORDER BY cr.date DESC
     ");
 
@@ -1191,6 +1191,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
