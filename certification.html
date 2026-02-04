@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0">
+<title>Request Certification</title>
+<style>
+/* =============================
+   GLOBAL
+============================= */
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(135deg, #1e6dff85, #0c35db);
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+  color: #0f1b3d;
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+  animation: fadeSlide 0.8s ease;
+}
+
+/* =============================
+   HEADINGS
+============================= */
+h1 {
+  text-align: center;
+  font-size: clamp(24px, 6vw, 32px);
+  margin-bottom: 22px;
+  color: #ffffff;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+/* =============================
+   CARDS (GLASS STYLE)
+============================= */
+.card {
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 18px;
+  padding: 26px;
+  margin-bottom: 22px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.18);
+  border: 1px solid rgba(255,255,255,0.25);
+  animation: floatIn 0.6s ease;
+}
+
+/* =============================
+   FORM LABELS
+============================= */
+label {
+  display: block;
+  font-weight: 600;
+  font-size: clamp(15px, 4vw, 17px);
+  margin-top: 16px;
+  margin-bottom: 6px;
+  color: #ffffff;
+}
+
+/* =============================
+   INPUTS & TEXTAREA  ✅ FIXED
+============================= */
+input,
+textarea {
+  width: 100%;
+  padding: 18px 16px;          /* 🔧 FIX */
+  font-size: clamp(15px, 4vw, 17px);
+  line-height: 1.4;            /* 🔧 FIX */
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  background: rgba(255,255,255,0.85);
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.12);
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+}
+
+textarea {
+  min-height: 120px;           /* 🔧 FIX */
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus {
+  transform: scale(1.02);
+  box-shadow: 0 0 0 3px rgba(30,109,255,0.35);
+}
+
+/* =============================
+   BUTTONS
+============================= */
+button {
+  padding: 16px;
+  font-size: clamp(16px, 4vw, 18px);
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #1e6dff, #0c35db);
+  color: white;
+  cursor: pointer;
+  margin-top: 16px;
+  width: 100%;
+  font-weight: bold;
+  letter-spacing: 0.4px;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.25);
+  transition: all 0.25s ease;
+}
+
+button:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 18px 35px rgba(0,0,0,0.35);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* =============================
+   SPECIAL BUTTONS
+============================= */
+.btn-edit {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #ff5c5c, #e74c3c);
+}
+
+#btnBack {
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+}
+
+/* =============================
+   REQUEST LIST
+============================= */
+.request-item {
+  border-bottom: 1px solid rgba(255,255,255,0.35);
+  padding: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeIn 0.4s ease;
+}
+
+.request-info {
+  font-size: clamp(14px, 3.5vw, 16px);
+  color: #ffffff;
+  line-height: 1.5;
+}
+
+.request-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.request-actions button {
+  width: auto;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+/* =============================
+   RESPONSIVE
+============================= */
+@media (max-width: 480px) {
+  .request-actions {
+    flex-direction: column;
+  }
+}
+
+/* =============================
+   ANIMATIONS
+============================= */
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes floatIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>Request Certification</h1>
+
+  <div class="card">
+    <form id="requestForm">
+      <label>Purpose</label>
+      <textarea id="purpose" required placeholder="Enter your purpose or message"></textarea>
+
+    <!-- Age -->
+    <label>Age</label>
+    <input type="number" id="age" placeholder="Enter your age" min="1" required>
+              <!-- Gender -->
+    <label>Purok</label>
+    <input type="number" id="purok" placeholder="Enter purok" min="0" step="0.01" required>
+              <!-- Gender -->
+    <label>Amount</label>
+    <input type="number" id="price" placeholder="Enter amount" min="0" step="0.01" required>
+
+
+    
+      <button type="submit">Submit Request</button>
+    </form>
+    <button id="btnBack">Back to Dashboard</button>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size: clamp(20px,5vw,24px);">Your Requests</h2>
+    <div id="requestList">
+      <!-- User requests will appear here -->
+    </div>
+  </div>
+</div>
+
+
+
+
+      
+<script>
+const currentEmail = localStorage.getItem("currentEmail");
+const requestForm = document.getElementById("requestForm");
+const requestList = document.getElementById("requestList");
+let editingRequestId = null;
+
+// Load user requests
+// Load user requests
+async function loadRequests() {
+  const formData = new FormData();
+  formData.append("email", currentEmail);
+
+  const res = await fetch("certReq.php?action=getCertReq", {
+    method: "POST",
+    body: formData
+  });
+
+  const data = await res.json();
+  requestList.innerHTML = "";
+
+  data.forEach(req => {
+    if ((req.type || "").toLowerCase() !== "certificate") return;
+
+    const div = document.createElement("div");
+    div.classList.add("request-item");
+
+    div.innerHTML = `
+      <div class="request-info">
+        <strong>Message to admin:</strong> ${req.purpose || '-'} <br>
+        <strong>Age:</strong> ${req.age ?? '-'} <br>
+        <strong>Purok:</strong> ${req.purok || '-'} <br>
+        <strong>Amount:</strong> ₱${req.price ?? 0} <br>
+        <strong>Status:</strong> ${req.status || '-'} <br>
+        <strong>Admin Message:</strong> ${req.adminmessage || 'None'} <br>
+<strong>Payment:</strong> ${
+  req.status === 'Approved'
+    ? (req.paid === true || req.paid === 't' || req.paid == 1
+        ? 'PAID'
+        : 'UNPAID')
+    : 'PENDING'
+} <br>
+
+
+        <small>Date: ${req.date || '-'}</small> <br>
+      </div>
+
+      <div class="request-actions">
+        <button onclick="editRequest(
+          ${req.id},
+          '${(req.purpose || "").replace(/'/g,"\\'")}',
+          '${req.age ?? ''}',
+          '${req.purok ?? ''}',
+          '${req.price ?? 0}'
+        )">Edit</button>
+
+        <button class="btn-delete" onclick="deleteRequest(${req.id})">Delete</button>
+      </div>
+    `;
+
+    requestList.appendChild(div);
+  });
+}
+
+// Add / Update request
+requestForm.addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const purpose = document.getElementById("purpose").value.trim();
+  const ageInput = document.getElementById("age").value.trim();
+  const priceInput = document.getElementById("price").value.trim();
+  const purok = document.getElementById("purok").value.trim();
+
+  // Validation BEFORE converting
+  if (!purpose || !purok || priceInput === '' || ageInput === '')
+    return alert("All fields are required");
+
+  const price = Number(priceInput);
+  if (isNaN(price) || price < 0)
+    return alert("Please enter a valid price");
+
+  const age = Number(ageInput);
+  if (isNaN(age) || age <= 0)
+    return alert("Please enter a valid age");
+
+  const formData = new FormData();
+  if (editingRequestId) formData.append("id", editingRequestId);
+  formData.append("email", currentEmail);   // <-- must match PHP $_POST['email']
+  formData.append("purpose", purpose);      // <-- matches $_POST['purpose']
+  formData.append("price", price);          // <-- matches $_POST['price']
+  formData.append("age", age);              // <-- matches $_POST['age']
+  formData.append("purok", purok);          // <-- matches $_POST['purok']
+
+  try {
+    // action=saveRequest must be in the query string
+    const res = await fetch("certReq.php?action=saveRequest", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+    alert(data.message || "Request saved!");
+
+    requestForm.reset();
+    editingRequestId = null;
+
+    // reload requests
+    await loadRequests();
+  } catch (err) {
+    console.error(err);
+    alert("Error saving request");
+  }
+});
+
+
+
+// Edit request
+function editRequest(id, purpose, age, price,purok) {
+  editingRequestId = id;
+  document.getElementById("purpose").value = purpose;
+  document.getElementById("age").value = age;
+  document.getElementById("price").value = price;
+  document.getElementById("purok").value = purok;
+}
+
+// Delete request
+async function deleteRequest(id) {
+  if (!confirm("Are you sure you want to delete this request?")) return;
+
+  const formData = new FormData();
+  formData.append("id", id);
+
+  try {
+    const res = await fetch("certReq.php?action=deleteRequest", {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to delete request");
+
+    alert(data.message);
+    loadRequests();
+  } catch (err) {
+    console.error(err);
+    alert("Error deleting request: " + err.message);
+  }
+}
+
+// Back button
+document.getElementById("btnBack").addEventListener("click", () => {
+  window.location.href = "userDashboard.php";
+});
+
+// Load requests on page load
+document.addEventListener("DOMContentLoaded", loadRequests);
+</script>
+
+
+
+
