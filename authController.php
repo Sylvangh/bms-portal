@@ -1116,7 +1116,7 @@ elseif ($action === "adminGetCertRequests") {
 // ----------------------------
 // Admin: Update request status / message
 // ----------------------------
-elseif ($action === "adminUpdateRequestCert") {
+elseif ($action === "adminUpdateCertRequest") {
     $id = intval($_POST['id'] ?? 0);
     $status = $_POST['status'] ?? '';
     $msg = $_POST['adminmessage'] ?? '';
@@ -1191,6 +1191,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
