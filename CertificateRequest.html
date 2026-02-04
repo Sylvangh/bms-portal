@@ -1503,7 +1503,7 @@ function printBusiness(name, lastname, businessType, businessName, businessAddre
 
 
 
-const certrequestsList = document.getElementById("certrequestsList");
+const certRequestsList = document.getElementById("certRequestsList");
 const certmodal = document.getElementById("certmessageModal");
 const rejectCertMessage = document.getElementById("certrejectMessage");
 
@@ -1526,11 +1526,11 @@ async function renderRequests() {
   );
 
   if (!filtered.length) {
-    certrequestsList.innerHTML = "<p>No indigency requests found..</p>";
+    certRequestsList.innerHTML = "<p>No indigency requests found..</p>";
     return;
   }
 
-  certrequestsList.innerHTML = filtered.map(r => {
+  certRequestsList.innerHTML = filtered.map(r => {
     // Map type to a readable label
     let typeLabel = "Request";
     if (r.type === "certificate") typeLabel = "";
