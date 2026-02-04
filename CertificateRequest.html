@@ -265,7 +265,7 @@
 <div id="certRejectModal" class="modal hidden">
   <div class="modal-content">
     <h3>Reject Certificate Request</h3>
-    <textarea id="RejectCertMessage" placeholder="Enter reason..."></textarea>
+    <textarea id="rejectCertMessage" placeholder="Enter reason..."></textarea>
     <div class="actions">
       <button id="sendCertReject" class="reject">Send</button>
       <button id="cancelCertReject">Cancel</button>
@@ -1505,8 +1505,7 @@ function printBusiness(name, lastname, businessType, businessName, businessAddre
 
 const certRequestsList = document.getElementById("certRequestsList");
 const certmodal = document.getElementById("certRejectModal");
-const rejectCertMessage = document.getElementById("certrejectMessage");
-
+const rejectCertMessage = document.getElementById("rejectCertMessage");
 
 
 // ---------------- LOAD REQUESTS ----------------
@@ -1526,7 +1525,7 @@ async function renderRequests() {
   );
 
   if (!filtered.length) {
-    certRequestsList.innerHTML = "<p>No indigency requests found..</p>";
+    certRequestsList.innerHTML = "<p>No certificate requests found..</p>";
     return;
   }
 
@@ -1628,8 +1627,6 @@ async function markPaid(id) {
     alert("Failed to mark as paid: " + err.message);
   }
 }
-
-
 
 async function deleteReq(id) {
   if(!confirm("Delete request?")) return;
@@ -1818,6 +1815,13 @@ setInterval(renderResidencyRequests, 5000);
 renderIndigencyRequests();
 setInterval(renderIndigencyRequests, 5000);
 </script>
+
+
+
+
+
+
+
 
 
 
