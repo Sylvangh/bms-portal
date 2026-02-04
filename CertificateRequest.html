@@ -1555,7 +1555,7 @@ async function renderRequests() {
 
         <div class="actions">
           <button class="approve" onclick="approve(${r.id})">Approve</button>
-          <button class="reject" onclick="openReject(${r.id})">Reject</button>
+          <button class="reject" onclick="openRejectCert(${r.id})">Reject</button>
           <button class="markPaid" onclick="markPaid(${r.id})">Mark Paid</button>
           <button class="print" onclick="printClearance('${r.name}','${r.lastname}','${r.age}','${r.purpose}','${r.price}','${r.purok}')">Print</button>
 
@@ -1583,7 +1583,7 @@ body: new URLSearchParams({
   renderRequests();
 }
 
-function openReject(id) {
+function openRejectCert(id) {
   currentRejectId = id;
   certmodal.classList.remove("hidden");
 }
