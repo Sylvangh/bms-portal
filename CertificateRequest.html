@@ -175,8 +175,8 @@
 
 <body>
 
+    <input type="text" id="searchClearance" placeholder="Search...">
   <h1>Barangay Clearance Requests</h1>
-  <input type="text" id="searchClearance" placeholder="Search...">
 
   <div class="container">
     <div class="card" id="requestsList"></div>
@@ -300,7 +300,7 @@ async function renderRequests() {
   );
 
   if (!filtered.length) {
-    requestsList.innerHTML = "<p>No indigency requests found..</p>";
+    requestsList.innerHTML = "<p>No clearance requests found..</p>";
     return;
   }
 
@@ -1506,17 +1506,17 @@ function printBusiness(name, lastname, businessType, businessName, businessAddre
 const certRequestsList = document.getElementById("certRequestsList");
 const certmodal = document.getElementById("certRejectModal");
 const rejectCertMessage = document.getElementById("rejectCertMessage");
-
+let currentRejecCertId = null;
 
 // ---------------- LOAD REQUESTS ----------------
-async function loadRequests() {
+async function loadRequestsCert() {
   const res = await fetch("authController.php?action=adminGetCertRequests");
   return await res.json();
 }
 
 // ---------------- RENDER ----------------
-async function renderRequests() {
-  const data = await loadRequests();
+async function renderRequestsCert() {
+  const data = await loadRequestsCert();
   const search = document.getElementById("searchClearance").value.toLowerCase();
 
   const filtered = data.filter(r =>
@@ -1554,14 +1554,14 @@ async function renderRequests() {
         <p><b>Admin Message:</b> ${r.adminMessage || "None"}</p>
 
         <div class="actions">
-          <button class="approve" onclick="approve(${r.id})">Approve</button>
+          <button class="approve" onclick="approveCert(${r.id})">Approve</button>
           <button class="reject" onclick="openRejectCert(${r.id})">Reject</button>
-          <button class="markPaid" onclick="markPaid(${r.id})">Mark Paid</button>
+          <button class="markPaid" onclick="markPaidCert(${r.id})">Mark Paid</button>
           <button class="print" onclick="printClearance('${r.name}','${r.lastname}','${r.age}','${r.purpose}','${r.price}','${r.purok}')">Print</button>
 
           
 
-          <button class="remove" onclick="deleteReq(${r.id})">Delete</button>
+          <button class="remove" onclick="deleteReqCert(${r.id})">Delete</button>
         </div>
       </div>
     `;
@@ -1570,45 +1570,51 @@ async function renderRequests() {
   
 }
 
-// ---------------- ACTIONS ----------------
-async function approve(id) {
-  await fetch("authController.php?action=adminUpdateRequestCert", {
+// ---------------- APPROVE ----------------
+async function approveCert(id) {
+  await fetch("authController.php?action=adminUpdateCertRequest", {
     method:"POST",
-body: new URLSearchParams({
-  id,
-  status: "Approved",
-  adminmessage: "Approved"
-})
+    body:new URLSearchParams({id, status:"Approved", adminmessage:"Approved"})
   });
-  renderRequests();
+  renderRequestsCert();
 }
 
+// ---------------- REJECT ----------------
 function openRejectCert(id) {
-  currentRejectId = id;
+  currentRejecCertId = id;
   certmodal.classList.remove("hidden");
 }
 
 document.getElementById("sendCertReject").onclick = async () => {
-  await fetch("authController.php?action=adminUpdateRequestCert", {
-    method:"POST",
-    body:new URLSearchParams({
-      id: currentRejectId,
-      status:"Rejected",
-      adminmessage: rejectCertMessage.value
-    })
-  });
-  rejectCertMessage.value="";
-  certmodal.classList.add("hidden");
-  renderRequests();
+  try {
+    const res = await fetch("authController.php?action=adminUpdateCertRequest", {
+      method:"POST",
+      body:new URLSearchParams({
+        id: currentRejecCertId,
+        status:"Rejected",
+        adminmessage: rejectCertMessage.value
+      })
+    });
+    const data = await res.json();
+    alert(data.message);
+
+    rejectCertMessage.value="";
+    certmodal.classList.add("hidden");
+    renderRequestsCert();
+    currentRejecCertId = null;
+  } catch(err) {
+    console.error(err);
+    alert("Failed to reject business request: " + err.message);
+  }
 };
 
 document.getElementById("cancelCertReject").onclick = ()=>{
-  certmodal.classList.add("hidden");
   rejectCertMessage.value="";
+  certmodal.classList.add("hidden");
+  currentRejecCertId = null;
 };
-  
 
-async function markPaid(id) {
+async function markPaidCert(id) {
   if (!confirm("Mark this request as PAID?")) return;
 
   try {
@@ -1623,20 +1629,20 @@ async function markPaid(id) {
     const data = await res.json();
     alert(data.message);
 
-    renderRequests(); // reload table/list
+    renderRequestsCert(); // reload table/list
   } catch (err) {
     console.error(err);
     alert("Failed to mark as paid: " + err.message);
   }
 }
 
-async function deleteReq(id) {
+async function deleteReqCert(id) {
   if(!confirm("Delete request?")) return;
   await fetch("authController.php?action=adminDeleteRequestCert",{
     method:"POST",
     body:new URLSearchParams({id})
   });
-  renderRequests();
+  renderRequestsCert();
 }
 
 // ---------------- PRINT ----------------
@@ -1816,6 +1822,11 @@ setInterval(renderResidencyRequests, 5000);
 
 renderIndigencyRequests();
 setInterval(renderIndigencyRequests, 5000);
+
+renderRequestsCert();
+setInterval(renderRequestsCert, 5000);
+
+
 </script>
 
 
