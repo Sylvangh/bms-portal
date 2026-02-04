@@ -1551,7 +1551,7 @@ async function renderRequestsCert() {
 
 
         </p>
-        <p><b>Admin Message:</b> ${r.adminMessage || "None"}</p>
+        <p><b>Admin Message:</b> ${r.adminmessage || "None"}</p>
 
         <div class="actions">
           <button class="approve" onclick="approveCert(${r.id})">Approve</button>
@@ -1828,6 +1828,7 @@ setInterval(renderRequestsCert, 5000);
 
 
 </script>
+
 
 
 
