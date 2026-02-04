@@ -326,7 +326,7 @@ async function renderRequests() {
 
 
         </p>
-        <p><b>Admin Message:</b> ${r.adminMessage || "None"}</p>
+        <p><b>Admin Message:</b> ${r.adminmessage || "None"}</p>
 
         <div class="actions">
           <button class="approve" onclick="approve(${r.id})">Approve</button>
@@ -350,7 +350,7 @@ async function approve(id) {
   await fetch("authController.php?action=adminUpdateRequest", {
     method:"POST",
     body:new URLSearchParams({
-      id, status:"Approved", adminMessage:"Approved"
+      id, status:"Approved", adminmessage:"Approved"
     })
   });
   renderRequests();
@@ -978,7 +978,7 @@ async function approveIndigecny(id) {
     body: new URLSearchParams({
       id,
       status: "Approved",
-      adminMessage: "Approved"
+      adminmessage: "Approved"
     })
   });
   renderIndigencyRequests();
@@ -1254,7 +1254,7 @@ async function renderBusinessRequests() {
 async function approveBusiness(id) {
   await fetch("authController.php?action=adminUpdateBusinessRequest", {
     method:"POST",
-    body:new URLSearchParams({id, status:"Approved", adminMessage:"Approved"})
+    body:new URLSearchParams({id, status:"Approved", adminmessage:"Approved"})
   });
   renderBusinessRequests();
 }
@@ -1574,9 +1574,11 @@ async function renderRequests() {
 async function approve(id) {
   await fetch("authController.php?action=adminUpdateRequestCert", {
     method:"POST",
-    body:new URLSearchParams({
-      id, status:"Approved", adminMessage:"Approved"
-    })
+body: new URLSearchParams({
+  id,
+  status: "Approved",
+  adminmessage: "Approved"
+})
   });
   renderRequests();
 }
