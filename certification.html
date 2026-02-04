@@ -199,8 +199,8 @@ button:active {
 
   <div class="card">
     <form id="requestForm">
-      <label>Purpose</label>
-      <textarea id="purpose" required placeholder="Enter your purpose or message"></textarea>
+      <label>Purpose: Example; Scholarship... </label>
+      <textarea id="number" required placeholder="Enter your purpose"></textarea>
 
     <!-- Age -->
     <label>Age</label>
@@ -259,7 +259,7 @@ async function loadRequests() {
 
     div.innerHTML = `
       <div class="request-info">
-        <strong>Message to admin:</strong> ${req.purpose || '-'} <br>
+        <strong>Purpose:</strong> ${req.purpose || '-'} <br>
         <strong>Age:</strong> ${req.age ?? '-'} <br>
         <strong>Purok:</strong> ${req.purok || '-'} <br>
         <strong>Amount:</strong> ₱${req.price ?? 0} <br>
@@ -343,8 +343,6 @@ requestForm.addEventListener("submit", async e => {
     alert("Error saving request");
   }
 });
-
-
 
 // Edit request
 function editRequest(id, purpose, age, price,purok) {
