@@ -708,7 +708,7 @@ body::before {
       <button onclick="openCertificate('business')">Manage Requests</button>
     </div>
      <div class="card">
-      <i class="fas fa-paper"></i>
+      <i class="fas fa-certificate"></i>
       <h3>Certification</h3>
       <p class="cert-fee" data-type="certificate">₱0</p>
       <button onclick="openCertificate('certificate')">Manage Requests</button>
@@ -1190,6 +1190,7 @@ function askAI() {
 
 </body>
 </html>
+
 
 
 
