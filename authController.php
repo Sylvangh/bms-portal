@@ -1093,7 +1093,7 @@ elseif ($action === "deleteAnnouncements") {
 }
 
         // ----------------------------
-// Admin: Get all clearance requests
+// Admin: Get all certificate requests
 // ----------------------------
 elseif ($action === "adminGetCertRequests") {
     $result = pg_query($conn, "
@@ -1191,6 +1191,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
