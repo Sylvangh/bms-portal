@@ -199,9 +199,6 @@ button:active {
 
   <div class="card">
     <form id="requestForm">
-      <label>Purpose: Example; Scholarship... </label>
-      <textarea id="number" required placeholder="Enter your purpose"></textarea>
-
     <!-- Age -->
     <label>Age</label>
     <input type="number" id="age" placeholder="Enter your age" min="1" required>
@@ -259,7 +256,6 @@ async function loadRequests() {
 
     div.innerHTML = `
       <div class="request-info">
-        <strong>Purpose:</strong> ${req.purpose || '-'} <br>
         <strong>Age:</strong> ${req.age ?? '-'} <br>
         <strong>Purok:</strong> ${req.purok || '-'} <br>
         <strong>Amount:</strong> ₱${req.price ?? 0} <br>
@@ -280,7 +276,6 @@ async function loadRequests() {
       <div class="request-actions">
         <button onclick="editRequest(
           ${req.id},
-          '${(req.purpose || "").replace(/'/g,"\\'")}',
           '${req.age ?? ''}',
           '${req.purok ?? ''}',
           '${req.price ?? 0}'
@@ -298,13 +293,12 @@ async function loadRequests() {
 requestForm.addEventListener("submit", async e => {
   e.preventDefault();
 
-  const purpose = document.getElementById("purpose").value.trim();
   const ageInput = document.getElementById("age").value.trim();
   const priceInput = document.getElementById("price").value.trim();
   const purok = document.getElementById("purok").value.trim();
 
   // Validation BEFORE converting
-  if (!purpose || !purok || priceInput === '' || ageInput === '')
+  if (!purok || priceInput === '' || ageInput === '')
     return alert("All fields are required");
 
   const price = Number(priceInput);
@@ -318,7 +312,6 @@ requestForm.addEventListener("submit", async e => {
   const formData = new FormData();
   if (editingRequestId) formData.append("id", editingRequestId);
   formData.append("email", currentEmail);   // <-- must match PHP $_POST['email']
-  formData.append("purpose", purpose);      // <-- matches $_POST['purpose']
   formData.append("price", price);          // <-- matches $_POST['price']
   formData.append("age", age);              // <-- matches $_POST['age']
   formData.append("purok", purok);          // <-- matches $_POST['purok']
@@ -347,7 +340,6 @@ requestForm.addEventListener("submit", async e => {
 // Edit request
 function editRequest(id, purpose, age, price,purok) {
   editingRequestId = id;
-  document.getElementById("purpose").value = purpose;
   document.getElementById("age").value = age;
   document.getElementById("price").value = price;
   document.getElementById("purok").value = purok;
