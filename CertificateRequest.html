@@ -1541,7 +1541,6 @@ async function renderRequestsCert() {
         <p><b>Date:</b> ${r.date}</p>
         <p><b>Age:</b> ${r.age}</p>
         <p><b>Purok:</b> ${r.purok}</p>
-        <p><b>Purpose:</b> ${r.purpose}</p>
         <p><b>Status:</b> ${r.status}</p>
         <p><b>Price:</b> ${r.price}</p>
         <p><b>Payment:</b>
@@ -1557,7 +1556,7 @@ async function renderRequestsCert() {
           <button class="approve" onclick="approveCert(${r.id})">Approve</button>
           <button class="reject" onclick="openRejectCert(${r.id})">Reject</button>
           <button class="markPaid" onclick="markPaidCert(${r.id})">Mark Paid</button>
-          <button class="print" onclick="printClearance('${r.name}','${r.lastname}','${r.age}','${r.purpose}','${r.price}','${r.purok}')">Print</button>
+          <button class="print" onclick="printClearance('${r.name}','${r.lastname}','${r.age}','${r.price}','${r.purok}')">Print</button>
 
           
 
@@ -1646,7 +1645,7 @@ async function deleteReqCert(id) {
 }
 
 // ---------------- PRINT ----------------
-function printClearance(name, lastname, age, purpose,price,purok) {
+function printClearance(name, lastname, age,price,purok) {
     const fullName = `${name ?? ''} ${lastname ?? ''}`.trim().toUpperCase();
   const today = new Date().toLocaleDateString();
   const win = window.open("", "_blank");
@@ -1654,7 +1653,7 @@ function printClearance(name, lastname, age, purpose,price,purok) {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Barangay Clearance</title>
+<title>CERTIFICATION</title>
 
 <style>
   @page {
@@ -1751,20 +1750,20 @@ function printClearance(name, lastname, age, purpose,price,purok) {
 <div class="page">
 
   <div class="right">
-    <h1>BARANGAY CLEARANCE</h1>
+    <h1>CERTIFICATION</h1>
 
     <p class="no-indent"><b>TO WHOM IT MAY CONCERN:</b></p>
 
-    <p>
+     <p>
       THIS IS TO CERTIFY that <span class="highlight"><b>${fullName}</b></span>,
-     <b>${age}</b> years old, Filipino citizen, is a bonafide resident of Purok ${purok},
+     <b>${age}</b> years old, a bonifide resident of Purok ${purok},
       Barangay Peñafrancia, Sta. Magdalena, Sorsogon and has no derogatory
       record in this community.
     </p>
 
     <p>
-      THIS CERTIFICATION is issued upon request of the interested party
-      for <span class="highlight"><b>${purpose}</b></span> purposes.
+      <b>THIS CERTIFICATION</b> is issued upon request of the request of the above
+      mentioned individual for what ever legal purpose it may serve.
     </p>
 
     <p>
@@ -1828,6 +1827,7 @@ setInterval(renderRequestsCert, 5000);
 
 
 </script>
+
 
 
 
