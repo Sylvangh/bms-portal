@@ -675,7 +675,7 @@ elseif ($action === "adminGetClearanceRequests") {
 elseif ($action === "adminUpdateRequest") {
     $id = intval($_POST['id'] ?? 0);
     $status = $_POST['status'] ?? '';
-    $msg = $_POST['adminMessage'] ?? '';
+    $msg = $_POST['adminmessage'] ?? '';
 
     if (!$id || !$status) {
         echo json_encode(["message" => "Missing fields"]);
@@ -686,7 +686,7 @@ elseif ($action === "adminUpdateRequest") {
     $result = pg_query_params(
         $conn,
         "UPDATE certificate_requests 
-         SET status=$1, adminMessage=$2 
+         SET status=$1, adminmessage=$2 
          WHERE id=$3",
         [$status, $msg, $id]
     );
@@ -1119,7 +1119,7 @@ elseif ($action === "adminGetCertRequests") {
 elseif ($action === "adminUpdateRequestCert") {
     $id = intval($_POST['id'] ?? 0);
     $status = $_POST['status'] ?? '';
-    $msg = $_POST['adminMessage'] ?? '';
+    $msg = $_POST['adminmessage'] ?? '';
 
     if (!$id || !$status) {
         echo json_encode(["message" => "Missing fields"]);
@@ -1130,7 +1130,7 @@ elseif ($action === "adminUpdateRequestCert") {
     $result = pg_query_params(
         $conn,
         "UPDATE certificate_requests 
-         SET status=$1, adminMessage=$2 
+         SET status=$1, adminmessage=$2 
          WHERE id=$3",
         [$status, $msg, $id]
     );
@@ -1191,6 +1191,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
