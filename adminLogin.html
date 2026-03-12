@@ -280,8 +280,10 @@ input:focus {
      <footer>
   Developed by <b>@SylvanDR2</b>
 </footer>
-  </div><script>
-const btnLogin = document.getElementById("btn-admin-login");
+  </div><script>1
+
+
+    const btnLogin = document.getElementById("btn-admin-login");
 
 btnLogin.addEventListener("click", async () => {
   const username = document.getElementById("admin-username").value.trim();
@@ -304,15 +306,11 @@ btnLogin.addEventListener("click", async () => {
       throw new Error(`Server responded with status ${res.status}`);
     }
 
-    // Parse JSON safely
-    const data = await res.json().catch(() => {
-      throw new Error("Server returned invalid JSON");
-    });
+    const data = await res.json(); // parse JSON safely
 
-    // Handle response
     if (data.status === "success") {
       alert("Welcome, Admin!");
-      window.location.href = "adminDashboard.php"; // redirect
+      window.location.href = "adminDashboard.php";
     } else {
       alert(data.message || "Invalid username or password");
     }
@@ -333,7 +331,7 @@ togglePassword.addEventListener("click", () => {
   togglePassword.classList.toggle("fa-eye");
   togglePassword.classList.toggle("fa-eye-slash");
 });
-
+    
 </script>
 
 
@@ -342,6 +340,7 @@ togglePassword.addEventListener("click", () => {
 </body>
 
 </html>
+
 
 
 
