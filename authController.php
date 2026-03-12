@@ -7,22 +7,32 @@ ini_set('display_errors', 0);
 $response = [];
 
 try {
-    // --- PostgreSQL connection ---
-    $host = "db.wggqwjvdmxaplqydddjy.supabase.co";
-$db   = "postgres";
-$user = "postgres";
-$pass = "#Sylvan2026";  // put your real Supabase password here
-$port = 5432;
-    
-    $conn_string = "host=$host port=$port dbname=$db user=$user password=$pass sslmode=require";
-    $conn = @pg_connect($conn_string);
-    if (!$conn) throw new Exception("Connection failed: " . pg_last_error());
 
+    // --- Supabase PostgreSQL connection ---
+    $host = "db.wggqwjvdmxaplqydddjy.supabase.co";
+    $db   = "postgres";
+    $user = "postgres";
+    $pass = "#Sylvan2026";
+    $port = "5432";
+
+    $conn_string = "host=$host port=$port dbname=$db user=$user password=$pass sslmode=require";
+
+    $conn = pg_connect($conn_string);
+
+    if (!$conn) {
+        throw new Exception("Database connection failed.");
+    }
+
+    // get action from URL
     $action = $_GET['action'] ?? '';
 
     if ($action === 'register') {
+
         $data = json_decode(file_get_contents("php://input"), true);
-        if (!$data) throw new Exception("No input received");
+
+        if (!$data) {
+            throw new Exception("No input received");
+        }
 
         // --- sanitize and insert registration (as you already have) ---
         $name = pg_escape_string($data['name'] ?? '');
@@ -1191,6 +1201,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
