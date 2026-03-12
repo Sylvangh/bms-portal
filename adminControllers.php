@@ -1,5 +1,12 @@
 <?php
+
+// Allow frontend requests (CORS fix)
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+
 header('Content-Type: application/json');
+
 session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
@@ -13,15 +20,24 @@ try {
     $db   = "postgres";
     $user = "postgres.wggqwjvdmxaplqydddjy";
     $pass = "#Sylvan2026supabase";
-    $port = 6543;
+    $port = "6543";
 
-    $conn_string = "host=$host port=$port dbname=$db user=$user password=$pass sslmode=require";
+    $conn_string = "
+        host=$host
+        port=$port
+        dbname=$db
+        user=$user
+        password=$pass
+        sslmode=require
+    ";
+
     $conn = pg_connect($conn_string);
 
     if (!$conn) {
-        throw new Exception("Connection failed: " . pg_last_error());
+        throw new Exception("Database connection failed");
     }
 
+    // get action from URL
     $action = $_GET['action'] ?? '';
 
     // ---------------- GET PENDING ----------------
@@ -76,5 +92,6 @@ try {
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);
     exit();
 }
+
 
 
