@@ -9,11 +9,12 @@ $response = [];
 try {
 
     // --- Supabase PostgreSQL connection ---
-    $host = "db.wggqwjvdmxaplqydddjy.supabase.co";
-    $db   = "postgres";
-    $user = "postgres";
-    $pass = "#Sylvan2026";
-    $port = "5432";
+   $host = "aws-0-us-west-1.pooler.supabase.com";
+$db   = "postgres";
+$user = "postgres.wggqwjvdmxaplqydddjy";
+$pass = "#Sylvan2026";
+$port = 6543;
+
 
     $conn_string = "host=$host port=$port dbname=$db user=$user password=$pass sslmode=require";
 
@@ -1201,6 +1202,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
