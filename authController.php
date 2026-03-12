@@ -1,8 +1,16 @@
 <?php
-// Allow frontend requests (CORS fix)
+// ----------------------------
+// CORS & Headers
+// ----------------------------
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+
+// Handle preflight request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
 
 header('Content-Type: application/json');
 
@@ -13,30 +21,26 @@ ini_set('display_errors', 0);
 $response = [];
 
 try {
-
-    // --- Supabase PostgreSQL connection ---
+    // ----------------------------
+    // Supabase PostgreSQL connection
+    // ----------------------------
     $host = "aws-1-ap-south-1.pooler.supabase.com";
     $db   = "postgres";
     $user = "postgres.wggqwjvdmxaplqydddjy";
     $pass = "#Sylvan2026supabase";
-    $port = "6543";
+    $port = 6543;
 
-    $conn_string = "
-        host=$host
-        port=$port
-        dbname=$db
-        user=$user
-        password=$pass
-        sslmode=require
-    ";
+    $conn_string = "host=$host port=$port dbname=$db user=$user password=$pass sslmode=require";
 
     $conn = pg_connect($conn_string);
 
     if (!$conn) {
-        throw new Exception("Database connection failed");
+        throw new Exception("Database connection failed: " . pg_last_error());
     }
 
-    // get action from URL
+    // ----------------------------
+    // Get action from URL
+    // ----------------------------
     $action = $_GET['action'] ?? '';
 
     if ($action === 'register') {
@@ -1214,6 +1218,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
