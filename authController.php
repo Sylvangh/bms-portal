@@ -1,47 +1,67 @@
 <?php
 // ----------------------------
-// CORS & Headers
+// authController.php
+// ----------------------------
+
+// ----------------------------
+// 1. CORS Handling
 // ----------------------------
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 
-// Handle preflight request
+// Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
+// ----------------------------
+// 2. JSON Response Setup
+// ----------------------------
 header('Content-Type: application/json');
 
-session_start();
+// ----------------------------
+// 3. Error Reporting (debugging)
+// ----------------------------
+ini_set('display_errors', 1);
 error_reporting(E_ALL);
-ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/php_errors.log');
 
+// ----------------------------
+// 4. Start session
+// ----------------------------
+session_start();
+
+// ----------------------------
+// 5. Supabase Pooler Connection
+// ----------------------------
+$host = "aws-1-ap-south-1.pooler.supabase.com";
+$port = 6543;
+$db   = "postgres";
+$user = "postgres.wggqwjvdmxaplqydddjy"; // format: postgres.project-ref
+$pass = "#Sylvan2026supabase";
+
+// Must be ONE LINE, no extra spaces/newlines
+$conn_string = "host=$host port=$port dbname=$db user=$user password=$pass sslmode=require";
+
+$conn = @pg_connect($conn_string);
+
+if (!$conn) {
+    http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Database connection failed: " . pg_last_error()
+    ]);
+    exit();
+}
+
+// ----------------------------
+// 6. Get action from URL
+// ----------------------------
+$action = $_GET['action'] ?? '';
 $response = [];
-
-try {
-    // ----------------------------
-    // Supabase PostgreSQL connection
-    // ----------------------------
-    $host = "aws-1-ap-south-1.pooler.supabase.com";
-    $db   = "postgres";
-    $user = "postgres.wggqwjvdmxaplqydddjy";
-    $pass = "#Sylvan2026supabase";
-    $port = 6543;
-
-    $conn_string = "host=$host port=$port dbname=$db user=$user password=$pass sslmode=require";
-
-    $conn = pg_connect($conn_string);
-
-    if (!$conn) {
-        throw new Exception("Database connection failed: " . pg_last_error());
-    }
-
-    // ----------------------------
-    // Get action from URL
-    // ----------------------------
-    $action = $_GET['action'] ?? '';
 
     if ($action === 'register') {
 
@@ -1218,6 +1238,7 @@ else {
 
 echo json_encode($response);
 exit();
+
 
 
 
