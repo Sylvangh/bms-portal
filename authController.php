@@ -1,31 +1,25 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header('Content-Type: application/json');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit(200);
-
 session_start();
-ini_set('display_errors', 0);   // hide warnings from output
-ini_set('log_errors', 1);       // log errors to file
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
 
 $response = [];
 
 try {
-    $host = "aws-1-ap-south-1.pooler.supabase.com";
-    $port = 6543;
-    $db   = "postgres";
-    $user = "postgres.wggqwjvdmxaplqydddjy";
-    $pass = "#Sylvan2026supabase";
+// --- PostgreSQL connection ---
+ // --- PostgreSQL connection ---
+    $host = "dpg-d6qvp3i4d50c73bkp6n0-a.oregon-postgres.render.com";
+    $db   = "registrations_ghe3";
+    $user = "registrations_ghe3_user";
+    $pass = "7t55ce58WYKrOEF9AINd1aWTCnizNiTj";
+    $port = 5432;
 
-    $conn_string = "host=$host port=$port dbname=$db user=$user password=$pass sslmode=require";
+$conn_string = "host=$host port=$port dbname=$db user=$user password=$pass sslmode=require";  
+$conn = @pg_connect($conn_string);  
+if (!$conn) throw new Exception("Connection failed: " . pg_last_error());  
 
-    $conn = @pg_connect($conn_string);
-    if (!$conn) throw new Exception("Database connection failed: " . pg_last_error());
-
-    // Get action
-    $action = $_GET['action'] ?? '';
+$action = $_GET['action'] ?? '';
 
     if ($action === 'register') {
 
