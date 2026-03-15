@@ -7,7 +7,6 @@ ini_set('display_errors', 0);
 $response = [];
 
 try {
-// --- PostgreSQL connection ---
  // --- PostgreSQL connection ---
     $host = "dpg-d6qvp3i4d50c73bkp6n0-a.oregon-postgres.render.com";
     $db   = "registrations_ghe3";
