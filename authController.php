@@ -578,10 +578,11 @@ elseif ($action === 'updateCertificateFees') {
         exit;
     }
 
-    $clearance = intval($fees['clearance'] ?? 0);
-    $residency = intval($fees['residency'] ?? 0);
-    $indigency = intval($fees['indigency'] ?? 0);
-    $business  = intval($fees['business'] ?? 0);
+    $clearance   = intval($fees['clearance'] ?? 0);
+    $residency   = intval($fees['residency'] ?? 0);
+    $indigency   = intval($fees['indigency'] ?? 0);
+    $business    = intval($fees['business'] ?? 0);
+    $certificate = intval($fees['certificate'] ?? 0); // NEW
 
     // Ensure the row exists
     $rowCheck = pg_query($conn, "SELECT id FROM certificate_fees LIMIT 1");
@@ -591,15 +592,19 @@ elseif ($action === 'updateCertificateFees') {
                     clearance = $1,
                     residency = $2,
                     indigency = $3,
-                    business = $4
+                    business = $4,
+                    certificate = $5
                 WHERE id = (SELECT id FROM certificate_fees LIMIT 1)";
+        $params = [$clearance, $residency, $indigency, $business, $certificate];
     } else {
-        // INSERT a new row if table empty (provide fee = 0)
-        $sql = "INSERT INTO certificate_fees (fee, clearance, residency, indigency, business)
-                VALUES (0, $1, $2, $3, $4)";
+        // INSERT a new row if table empty
+        $sql = "INSERT INTO certificate_fees 
+                    (fee, clearance, residency, indigency, business, certificate)
+                VALUES (0, $1, $2, $3, $4, $5)";
+        $params = [$clearance, $residency, $indigency, $business, $certificate];
     }
 
-    $result = pg_query_params($conn, $sql, [$clearance, $residency, $indigency, $business]);
+    $result = pg_query_params($conn, $sql, $params);
 
     if ($result) {
         echo json_encode([
@@ -622,7 +627,8 @@ elseif ($action === 'updateCertificateFees') {
             "clearance" => 0,
             "residency" => 0,
             "indigency" => 0,
-            "business"  => 0
+            "business"  => 0,
+            "certificate" => 0 // NEW
         ]);
         exit;
     }
@@ -1196,7 +1202,6 @@ else {
 
 echo json_encode($response);
 exit();
-
 
 
 
