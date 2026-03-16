@@ -6,10 +6,10 @@ ini_set('display_errors', 1);
 
 try {
     // --- PostgreSQL connection ---
-    $host = "dpg-d5g6o614tr6s73e42630-a.oregon-postgres.render.com";
-    $db   = "bms_pen_db";
-    $user = "bms_pen_db_user";
-    $pass = "PuV1lCJedCOHqq2ZRJ2DYPCPWuWC5Ux6";
+    $host = "dpg-d6qvp3i4d50c73bkp6n0-a.oregon-postgres.render.com";
+    $db   = "registrations_ghe3";
+    $user = "registrations_ghe3_user";
+    $pass = "7t55ce58WYKrOEF9AINd1aWTCnizNiTj";
     $port = 5432;
 
     $conn_string = "host=$host port=$port dbname=$db user=$user password=$pass sslmode=require";
